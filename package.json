@@ -1,19 +1,19 @@
 {
-  "name": "n8n-nodes-<...>",
+  "name": "n8n-nodes-substack",
   "version": "0.1.0",
-  "description": "",
+  "description": "n8n community node for Substack API integration",
   "keywords": [
     "n8n-community-node-package"
   ],
   "license": "MIT",
   "homepage": "",
   "author": {
-    "name": "",
-    "email": ""
+    "name": "Jakub Slys",
+    "email": "jakub@slys.dev"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/<...>/n8n-nodes-<...>.git"
+    "url": "https://github.com/jakub-k-slys/n8n-nodes-substack.git"
   },
   "engines": {
     "node": ">=20.15"
