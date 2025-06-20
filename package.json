@@ -1,5 +1,5 @@
 {
-  "name": "n8n-nodes-<...>",
+  "name": "n8n-nodes-substack",
   "version": "0.1.0",
   "description": "n8n community node for Substack API integration",
   "keywords": [
