@@ -5,7 +5,8 @@ module.exports = [
 	// Global ignores
 	{
 		ignores: [
-			'.eslintrc.js',
+			'eslint.config.js',
+			'eslint.prepublish.config.js',
 			'**/*.js',
 			'**/node_modules/**',
 			'**/dist/**',
