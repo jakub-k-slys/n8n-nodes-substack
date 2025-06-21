@@ -1,0 +1,5 @@
+site_name: N8N Nodes Substack
+theme:
+  name: material
+plugins:
+  - search
