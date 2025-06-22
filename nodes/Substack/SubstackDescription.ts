@@ -18,22 +18,12 @@ export const noteOperations: INodeProperties[] = [
 				value: 'create',
 				description: 'Create a new Substack note',
 				action: 'Create a note',
-				routing: {
-					request: {
-						method: 'POST',
-						url: '/api/v1/notes',
-					},
-					output: {
-						postReceive: [
-							{
-								type: 'set',
-								properties: {
-									value: '={{ { "title": $response.body.title || $parameter.title, "success": true, "noteId": $response.body.id, "url": $response.body.url } }}',
-								},
-							},
-						],
-					},
-				},
+			},
+			{
+				name: 'Get',
+				value: 'get',
+				description: 'Retrieve notes from the publication',
+				action: 'Get notes',
 			},
 		],
 		default: 'create',
@@ -55,12 +45,6 @@ const createOperation: INodeProperties[] = [
 				operation: ['create'],
 			},
 		},
-		routing: {
-			send: {
-				property: 'title',
-				type: 'body',
-			},
-		},
 		required: true,
 	},
 	{
@@ -79,13 +63,43 @@ const createOperation: INodeProperties[] = [
 				operation: ['create'],
 			},
 		},
-		routing: {
-			send: {
-				property: 'body',
-				type: 'body',
+		required: true,
+	},
+];
+
+// Here we define what to show when the 'get' operation is selected.
+const getOperation: INodeProperties[] = [
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		default: 50,
+		description: 'Max number of results to return',
+		displayOptions: {
+			show: {
+				resource: ['note'],
+				operation: ['get'],
 			},
 		},
-		required: true,
+		typeOptions: {
+			minValue: 1,
+		},
+	},
+	{
+		displayName: 'Offset',
+		name: 'offset',
+		type: 'number',
+		default: 0,
+		description: 'Number of notes to skip',
+		displayOptions: {
+			show: {
+				resource: ['note'],
+				operation: ['get'],
+			},
+		},
+		typeOptions: {
+			minValue: 0,
+		},
 	},
 ];
 
@@ -94,4 +108,8 @@ export const noteFields: INodeProperties[] = [
 	/*                                note:create                                 */
 	/* -------------------------------------------------------------------------- */
 	...createOperation,
+	/* -------------------------------------------------------------------------- */
+	/*                                note:get                                    */
+	/* -------------------------------------------------------------------------- */
+	...getOperation,
 ];
