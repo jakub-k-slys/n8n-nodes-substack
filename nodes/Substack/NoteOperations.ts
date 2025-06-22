@@ -8,28 +8,23 @@ export class NoteOperations {
 		publicationAddress: string,
 		itemIndex: number,
 	) {
-		// Get note parameters
-		const title = executeFunctions.getNodeParameter('title', itemIndex) as string;
+		// Get note body
 		const body = executeFunctions.getNodeParameter('body', itemIndex) as string;
 
-		if (!title || !body) {
-			throw new NodeOperationError(executeFunctions.getNode(), 'Title and body are required', {
+		if (!body) {
+			throw new NodeOperationError(executeFunctions.getNode(), 'Body is required', {
 				itemIndex,
 			});
 		}
 
-		// Create note content by combining title and body
-		// For simple notes, we'll create a formatted note with title as first paragraph
-		const noteContent = title + '\n\n' + body;
-
 		// Publish the note using the substack-api library
-		const response = await client.publishNote(noteContent);
+		const response = await client.publishNote(body);
 
 		// Format response to match expected output format
 		return {
 			success: true,
-			title: title,
 			noteId: response.id,
+			body: response.body || body,
 			url: `${publicationAddress}/p/${response.id}`, // Use full URL from credentials
 			date: response.date,
 			status: response.status,
@@ -61,7 +56,6 @@ export class NoteOperations {
 			if (comment) {
 				formattedNotes.push({
 					noteId: comment.id,
-					title: '', // Notes don't typically have titles separate from body
 					body: comment.body || '',
 					url: `${publicationAddress}/p/${comment.id}`,
 					date: comment.date,
