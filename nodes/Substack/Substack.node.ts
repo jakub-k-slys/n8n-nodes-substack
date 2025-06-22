@@ -1,13 +1,14 @@
-import {
+import { 
 	IExecuteFunctions,
 	INodeExecutionData,
-	INodeType,
-	INodeTypeDescription,
+	INodeType, 
+	INodeTypeDescription, 
 	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { Substack as SubstackClient } from 'substack-api';
-import { noteFields, noteOperations, postFields, postOperations } from './SubstackDescription';
+import { noteFields, noteOperations } from './SubstackDescription';
+import { NoteOperations } from './NoteOperations';
+import { SubstackUtils } from './SubstackUtils';
 
 export class Substack implements INodeType {
 	description: INodeTypeDescription = {
@@ -114,8 +115,20 @@ export class Substack implements INodeType {
 							},
 							pairedItem: { item: i },
 						});
+            
+					} else if (operation === 'get') {
+						const notes = await NoteOperations.get(this, client, publicationAddress, i);
+						
+						// Return each note as a separate item
+						for (const note of notes) {
+							returnData.push({
+								json: note,
+								pairedItem: { item: i },
+							});
+						}
+					} else {
+						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, { itemIndex: i });
 					}
-				}
 			} catch (error) {
 				if (this.continueOnFail()) {
 					returnData.push({
