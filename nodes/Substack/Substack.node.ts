@@ -6,8 +6,9 @@ import {
 	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { Substack as SubstackClient } from 'substack-api';
 import { noteFields, noteOperations } from './SubstackDescription';
+import { NoteOperations } from './NoteOperations';
+import { SubstackUtils } from './SubstackUtils';
 
 export class Substack implements INodeType {
 	description: INodeTypeDescription = {
@@ -59,85 +60,26 @@ export class Substack implements INodeType {
 				const resource = this.getNodeParameter('resource', i) as string;
 				const operation = this.getNodeParameter('operation', i) as string;
 
-				// Get credentials
-				const credentials = await this.getCredentials('substackApi');
-				const { publicationAddress, apiKey } = credentials;
-
-				if (!apiKey) {
-					throw new NodeOperationError(this.getNode(), 'API key is required', { itemIndex: i });
-				}
-
 				// Initialize Substack client
-				const client = new SubstackClient({
-					hostname: publicationAddress as string,
-					apiKey: apiKey as string,
-				});
+				const { client, publicationAddress } = await SubstackUtils.initializeClient(this, i);
 
 				if (resource === 'note') {
 					if (operation === 'create') {
-						// Get note parameters
-						const title = this.getNodeParameter('title', i) as string;
-						const body = this.getNodeParameter('body', i) as string;
-
-						if (!title || !body) {
-							throw new NodeOperationError(this.getNode(), 'Title and body are required', { itemIndex: i });
-						}
-
-						// Create note content by combining title and body
-						// For simple notes, we'll create a formatted note with title as first paragraph
-						const noteContent = title + '\n\n' + body;
-
-						// Publish the note using the substack-api library
-						const response = await client.publishNote(noteContent);
-
-						// Format response to match expected output format
-						const outputData = {
-							success: true,
-							title: title,
-							noteId: response.id,
-							url: `https://${publicationAddress}/p/${response.id}`, // Construct URL based on response
-							date: response.date,
-							status: response.status,
-							userId: response.user_id,
-						};
-
+						const outputData = await NoteOperations.create(this, client, publicationAddress, i);
+						
 						returnData.push({
 							json: outputData,
 							pairedItem: { item: i },
 						});
 					} else if (operation === 'get') {
-						// Get parameters for retrieving notes
-						const limit = this.getNodeParameter('limit', i, 10) as number;
-						const offset = this.getNodeParameter('offset', i, 0) as number;
-
-						// Retrieve notes using the substack-api library
-						const response = await client.getNotes({ limit, offset });
-
-						// Format response - SubstackNotes has an items property containing the notes
-						const notes = response.items || [];
+						const notes = await NoteOperations.get(this, client, publicationAddress, i);
 						
 						// Return each note as a separate item
 						for (const note of notes) {
-							// Extract note content from the comment field
-							const comment = note.comment;
-							if (comment) {
-								returnData.push({
-									json: {
-										noteId: comment.id,
-										title: '', // Notes don't typically have titles separate from body
-										body: comment.body || '',
-										url: `https://${publicationAddress}/p/${comment.id}`,
-										date: comment.date,
-										status: 'published',
-										userId: comment.user_id,
-										likes: comment.reaction_count || 0,
-										restacks: comment.restacks || 0,
-										type: comment.type,
-										entityKey: note.entity_key,
-									},
-									pairedItem: { item: i },
-								});
-							}
+							returnData.push({
+								json: note,
+								pairedItem: { item: i },
+							});
 						}
 					} else {
 						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, { itemIndex: i });
