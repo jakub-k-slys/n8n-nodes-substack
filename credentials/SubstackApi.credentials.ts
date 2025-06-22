@@ -48,7 +48,7 @@ export class SubstackApi implements ICredentialType {
 		request: {
 			baseURL:
 				'={{$credentials?.publicationAddress ? "https://" + $credentials.publicationAddress : "https://substack.com"}}',
-			url: '/api/v1/user',
+			url: '/api/v1/feed/following',
 		},
 	};
 }
