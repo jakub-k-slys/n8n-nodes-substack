@@ -1,4 +1,4 @@
-Copyright 2024 Jakub Slys
+Copyright 2025 Jakub Slys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
