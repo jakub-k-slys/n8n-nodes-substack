@@ -1,5 +1,31 @@
 # API Reference
 
+> **Important**: This document covers the [substack-api](https://www.npmjs.com/package/substack-api) library that powers the n8n Substack node. If you're looking for n8n-specific documentation, see the [n8n Usage Guide](n8n-usage.md).
+
+## n8n Node Interface
+
+The n8n Substack node provides a simplified interface with these operations:
+
+### Available Resources
+- **Post**: Retrieve posts from your publication
+  - **Get Many**: Retrieves posts with optional pagination (`limit`, `offset`)
+  
+- **Note**: Create short-form content
+  - **Create**: Publishes a note with `title` and `body` parameters
+
+### Quick Reference
+```javascript
+// n8n Node equivalent operations:
+// Post → Get Many = client.getPosts({ limit, offset })
+// Note → Create = client.publishNote(`${title}\n\n${body}`)
+```
+
+For advanced operations not available in the n8n node, you can use the full API client in Function nodes or custom applications.
+
+---
+
+## Substack API Client Reference
+
 This section provides comprehensive documentation for all classes, methods, and types available in the Substack API client, including detailed descriptions and practical code examples.
 
 ## Substack Class
