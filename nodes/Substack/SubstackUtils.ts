@@ -1,5 +1,6 @@
-import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
+import { IExecuteFunctions, INode, NodeOperationError } from 'n8n-workflow';
 import { Substack as SubstackClient } from 'substack-api';
+import { IErrorResponse, IStandardResponse } from './types';
 
 export class SubstackUtils {
 	static async initializeClient(executeFunctions: IExecuteFunctions) {
@@ -28,5 +29,54 @@ export class SubstackUtils {
 		});
 
 		return { client, publicationAddress: publicationAddress as string };
+	}
+
+	static formatUrl(publicationAddress: string, path: string): string {
+		// Ensure path starts with / and remove any trailing slashes from publicationAddress
+		const cleanPath = path.startsWith('/') ? path : `/${path}`;
+		const cleanAddress = publicationAddress.replace(/\/+$/, '');
+		return `${cleanAddress}${cleanPath}`;
+	}
+
+	static validateResponse(response: any): IStandardResponse {
+		if (!response) {
+			return {
+				success: false,
+				data: null,
+				error: 'Empty response received',
+			};
+		}
+
+		return {
+			success: true,
+			data: response,
+			metadata: {
+				date: response.date,
+				status: response.status,
+			},
+		};
+	}
+
+	static handleError(error: Error | NodeOperationError, node: INode, itemIndex: number): never {
+		// If it's already a NodeOperationError, just throw it
+		if (error instanceof NodeOperationError) {
+			throw error;
+		}
+
+		// Otherwise, create a new NodeOperationError with the error message
+		throw new NodeOperationError(node, error.message, {
+			itemIndex,
+		});
+	}
+
+	static formatErrorResponse({ message, node, itemIndex }: IErrorResponse): IStandardResponse {
+		return {
+			success: false,
+			data: null,
+			error: message,
+			metadata: {
+				status: 'error',
+			},
+		};
 	}
 }
