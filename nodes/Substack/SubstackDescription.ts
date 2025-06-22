@@ -18,12 +18,6 @@ export const postOperations: INodeProperties[] = [
 				value: 'getAll',
 				description: 'Get many posts from the publication',
 				action: 'Get many posts',
-				routing: {
-					request: {
-						method: 'GET',
-						url: '/api/v1/posts',
-					},
-				},
 			},
 		],
 		default: 'getAll',
@@ -48,22 +42,6 @@ export const noteOperations: INodeProperties[] = [
 				value: 'create',
 				description: 'Create a new Substack note',
 				action: 'Create a note',
-				routing: {
-					request: {
-						method: 'POST',
-						url: '/api/v1/notes',
-					},
-					output: {
-						postReceive: [
-							{
-								type: 'set',
-								properties: {
-									value: '={{ { "title": $response.body.title || $parameter.title, "success": true, "noteId": $response.body.id, "url": $response.body.url } }}',
-								},
-							},
-						],
-					},
-				},
 			},
 		],
 		default: 'create',
@@ -84,12 +62,6 @@ const getAllOperation: INodeProperties[] = [
 				operation: ['getAll'],
 			},
 		},
-		routing: {
-			send: {
-				property: 'limit',
-				type: 'query',
-			},
-		},
 		typeOptions: {
 			minValue: 1,
 		},
@@ -104,12 +76,6 @@ const getAllOperation: INodeProperties[] = [
 			show: {
 				resource: ['post'],
 				operation: ['getAll'],
-			},
-		},
-		routing: {
-			send: {
-				property: 'offset',
-				type: 'query',
 			},
 		},
 		typeOptions: {
@@ -140,12 +106,6 @@ const createOperation: INodeProperties[] = [
 				operation: ['create'],
 			},
 		},
-		routing: {
-			send: {
-				property: 'title',
-				type: 'body',
-			},
-		},
 		required: true,
 	},
 	{
@@ -162,12 +122,6 @@ const createOperation: INodeProperties[] = [
 			show: {
 				resource: ['note'],
 				operation: ['create'],
-			},
-		},
-		routing: {
-			send: {
-				property: 'body',
-				type: 'body',
 			},
 		},
 		required: true,

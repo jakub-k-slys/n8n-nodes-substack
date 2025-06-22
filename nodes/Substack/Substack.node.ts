@@ -1,4 +1,12 @@
-import { INodeType, INodeTypeDescription, NodeConnectionType } from 'n8n-workflow';
+import {
+	IExecuteFunctions,
+	INodeExecutionData,
+	INodeType,
+	INodeTypeDescription,
+	NodeConnectionType,
+	NodeOperationError,
+} from 'n8n-workflow';
+import { Substack as SubstackClient } from 'substack-api';
 import { noteFields, noteOperations, postFields, postOperations } from './SubstackDescription';
 
 export class Substack implements INodeType {
@@ -22,14 +30,6 @@ export class Substack implements INodeType {
 				required: true,
 			},
 		],
-		requestDefaults: {
-			baseURL: '={{$credentials?.publicationAddress ? "https://" + $credentials.publicationAddress : "https://substack.com"}}',
-			url: '',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json',
-			},
-		},
 		properties: [
 			{
 				displayName: 'Resource',
@@ -55,4 +55,79 @@ export class Substack implements INodeType {
 			...postFields,
 		],
 	};
+
+	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+		const items = this.getInputData();
+		const credentials = await this.getCredentials('substackApi');
+		
+		if (!credentials) {
+			throw new NodeOperationError(this.getNode(), 'No credentials provided');
+		}
+
+		const returnData: INodeExecutionData[] = [];
+
+		// Extract hostname from publication address
+		const publicationAddress = credentials.publicationAddress as string;
+		const hostname = publicationAddress.replace(/^https?:\/\//, '');
+
+		// Initialize Substack client
+		const client = new SubstackClient({
+			hostname,
+			apiKey: credentials.apiKey as string,
+		});
+
+		for (let i = 0; i < items.length; i++) {
+			try {
+				const resource = this.getNodeParameter('resource', i) as string;
+				const operation = this.getNodeParameter('operation', i) as string;
+
+				if (resource === 'post') {
+					if (operation === 'getAll') {
+						const limit = this.getNodeParameter('limit', i, 50) as number;
+						const offset = this.getNodeParameter('offset', i, 0) as number;
+
+						const posts = await client.getPosts({ limit, offset });
+						
+						posts.forEach((post) => {
+							returnData.push({
+								json: { ...post } as any,
+								pairedItem: { item: i },
+							});
+						});
+					}
+				} else if (resource === 'note') {
+					if (operation === 'create') {
+						const title = this.getNodeParameter('title', i) as string;
+						const body = this.getNodeParameter('body', i) as string;
+
+						// For now, use the simple publishNote method
+						// In the future, this could be enhanced to use the note builder
+						const result = await client.publishNote(`${title}\n\n${body}`);
+						
+						returnData.push({
+							json: {
+								title,
+								success: true,
+								noteId: result.id,
+								body: result.body,
+								date: result.date,
+							},
+							pairedItem: { item: i },
+						});
+					}
+				}
+			} catch (error) {
+				if (this.continueOnFail()) {
+					returnData.push({
+						json: { error: error.message },
+						pairedItem: { item: i },
+					});
+					continue;
+				}
+				throw error;
+			}
+		}
+
+		return [returnData];
+	}
 }
