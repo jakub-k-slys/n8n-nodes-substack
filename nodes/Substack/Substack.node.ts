@@ -105,6 +105,40 @@ export class Substack implements INodeType {
 							json: outputData,
 							pairedItem: { item: i },
 						});
+					} else if (operation === 'get') {
+						// Get parameters for retrieving notes
+						const limit = this.getNodeParameter('limit', i, 10) as number;
+						const offset = this.getNodeParameter('offset', i, 0) as number;
+
+						// Retrieve notes using the substack-api library
+						const response = await client.getNotes({ limit, offset });
+
+						// Format response - SubstackNotes has an items property containing the notes
+						const notes = response.items || [];
+						
+						// Return each note as a separate item
+						for (const note of notes) {
+							// Extract note content from the comment field
+							const comment = note.comment;
+							if (comment) {
+								returnData.push({
+									json: {
+										noteId: comment.id,
+										title: '', // Notes don't typically have titles separate from body
+										body: comment.body || '',
+										url: `https://${publicationAddress}/p/${comment.id}`,
+										date: comment.date,
+										status: 'published',
+										userId: comment.user_id,
+										likes: comment.reaction_count || 0,
+										restacks: comment.restacks || 0,
+										type: comment.type,
+										entityKey: note.entity_key,
+									},
+									pairedItem: { item: i },
+								});
+							}
+						}
 					} else {
 						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, { itemIndex: i });
 					}
