@@ -1,8 +1,168 @@
 # Examples
 
-This section provides practical examples of using the Substack API client in various scenarios.
+This section provides practical examples for both the n8n Substack node and the underlying API client.
 
-## Basic Usage
+## n8n Workflow Examples
+
+### Basic Note Creation
+
+Simple workflow to create a Substack note:
+
+```json
+{
+  "meta": {
+    "instanceId": "your-instance-id"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "note",
+        "operation": "create", 
+        "title": "My First Note",
+        "body": "This is the content of my note."
+      },
+      "id": "substack-node",
+      "name": "Substack",
+      "type": "n8n-nodes-substack.substack",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "credentials": {
+        "substackApi": {
+          "id": "your-credential-id",
+          "name": "Substack API"
+        }
+      }
+    }
+  ],
+  "connections": {}
+}
+```
+
+### Automated Content Publishing
+
+Workflow that creates a note when a webhook is triggered:
+
+```json
+{
+  "meta": {
+    "instanceId": "your-instance-id"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "path": "publish-note",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300],
+      "webhookId": "your-webhook-id"
+    },
+    {
+      "parameters": {
+        "resource": "note",
+        "operation": "create",
+        "title": "={{$json.title}}",
+        "body": "={{$json.content}}"
+      },
+      "id": "substack-node",
+      "name": "Substack",
+      "type": "n8n-nodes-substack.substack", 
+      "typeVersion": 1,
+      "position": [400, 300],
+      "credentials": {
+        "substackApi": {
+          "id": "your-credential-id",
+          "name": "Substack API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Substack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
+```
+
+### Content Scheduling with Cron
+
+Schedule regular content publication:
+
+```json
+{
+  "meta": {
+    "instanceId": "your-instance-id"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9,
+              "triggerAtMinute": 0,
+              "weekdays": [1, 3, 5]
+            }
+          ]
+        }
+      },
+      "id": "cron-trigger", 
+      "name": "Cron",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "resource": "note",
+        "operation": "create",
+        "title": "Weekly Update - {{$now.format('MMMM Do, YYYY')}}",
+        "body": "Here's your weekly update for this week..."
+      },
+      "id": "substack-node",
+      "name": "Substack",
+      "type": "n8n-nodes-substack.substack",
+      "typeVersion": 1,
+      "position": [400, 300],
+      "credentials": {
+        "substackApi": {
+          "id": "your-credential-id", 
+          "name": "Substack API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cron": {
+      "main": [
+        [
+          {
+            "node": "Substack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
+```
+
+## API Client Examples
+
+## API Client Examples
 
 ### Initialize the Client
 
