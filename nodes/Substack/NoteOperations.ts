@@ -30,7 +30,7 @@ export class NoteOperations {
 			success: true,
 			title: title,
 			noteId: response.id,
-			url: `https://${publicationAddress}/p/${response.id}`, // Construct URL based on response
+			url: `${publicationAddress}/p/${response.id}`, // Use full URL from credentials
 			date: response.date,
 			status: response.status,
 			userId: response.user_id,
@@ -63,7 +63,7 @@ export class NoteOperations {
 					noteId: comment.id,
 					title: '', // Notes don't typically have titles separate from body
 					body: comment.body || '',
-					url: `https://${publicationAddress}/p/${comment.id}`,
+					url: `${publicationAddress}/p/${comment.id}`,
 					date: comment.date,
 					status: 'published',
 					userId: comment.user_id,

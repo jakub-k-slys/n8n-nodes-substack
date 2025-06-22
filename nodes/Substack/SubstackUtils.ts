@@ -11,9 +11,19 @@ export class SubstackUtils {
 			throw new NodeOperationError(executeFunctions.getNode(), 'API key is required');
 		}
 
+		// Extract hostname from the full URL
+		const url = publicationAddress as string;
+		const hostname = url
+			.replace(/^https?:\/\//, '') // Remove protocol
+			.replace(/\/.*$/, ''); // Remove path
+
+		if (!hostname.includes('.')) {
+			throw new NodeOperationError(executeFunctions.getNode(), 'Invalid publication URL provided');
+		}
+
 		// Initialize Substack client
 		const client = new SubstackClient({
-			hostname: publicationAddress as string,
+			hostname,
 			apiKey: apiKey as string,
 		});
 

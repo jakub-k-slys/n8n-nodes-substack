@@ -8,16 +8,17 @@ import {
 export class SubstackApi implements ICredentialType {
 	name = 'substackApi';
 	displayName = 'Substack API';
-	documentationUrl = 'https://substack.com/api';
+	documentationUrl = 'https://substack-api.readthedocs.io';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Publication Address',
 			name: 'publicationAddress',
 			type: 'string',
 			default: '',
-			placeholder: 'myblog.substack.com',
-			description: 'The full Substack domain of your publication',
+			placeholder: 'https://myblog.substack.com',
+			description: 'The full URL of your Substack publication (must include http:// or https://)',
 			required: true,
+			validateType: 'url',
 		},
 		{
 			displayName: 'API Key',
@@ -46,8 +47,7 @@ export class SubstackApi implements ICredentialType {
 	// The block below tells how this credential can be tested
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL:
-				'={{$credentials?.publicationAddress ? "https://" + $credentials.publicationAddress : "https://substack.com"}}',
+			baseURL: '={{$credentials.publicationAddress}}',
 			url: '/api/v1/feed/following',
 		},
 	};
