@@ -1,5 +1,35 @@
 import { INodeProperties } from 'n8n-workflow';
 
+// When the resource `post` is selected, this `operation` parameter will be shown.
+export const postOperations: INodeProperties[] = [
+	{
+		displayName: 'Operation',
+		name: 'operation',
+		type: 'options',
+		noDataExpression: true,
+		displayOptions: {
+			show: {
+				resource: ['post'],
+			},
+		},
+		options: [
+			{
+				name: 'Get Many',
+				value: 'getAll',
+				description: 'Get many posts from the publication',
+				action: 'Get many posts',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '/api/v1/posts',
+					},
+				},
+			},
+		],
+		default: 'getAll',
+	},
+];
+
 // When the resource `note` is selected, this `operation` parameter will be shown.
 export const noteOperations: INodeProperties[] = [
 	{
@@ -38,6 +68,61 @@ export const noteOperations: INodeProperties[] = [
 		],
 		default: 'create',
 	},
+];
+
+// Here we define what to show when the 'getAll' operation is selected for posts.
+const getAllOperation: INodeProperties[] = [
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		default: 50,
+		description: 'Max number of results to return',
+		displayOptions: {
+			show: {
+				resource: ['post'],
+				operation: ['getAll'],
+			},
+		},
+		routing: {
+			send: {
+				property: 'limit',
+				type: 'query',
+			},
+		},
+		typeOptions: {
+			minValue: 1,
+		},
+	},
+	{
+		displayName: 'Offset',
+		name: 'offset',
+		type: 'number',
+		default: 0,
+		description: 'Number of posts to skip (for pagination)',
+		displayOptions: {
+			show: {
+				resource: ['post'],
+				operation: ['getAll'],
+			},
+		},
+		routing: {
+			send: {
+				property: 'offset',
+				type: 'query',
+			},
+		},
+		typeOptions: {
+			minValue: 0,
+		},
+	},
+];
+
+export const postFields: INodeProperties[] = [
+	/* -------------------------------------------------------------------------- */
+	/*                                post:getAll                                */
+	/* -------------------------------------------------------------------------- */
+	...getAllOperation,
 ];
 
 // Here we define what to show when the 'create' operation is selected.

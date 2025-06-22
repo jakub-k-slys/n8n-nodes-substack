@@ -1,5 +1,5 @@
 import { INodeType, INodeTypeDescription, NodeConnectionType } from 'n8n-workflow';
-import { noteFields, noteOperations } from './SubstackDescription';
+import { noteFields, noteOperations, postFields, postOperations } from './SubstackDescription';
 
 export class Substack implements INodeType {
 	description: INodeTypeDescription = {
@@ -41,12 +41,18 @@ export class Substack implements INodeType {
 						name: 'Note',
 						value: 'note',
 					},
+					{
+						name: 'Post',
+						value: 'post',
+					},
 				],
 				default: 'note',
 			},
 
 			...noteOperations,
 			...noteFields,
+			...postOperations,
+			...postFields,
 		],
 	};
 }
