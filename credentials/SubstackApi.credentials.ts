@@ -46,7 +46,8 @@ export class SubstackApi implements ICredentialType {
 	// The block below tells how this credential can be tested
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: '={{$credentials?.publicationAddress ? "https://" + $credentials.publicationAddress : "https://substack.com"}}',
+			baseURL:
+				'={{$credentials?.publicationAddress ? "https://" + $credentials.publicationAddress : "https://substack.com"}}',
 			url: '/api/v1/user',
 		},
 	};

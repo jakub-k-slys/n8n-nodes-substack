@@ -1,19 +1,19 @@
-import { 
+import {
 	IExecuteFunctions,
 	INodeExecutionData,
-	INodeType, 
-	INodeTypeDescription, 
+	INodeType,
+	INodeTypeDescription,
 	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { noteFields, noteOperations } from './SubstackDescription';
+import { noteFields, noteOperations, postFields, postOperations } from './SubstackDescription';
 import { NoteOperations } from './NoteOperations';
 import { SubstackUtils } from './SubstackUtils';
 
 export class Substack implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Substack',
-		name: 'substack', 
+		name: 'substack',
 		icon: { light: 'file:substack.svg', dark: 'file:substack.svg' },
 		group: ['output'],
 		version: 1,
@@ -59,23 +59,8 @@ export class Substack implements INodeType {
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
-		const credentials = await this.getCredentials('substackApi');
-		
-		if (!credentials) {
-			throw new NodeOperationError(this.getNode(), 'No credentials provided');
-		}
-
 		const returnData: INodeExecutionData[] = [];
-
-		// Extract hostname from publication address
-		const publicationAddress = credentials.publicationAddress as string;
-		const hostname = publicationAddress.replace(/^https?:\/\//, '');
-
-		// Initialize Substack client
-		const client = new SubstackClient({
-			hostname,
-			apiKey: credentials.apiKey as string,
-		});
+		const { client, publicationAddress } = await SubstackUtils.initializeClient(this);
 
 		for (let i = 0; i < items.length; i++) {
 			try {
@@ -88,7 +73,7 @@ export class Substack implements INodeType {
 						const offset = this.getNodeParameter('offset', i, 0) as number;
 
 						const posts = await client.getPosts({ limit, offset });
-						
+
 						posts.forEach((post) => {
 							returnData.push({
 								json: { ...post } as any,
@@ -104,7 +89,7 @@ export class Substack implements INodeType {
 						// For now, use the simple publishNote method
 						// In the future, this could be enhanced to use the note builder
 						const result = await client.publishNote(`${title}\n\n${body}`);
-						
+
 						returnData.push({
 							json: {
 								title,
@@ -115,10 +100,9 @@ export class Substack implements INodeType {
 							},
 							pairedItem: { item: i },
 						});
-            
 					} else if (operation === 'get') {
 						const notes = await NoteOperations.get(this, client, publicationAddress, i);
-						
+
 						// Return each note as a separate item
 						for (const note of notes) {
 							returnData.push({
@@ -127,8 +111,11 @@ export class Substack implements INodeType {
 							});
 						}
 					} else {
-						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, { itemIndex: i });
+						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
+							itemIndex: i,
+						});
 					}
+				}
 			} catch (error) {
 				if (this.continueOnFail()) {
 					returnData.push({

@@ -13,7 +13,9 @@ export class NoteOperations {
 		const body = executeFunctions.getNodeParameter('body', itemIndex) as string;
 
 		if (!title || !body) {
-			throw new NodeOperationError(executeFunctions.getNode(), 'Title and body are required', { itemIndex });
+			throw new NodeOperationError(executeFunctions.getNode(), 'Title and body are required', {
+				itemIndex,
+			});
 		}
 
 		// Create note content by combining title and body
@@ -51,7 +53,7 @@ export class NoteOperations {
 		// Format response - SubstackNotes has an items property containing the notes
 		const notes = response.items || [];
 		const formattedNotes = [];
-		
+
 		// Return each note as a separate item
 		for (const note of notes) {
 			// Extract note content from the comment field
