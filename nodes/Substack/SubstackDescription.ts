@@ -18,22 +18,6 @@ export const noteOperations: INodeProperties[] = [
 				value: 'create',
 				description: 'Create a new Substack note',
 				action: 'Create a note',
-				routing: {
-					request: {
-						method: 'POST',
-						url: '/api/v1/notes',
-					},
-					output: {
-						postReceive: [
-							{
-								type: 'set',
-								properties: {
-									value: '={{ { "title": $response.body.title || $parameter.title, "success": true, "noteId": $response.body.id, "url": $response.body.url } }}',
-								},
-							},
-						],
-					},
-				},
 			},
 		],
 		default: 'create',
@@ -55,12 +39,6 @@ const createOperation: INodeProperties[] = [
 				operation: ['create'],
 			},
 		},
-		routing: {
-			send: {
-				property: 'title',
-				type: 'body',
-			},
-		},
 		required: true,
 	},
 	{
@@ -77,12 +55,6 @@ const createOperation: INodeProperties[] = [
 			show: {
 				resource: ['note'],
 				operation: ['create'],
-			},
-		},
-		routing: {
-			send: {
-				property: 'body',
-				type: 'body',
 			},
 		},
 		required: true,
