@@ -8,7 +8,9 @@ import {
 } from 'n8n-workflow';
 import { noteFields, noteOperations, postFields, postOperations } from './SubstackDescription';
 import { NoteOperations } from './NoteOperations';
+import { PostOperations } from './PostOperations';
 import { SubstackUtils } from './SubstackUtils';
+import { IStandardResponse } from './types';
 
 export class Substack implements INodeType {
 	description: INodeTypeDescription = {
@@ -67,54 +69,57 @@ export class Substack implements INodeType {
 				const resource = this.getNodeParameter('resource', i) as string;
 				const operation = this.getNodeParameter('operation', i) as string;
 
+				let response: IStandardResponse;
+
 				if (resource === 'post') {
 					if (operation === 'getAll') {
-						const limit = this.getNodeParameter('limit', i, 50) as number;
-						const offset = this.getNodeParameter('offset', i, 0) as number;
-
-						const posts = await client.getPosts({ limit, offset });
-
-						posts.forEach((post) => {
-							returnData.push({
-								json: { ...post } as any,
-								pairedItem: { item: i },
-							});
-						});
-					}
-				} else if (resource === 'note') {
-					if (operation === 'create') {
-						const title = this.getNodeParameter('title', i) as string;
-						const body = this.getNodeParameter('body', i) as string;
-
-						// For now, use the simple publishNote method
-						// In the future, this could be enhanced to use the note builder
-						const result = await client.publishNote(`${title}\n\n${body}`);
-
-						returnData.push({
-							json: {
-								title,
-								success: true,
-								noteId: result.id,
-								body: result.body,
-								date: result.date,
-							},
-							pairedItem: { item: i },
-						});
-					} else if (operation === 'get') {
-						const notes = await NoteOperations.get(this, client, publicationAddress, i);
-
-						// Return each note as a separate item
-						for (const note of notes) {
-							returnData.push({
-								json: note,
-								pairedItem: { item: i },
-							});
-						}
+						response = await PostOperations.getAll(this, client, publicationAddress, i);
 					} else {
 						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
 							itemIndex: i,
 						});
 					}
+				} else if (resource === 'note') {
+					if (operation === 'create') {
+						response = await NoteOperations.create(this, client, publicationAddress, i);
+					} else if (operation === 'get') {
+						response = await NoteOperations.get(this, client, publicationAddress, i);
+					} else {
+						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
+							itemIndex: i,
+						});
+					}
+				} else {
+					throw new NodeOperationError(this.getNode(), `Unknown resource: ${resource}`, {
+						itemIndex: i,
+					});
+				}
+
+				if (!response.success) {
+					if (this.continueOnFail()) {
+						returnData.push({
+							json: { error: response.error },
+							pairedItem: { item: i },
+						});
+						continue;
+					}
+					throw new NodeOperationError(this.getNode(), response.error || 'Unknown error occurred');
+				}
+
+				// Handle array responses (like get notes/posts)
+				if (Array.isArray(response.data)) {
+					response.data.forEach((item) => {
+						returnData.push({
+							json: item,
+							pairedItem: { item: i },
+						});
+					});
+				} else {
+					// Handle single item responses (like create note)
+					returnData.push({
+						json: response.data,
+						pairedItem: { item: i },
+					});
 				}
 			} catch (error) {
 				if (this.continueOnFail()) {

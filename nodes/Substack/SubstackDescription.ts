@@ -100,21 +100,6 @@ export const postFields: INodeProperties[] = [
 // Here we define what to show when the 'create' operation is selected.
 const createOperation: INodeProperties[] = [
 	{
-		displayName: 'Title',
-		name: 'title',
-		type: 'string',
-		default: '',
-		placeholder: 'Note title',
-		description: 'The headline of the note',
-		displayOptions: {
-			show: {
-				resource: ['note'],
-				operation: ['create'],
-			},
-		},
-		required: true,
-	},
-	{
 		displayName: 'Body',
 		name: 'body',
 		type: 'string',

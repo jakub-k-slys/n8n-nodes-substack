@@ -1,5 +1,7 @@
 import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
 import { Substack as SubstackClient } from 'substack-api';
+import { IStandardResponse, ISubstackNote } from './types';
+import { SubstackUtils } from './SubstackUtils';
 
 export class NoteOperations {
 	static async create(
@@ -7,33 +9,36 @@ export class NoteOperations {
 		client: SubstackClient,
 		publicationAddress: string,
 		itemIndex: number,
-	) {
-		// Get note parameters
-		const title = executeFunctions.getNodeParameter('title', itemIndex) as string;
+	): Promise<IStandardResponse> {
+		// Get note body
 		const body = executeFunctions.getNodeParameter('body', itemIndex) as string;
 
-		if (!title || !body) {
-			throw new NodeOperationError(executeFunctions.getNode(), 'Title and body are required', {
+		if (!body) {
+			throw new NodeOperationError(executeFunctions.getNode(), 'Body is required', {
 				itemIndex,
 			});
 		}
 
-		// Create note content by combining title and body
-		// For simple notes, we'll create a formatted note with title as first paragraph
-		const noteContent = title + '\n\n' + body;
-
 		// Publish the note using the substack-api library
-		const response = await client.publishNote(noteContent);
+		const response = await client.publishNote(body);
 
 		// Format response to match expected output format
-		return {
-			success: true,
-			title: title,
-			noteId: response.id,
-			url: `https://${publicationAddress}/p/${response.id}`, // Construct URL based on response
+		const formattedNote: ISubstackNote = {
+			noteId: response.id.toString(),
+			body: response.body || body,
+			url: SubstackUtils.formatUrl(publicationAddress, `/p/${response.id}`),
 			date: response.date,
 			status: response.status,
-			userId: response.user_id,
+			userId: response.user_id.toString(),
+		};
+
+		return {
+			success: true,
+			data: formattedNote,
+			metadata: {
+				date: response.date,
+				status: response.status,
+			},
 		};
 	}
 
@@ -42,39 +47,52 @@ export class NoteOperations {
 		client: SubstackClient,
 		publicationAddress: string,
 		itemIndex: number,
-	) {
-		// Get parameters for retrieving notes
-		const limit = executeFunctions.getNodeParameter('limit', itemIndex, 10) as number;
-		const offset = executeFunctions.getNodeParameter('offset', itemIndex, 0) as number;
+	): Promise<IStandardResponse> {
+		try {
+			// Get parameters for retrieving notes
+			const limit = executeFunctions.getNodeParameter('limit', itemIndex, 10) as number;
+			const offset = executeFunctions.getNodeParameter('offset', itemIndex, 0) as number;
 
-		// Retrieve notes using the substack-api library
-		const response = await client.getNotes({ limit, offset });
+			// Retrieve notes using the substack-api library
+			const response = await client.getNotes({ limit, offset });
 
-		// Format response - SubstackNotes has an items property containing the notes
-		const notes = response.items || [];
-		const formattedNotes = [];
+			// Format response - SubstackNotes has an items property containing the notes
+			const notes = response.items || [];
+			const formattedNotes: ISubstackNote[] = [];
 
-		// Return each note as a separate item
-		for (const note of notes) {
-			// Extract note content from the comment field
-			const comment = note.comment;
-			if (comment) {
-				formattedNotes.push({
-					noteId: comment.id,
-					title: '', // Notes don't typically have titles separate from body
-					body: comment.body || '',
-					url: `https://${publicationAddress}/p/${comment.id}`,
-					date: comment.date,
-					status: 'published',
-					userId: comment.user_id,
-					likes: comment.reaction_count || 0,
-					restacks: comment.restacks || 0,
-					type: comment.type,
-					entityKey: note.entity_key,
-				});
+			// Return each note as a separate item
+			for (const note of notes) {
+				// Extract note content from the comment field
+				const comment = note.comment;
+				if (comment) {
+					formattedNotes.push({
+						noteId: comment.id.toString(),
+						body: comment.body || '',
+						url: SubstackUtils.formatUrl(publicationAddress, `/p/${comment.id}`),
+						date: comment.date,
+						status: 'published',
+						userId: comment.user_id.toString(),
+						likes: comment.reaction_count || 0,
+						restacks: comment.restacks || 0,
+						type: comment.type,
+						entityKey: note.entity_key,
+					});
+				}
 			}
-		}
 
-		return formattedNotes;
+			return {
+				success: true,
+				data: formattedNotes,
+				metadata: {
+					status: 'success',
+				},
+			};
+		} catch (error) {
+			return SubstackUtils.formatErrorResponse({
+				message: error.message,
+				node: executeFunctions.getNode(),
+				itemIndex,
+			});
+		}
 	}
 }
