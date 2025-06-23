@@ -4,7 +4,12 @@ This document provides detailed information about using the Substack community n
 
 ## Overview
 
-The n8n Substack node allows you to interact with the Substack API directly from your n8n workflows. Currently, the node supports creating Substack notes, with additional functionality planned for future releases.
+The n8n Substack node allows you to interact with the Substack API directly from your n8n workflows. The node supports two main resources:
+
+- **Notes**: Create short-form Substack notes 
+- **Posts**: Retrieve posts from your publication with pagination support
+
+The node uses the [substack-api](https://www.npmjs.com/package/substack-api) library for reliable API interactions.
 
 ## Prerequisites
 
@@ -50,6 +55,32 @@ Then restart your n8n instance.
 
 ## Supported Operations
 
+### Posts
+
+#### Get Many
+Retrieves posts from your Substack publication with pagination support.
+
+**Parameters:**
+- **Limit** (optional): Maximum number of posts to return (default: 50, minimum: 1)
+- **Offset** (optional): Number of posts to skip for pagination (default: 0, minimum: 0)
+
+**Example Output:**
+```json
+[
+  {
+    "id": 12345,
+    "title": "My Latest Post",
+    "subtitle": "An exciting update from my publication",
+    "slug": "my-latest-post",
+    "post_date": "2023-12-01T10:00:00.000Z",
+    "canonical_url": "https://myblog.substack.com/p/my-latest-post",
+    "type": "newsletter",
+    "published": true,
+    "paywalled": false
+  }
+]
+```
+
 ### Notes
 
 #### Create Note
@@ -65,7 +96,8 @@ Creates a new Substack note.
   "title": "My Note Title",
   "success": true,
   "noteId": 12345,
-  "url": "https://myblog.substack.com/p/my-note-title"
+  "body": "Note content here",
+  "date": "2023-12-01T10:00:00.000Z"
 }
 ```
 
@@ -84,6 +116,28 @@ Creates a new Substack note.
         "operation": "create",
         "title": "Hello from n8n!",
         "body": "This note was created automatically using n8n."
+      },
+      "credentials": {
+        "substackApi": "your-credential-id"
+      }
+    }
+  ]
+}
+```
+
+### Retrieve Posts with Pagination
+
+```json
+{
+  "nodes": [
+    {
+      "name": "Get Substack Posts",
+      "type": "n8n-nodes-substack.substack",
+      "parameters": {
+        "resource": "post",
+        "operation": "getAll",
+        "limit": 5,
+        "offset": 0
       },
       "credentials": {
         "substackApi": "your-credential-id"
@@ -137,6 +191,81 @@ This workflow creates a Substack note when a webhook is triggered:
 }
 ```
 
+### Content Analysis Pipeline
+
+This workflow retrieves posts and processes them for analysis:
+
+```json
+{
+  "nodes": [
+    {
+      "name": "Get Recent Posts",
+      "type": "n8n-nodes-substack.substack",
+      "parameters": {
+        "resource": "post",
+        "operation": "getAll",
+        "limit": 10
+      },
+      "credentials": {
+        "substackApi": "your-credential-id"
+      }
+    },
+    {
+      "name": "Filter Published Posts",
+      "type": "n8n-nodes-base.filter",
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.published}}",
+              "operation": "equal",
+              "value2": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Summary Note",
+      "type": "n8n-nodes-substack.substack",
+      "parameters": {
+        "resource": "note",
+        "operation": "create",
+        "title": "Recent Posts Summary",
+        "body": "={{$json.title}} - Published on {{$json.post_date}}"
+      },
+      "credentials": {
+        "substackApi": "your-credential-id"
+      }
+    }
+  ],
+  "connections": {
+    "Get Recent Posts": {
+      "main": [
+        [
+          {
+            "node": "Filter Published Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Published Posts": {
+      "main": [
+        [
+          {
+            "node": "Create Summary Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
+```
+
 ## Error Handling
 
 The node will return errors in the following scenarios:
@@ -166,18 +295,19 @@ Common error codes:
 ## Limitations
 
 Current limitations of the node:
-- Only supports note creation (more operations planned)
-- No support for scheduled publishing
-- Limited to text and HTML content (no media uploads)
+- Note creation supports text content only (HTML is accepted but no media uploads)
+- Post operations are read-only (retrieval only, no creation or editing)
+- No advanced filtering options for post retrieval beyond pagination
 
 ## Roadmap
 
 Planned features for future releases:
+- Enhanced post operations (creation, editing, deletion)
+- Advanced post filtering (by date range, status, search terms)
 - Subscriber management (fetch subscribers, add/remove)
-- Post publishing and management
 - Statistics and analytics retrieval
-- Comment management
-- Mailing list operations
+- Comment management and moderation
+- Mailing list operations and automation
 
 ## Support
 

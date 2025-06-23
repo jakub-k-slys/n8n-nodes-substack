@@ -38,6 +38,143 @@ Simple workflow to create a Substack note:
 }
 ```
 
+### Basic Post Retrieval
+
+Simple workflow to retrieve posts from your publication:
+
+```json
+{
+  "meta": {
+    "instanceId": "your-instance-id"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "post",
+        "operation": "getAll",
+        "limit": 10,
+        "offset": 0
+      },
+      "id": "substack-posts",
+      "name": "Get Substack Posts",
+      "type": "n8n-nodes-substack.substack",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "credentials": {
+        "substackApi": {
+          "id": "your-credential-id",
+          "name": "Substack API"
+        }
+      }
+    }
+  ],
+  "connections": {}
+}
+```
+
+### Post Analytics Workflow
+
+Retrieve posts and analyze engagement patterns:
+
+```json
+{
+  "meta": {
+    "instanceId": "your-instance-id"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "post",
+        "operation": "getAll",
+        "limit": 50,
+        "offset": 0
+      },
+      "id": "get-posts",
+      "name": "Get Recent Posts",
+      "type": "n8n-nodes-substack.substack",
+      "typeVersion": 1,
+      "position": [100, 300],
+      "credentials": {
+        "substackApi": {
+          "id": "your-credential-id",
+          "name": "Substack API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "newsletter",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "filter-newsletters",
+      "name": "Filter Newsletters",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "resource": "note",
+        "operation": "create",
+        "title": "Publication Stats",
+        "body": "=Recently published: {{ $json.title }} on {{ $json.post_date.split('T')[0] }}"
+      },
+      "id": "create-summary",
+      "name": "Create Summary Note",
+      "type": "n8n-nodes-substack.substack",
+      "typeVersion": 1,
+      "position": [700, 300],
+      "credentials": {
+        "substackApi": {
+          "id": "your-credential-id",
+          "name": "Substack API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Get Recent Posts": {
+      "main": [
+        [
+          {
+            "node": "Filter Newsletters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Newsletters": {
+      "main": [
+        [
+          {
+            "node": "Create Summary Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
+```
+
 ### Automated Content Publishing
 
 Workflow that creates a note when a webhook is triggered:
@@ -126,16 +263,35 @@ Schedule regular content publication:
     },
     {
       "parameters": {
+        "resource": "post",
+        "operation": "getAll",
+        "limit": 1,
+        "offset": 0
+      },
+      "id": "get-latest-post",
+      "name": "Get Latest Post",
+      "type": "n8n-nodes-substack.substack",
+      "typeVersion": 1,
+      "position": [300, 300],
+      "credentials": {
+        "substackApi": {
+          "id": "your-credential-id",
+          "name": "Substack API"
+        }
+      }
+    },
+    {
+      "parameters": {
         "resource": "note",
         "operation": "create",
         "title": "Weekly Update - {{$now.format('MMMM Do, YYYY')}}",
-        "body": "Here's your weekly update for this week..."
+        "body": "=Latest from the publication: {{ $json.title }}\nPublished: {{ $json.post_date.split('T')[0] }}\n\nCheck it out: {{ $json.canonical_url }}"
       },
-      "id": "substack-node",
-      "name": "Substack",
+      "id": "create-update-note",
+      "name": "Create Update Note",
       "type": "n8n-nodes-substack.substack",
       "typeVersion": 1,
-      "position": [400, 300],
+      "position": [500, 300],
       "credentials": {
         "substackApi": {
           "id": "your-credential-id", 
@@ -149,7 +305,18 @@ Schedule regular content publication:
       "main": [
         [
           {
-            "node": "Substack",
+            "node": "Get Latest Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Latest Post": {
+      "main": [
+        [
+          {
+            "node": "Create Update Note",
             "type": "main",
             "index": 0
           }
@@ -160,7 +327,11 @@ Schedule regular content publication:
 }
 ```
 
-## API Client Examples
+## Substack API Client Examples
+
+> **Note**: The examples below demonstrate usage of the underlying [substack-api](https://www.npmjs.com/package/substack-api) library directly. These are not n8n workflows but rather code examples for developers who want to use the library in their own applications.
+
+The n8n Substack node uses this library internally and provides a simplified interface for common operations. For advanced use cases not covered by the n8n node, you can use the library directly in Function nodes or custom applications.
 
 ## API Client Examples
 

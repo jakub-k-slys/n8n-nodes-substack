@@ -1,19 +1,19 @@
-import { 
+import {
 	IExecuteFunctions,
 	INodeExecutionData,
-	INodeType, 
-	INodeTypeDescription, 
+	INodeType,
+	INodeTypeDescription,
 	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { noteFields, noteOperations } from './SubstackDescription';
+import { noteFields, noteOperations, postFields, postOperations } from './SubstackDescription';
 import { NoteOperations } from './NoteOperations';
 import { SubstackUtils } from './SubstackUtils';
 
 export class Substack implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Substack',
-		name: 'substack', 
+		name: 'substack',
 		icon: { light: 'file:substack.svg', dark: 'file:substack.svg' },
 		group: ['output'],
 		version: 1,
@@ -42,38 +42,67 @@ export class Substack implements INodeType {
 						name: 'Note',
 						value: 'note',
 					},
+					{
+						name: 'Post',
+						value: 'post',
+					},
 				],
 				default: 'note',
 			},
 
 			...noteOperations,
 			...noteFields,
+			...postOperations,
+			...postFields,
 		],
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
+		const { client, publicationAddress } = await SubstackUtils.initializeClient(this);
 
 		for (let i = 0; i < items.length; i++) {
 			try {
 				const resource = this.getNodeParameter('resource', i) as string;
 				const operation = this.getNodeParameter('operation', i) as string;
 
-				// Initialize Substack client
-				const { client, publicationAddress } = await SubstackUtils.initializeClient(this, i);
+				if (resource === 'post') {
+					if (operation === 'getAll') {
+						const limit = this.getNodeParameter('limit', i, 50) as number;
+						const offset = this.getNodeParameter('offset', i, 0) as number;
 
-				if (resource === 'note') {
+						const posts = await client.getPosts({ limit, offset });
+
+						posts.forEach((post) => {
+							returnData.push({
+								json: { ...post } as any,
+								pairedItem: { item: i },
+							});
+						});
+					}
+				} else if (resource === 'note') {
 					if (operation === 'create') {
-						const outputData = await NoteOperations.create(this, client, publicationAddress, i);
-						
+						const title = this.getNodeParameter('title', i) as string;
+						const body = this.getNodeParameter('body', i) as string;
+
+						// For now, use the simple publishNote method
+						// In the future, this could be enhanced to use the note builder
+						const result = await client.publishNote(`${title}\n\n${body}`);
+
 						returnData.push({
-							json: outputData,
+							json: {
+								title,
+								success: true,
+								noteId: result.id,
+								body: result.body,
+								date: result.date,
+							},
 							pairedItem: { item: i },
 						});
 					} else if (operation === 'get') {
 						const notes = await NoteOperations.get(this, client, publicationAddress, i);
-						
+
 						// Return each note as a separate item
 						for (const note of notes) {
 							returnData.push({
@@ -82,23 +111,20 @@ export class Substack implements INodeType {
 							});
 						}
 					} else {
-						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, { itemIndex: i });
+						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
+							itemIndex: i,
+						});
 					}
-				} else {
-					throw new NodeOperationError(this.getNode(), `Unknown resource: ${resource}`, { itemIndex: i });
 				}
 			} catch (error) {
 				if (this.continueOnFail()) {
 					returnData.push({
-						json: { 
-							error: error.message,
-							success: false 
-						},
+						json: { error: error.message },
 						pairedItem: { item: i },
 					});
-				} else {
-					throw new NodeOperationError(this.getNode(), error.message, { itemIndex: i });
+					continue;
 				}
+				throw error;
 			}
 		}
 

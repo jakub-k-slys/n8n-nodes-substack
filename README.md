@@ -9,16 +9,16 @@ This n8n community node allows interaction with the Substack API, enabling you t
 
 ## Features
 
-- **Authenticate with Substack**: Secure API key authentication
-- **Create Notes**: Publish Substack notes programmatically
-- **Future Features** (coming soon):
-  - Fetch subscribers and manage mailing lists
-  - Create and publish full posts
-  - Access publication statistics and analytics
+- **Authenticate with Substack**: Secure API key authentication using publication address and API key
+- **Create Notes**: Publish Substack notes programmatically with title and body content
+- **Retrieve Posts**: Get posts from your publication with pagination support (limit and offset parameters)
+- **Powered by substack-api**: Uses the robust [substack-api](https://www.npmjs.com/package/substack-api) library for reliable API interactions
 
 ## Quick Start
 
-Here's a simple workflow that creates a Substack note:
+Here are simple workflows for the available operations:
+
+### Create a Substack Note
 
 ```json
 {
@@ -31,6 +31,28 @@ Here's a simple workflow that creates a Substack note:
         "operation": "create",
         "title": "Hello from n8n!",
         "body": "This note was created automatically using n8n."
+      },
+      "credentials": {
+        "substackApi": "your-credential-id"
+      }
+    }
+  ]
+}
+```
+
+### Retrieve Posts from Publication
+
+```json
+{
+  "nodes": [
+    {
+      "name": "Get Substack Posts",
+      "type": "n8n-nodes-substack.substack",
+      "parameters": {
+        "resource": "post", 
+        "operation": "getAll",
+        "limit": 10,
+        "offset": 0
       },
       "credentials": {
         "substackApi": "your-credential-id"
