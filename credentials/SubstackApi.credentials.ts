@@ -28,7 +28,7 @@ export class SubstackApi implements ICredentialType {
 			typeOptions: {
 				password: true,
 			},
-			description: 'The connect.sid cookie value for authentication (e.g., s%3A4kNVHo5yFcevWZwehZXK-3r0-yA_keKq.SWxNwiJ3Kc0rwkXThZU%2BalaIDZlIGrKLEeDLeqV7R6o)',
+			description: 'The connect.sid cookie value for authentication (e.g., s%3A4kNVHo5ygcevW3wehZKa-3r08yA_keKq.SWxNwiJ3hc0rwkXThZU%2zalaIDZlIrrKLEedLeqV7R6o)',
 			required: true,
 		},
 	];
