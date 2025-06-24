@@ -28,7 +28,7 @@ export class SubstackApi implements ICredentialType {
 			typeOptions: {
 				password: true,
 			},
-			description: 'The connect.sid cookie value for authentication (e.g., s%3A4kNVHo5ygcevW3wehZKa-3r08yA_keKq.SWxNwiJ3hc0rwkXThZU%2zalaIDZlIrrKLEedLeqV7R6o)',
+			description: 'The private API token for authentication',
 			required: true,
 		},
 	];
@@ -39,7 +39,7 @@ export class SubstackApi implements ICredentialType {
 		type: 'generic',
 		properties: {
 			headers: {
-				Cookie: '={{`connect.sid=${$credentials.apiKey}`}}',
+				Authorization: '={{"Bearer " + $credentials.apiKey}}',
 			},
 		},
 	};
