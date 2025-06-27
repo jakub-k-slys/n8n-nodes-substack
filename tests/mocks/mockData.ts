@@ -94,3 +94,47 @@ export const mockErrorResponse = {
 	message: 'Invalid API key provided',
 	status: 401,
 };
+
+export const mockFollowingIdsResponse = [12345, 67890, 54321, 98765];
+
+export const mockFollowingProfilesResponse = [
+	{
+		id: 12345,
+		name: 'John Doe',
+		handle: 'johndoe',
+		bio: 'Tech writer and blogger',
+		subscriberCount: 1500,
+		subscriberCountString: '1.5K',
+		primaryPublication: {
+			id: 101,
+			name: 'Tech Insights',
+			subdomain: 'techinsights',
+		},
+	},
+	{
+		id: 67890,
+		name: 'Jane Smith',
+		handle: 'janesmith',
+		bio: 'Science communicator',
+		subscriberCount: 3200,
+		subscriberCountString: '3.2K',
+		primaryPublication: {
+			id: 102,
+			name: 'Science Today',
+			subdomain: 'sciencetoday',
+		},
+	},
+	{
+		id: 54321,
+		name: 'Bob Wilson',
+		handle: 'bobwilson',
+		bio: 'Politics and current events',
+		subscriberCount: 850,
+		subscriberCountString: '850',
+		primaryPublication: {
+			id: 103,
+			name: 'Political Perspectives',
+			subdomain: 'politicalperspectives',
+		},
+	},
+];

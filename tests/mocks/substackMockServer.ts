@@ -4,6 +4,8 @@ import {
 	mockNotesListResponse,
 	mockPostsListResponse,
 	mockCommentsListResponse,
+	mockFollowingIdsResponse,
+	mockFollowingProfilesResponse,
 } from './mockData';
 
 export class SubstackMockServer {
@@ -31,6 +33,8 @@ export class SubstackMockServer {
 					yield comment;
 				}
 			}()),
+			getFollowingIds: jest.fn().mockResolvedValue(mockFollowingIdsResponse),
+			getFollowingProfiles: jest.fn().mockResolvedValue(mockFollowingProfilesResponse),
 		} as any));
 	}
 
@@ -54,6 +58,12 @@ export class SubstackMockServer {
 			getComments: jest.fn().mockImplementation(() => {
 				throw new Error('Unauthorized: Invalid API key provided');
 			}),
+			getFollowingIds: jest.fn().mockImplementation(() => {
+				throw new Error('Unauthorized: Invalid API key provided');
+			}),
+			getFollowingProfiles: jest.fn().mockImplementation(() => {
+				throw new Error('Unauthorized: Invalid API key provided');
+			}),
 		} as any));
 	}
 
@@ -75,6 +85,8 @@ export class SubstackMockServer {
 			getComments: jest.fn().mockReturnValue(async function* () {
 				// Empty generator
 			}()),
+			getFollowingIds: jest.fn().mockResolvedValue([]),
+			getFollowingProfiles: jest.fn().mockResolvedValue([]),
 		} as any));
 	}
 
@@ -96,6 +108,12 @@ export class SubstackMockServer {
 				throw new Error('fetch failed');
 			}),
 			getComments: jest.fn().mockImplementation(() => {
+				throw new Error('fetch failed');
+			}),
+			getFollowingIds: jest.fn().mockImplementation(() => {
+				throw new Error('fetch failed');
+			}),
+			getFollowingProfiles: jest.fn().mockImplementation(() => {
 				throw new Error('fetch failed');
 			}),
 		} as any));
