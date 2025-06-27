@@ -12,21 +12,24 @@ export class PostOperations {
 	): Promise<IStandardResponse> {
 		try {
 			const limit = executeFunctions.getNodeParameter('limit', itemIndex, 50) as number;
-			const offset = executeFunctions.getNodeParameter('offset', itemIndex, 0) as number;
 
-			const posts = await client.getPosts({ limit, offset });
+			const posts = client.getPosts({ limit });
+			const formattedPosts: ISubstackPost[] = [];
 
-			const formattedPosts: ISubstackPost[] = posts.map((post) => ({
-				id: post.id,
-				title: post.title || '',
-				subtitle: post.subtitle,
-				url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
-				postDate: post.post_date,
-				type: post.type,
-				published: post.published,
-				paywalled: post.paywalled,
-				description: post.description,
-			}));
+			// Iterate through async iterable posts
+			for await (const post of posts) {
+				formattedPosts.push({
+					id: post.id,
+					title: post.title || '',
+					subtitle: post.subtitle,
+					url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
+					postDate: post.post_date,
+					type: post.type,
+					published: post.published,
+					paywalled: post.paywalled,
+					description: post.description,
+				});
+			}
 
 			return {
 				success: true,

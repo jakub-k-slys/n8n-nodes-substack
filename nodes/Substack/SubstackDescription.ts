@@ -72,22 +72,6 @@ const getAllOperation: INodeProperties[] = [
 			minValue: 1,
 		},
 	},
-	{
-		displayName: 'Offset',
-		name: 'offset',
-		type: 'number',
-		default: 0,
-		description: 'Number of posts to skip (for pagination)',
-		displayOptions: {
-			show: {
-				resource: ['post'],
-				operation: ['getAll'],
-			},
-		},
-		typeOptions: {
-			minValue: 0,
-		},
-	},
 ];
 
 export const postFields: INodeProperties[] = [
@@ -135,22 +119,6 @@ const getOperation: INodeProperties[] = [
 		},
 		typeOptions: {
 			minValue: 1,
-		},
-	},
-	{
-		displayName: 'Offset',
-		name: 'offset',
-		type: 'number',
-		default: 0,
-		description: 'Number of notes to skip',
-		displayOptions: {
-			show: {
-				resource: ['note'],
-				operation: ['get'],
-			},
-		},
-		typeOptions: {
-			minValue: 0,
 		},
 	},
 ];
