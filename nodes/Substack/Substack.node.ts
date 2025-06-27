@@ -17,7 +17,7 @@ export class Substack implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Substack',
 		name: 'substack',
-		icon: { light: 'file:substack.svg', dark: 'file:substack.svg' },
+		icon: 'file:substack.svg',
 		group: ['output'],
 		defaultVersion: 1,
 		version: [1],
