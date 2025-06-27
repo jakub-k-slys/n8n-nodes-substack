@@ -87,7 +87,7 @@ const getAllOperation: INodeProperties[] = [
 		// eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-limit
 		default: '',
 		// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-limit
-		description: 'Max number of results to return. Leave empty to fetch all posts.',
+		description: 'Max number of results to return. Defaults to 100 if not specified.',
 		displayOptions: {
 			show: {
 				resource: ['post'],
@@ -130,7 +130,7 @@ const getCommentsOperation: INodeProperties[] = [
 		// eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-limit
 		default: '',
 		// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-limit
-		description: 'Max number of results to return. Leave empty to fetch all comments.',
+		description: 'Max number of results to return. Defaults to 100 if not specified.',
 		displayOptions: {
 			show: {
 				resource: ['comment'],
@@ -181,7 +181,7 @@ const getOperation: INodeProperties[] = [
 		// eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-limit
 		default: '',
 		// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-limit
-		description: 'Max number of results to return. Leave empty to fetch all notes.',
+		description: 'Max number of results to return. Defaults to 100 if not specified.',
 		displayOptions: {
 			show: {
 				resource: ['note'],
@@ -203,4 +203,82 @@ export const noteFields: INodeProperties[] = [
 	/*                                note:get                                    */
 	/* -------------------------------------------------------------------------- */
 	...getOperation,
+];
+
+// When the resource `follow` is selected, this `operation` parameter will be shown.
+export const followOperations: INodeProperties[] = [
+	{
+		displayName: 'Operation',
+		name: 'operation',
+		type: 'options',
+		noDataExpression: true,
+		displayOptions: {
+			show: {
+				resource: ['follow'],
+			},
+		},
+		options: [
+			{
+				name: 'Get Following',
+				value: 'getFollowing',
+				description: 'Get users that you follow',
+				action: 'Get following',
+			},
+		],
+		default: 'getFollowing',
+	},
+];
+
+// Here we define what to show when the 'getFollowing' operation is selected.
+const getFollowingOperation: INodeProperties[] = [
+	{
+		displayName: 'Return Type',
+		name: 'returnType',
+		type: 'options',
+		options: [
+			{
+				name: 'Full Profiles',
+				value: 'profiles',
+				description: 'Return complete profile information',
+			},
+			{
+				name: 'User IDs Only',
+				value: 'ids',
+				description: 'Return only user IDs',
+			},
+		],
+		default: 'profiles',
+		description: 'Choose what information to return about the users you follow',
+		displayOptions: {
+			show: {
+				resource: ['follow'],
+				operation: ['getFollowing'],
+			},
+		},
+	},
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		// eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-limit
+		default: '',
+		// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-limit
+		description: 'Max number of results to return. Defaults to 100 if not specified.',
+		displayOptions: {
+			show: {
+				resource: ['follow'],
+				operation: ['getFollowing'],
+			},
+		},
+		typeOptions: {
+			minValue: 1,
+		},
+	},
+];
+
+export const followFields: INodeProperties[] = [
+	/* -------------------------------------------------------------------------- */
+	/*                               follow:getFollowing                         */
+	/* -------------------------------------------------------------------------- */
+	...getFollowingOperation,
 ];

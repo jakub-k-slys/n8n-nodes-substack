@@ -52,10 +52,12 @@ export class NoteOperations {
 			// Get parameters for retrieving notes
 			const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
 			
-			// Prepare options - only include limit if it's specified
+			// Apply default limit of 100 if not specified
 			const options: any = {};
 			if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
 				options.limit = Number(limitParam);
+			} else {
+				options.limit = 100;
 			}
 
 			// Retrieve notes using the substack-api library

@@ -13,10 +13,12 @@ export class PostOperations {
 		try {
 			const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
 			
-			// Prepare options - only include limit if it's specified
+			// Apply default limit of 100 if not specified
 			const options: any = {};
 			if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
 				options.limit = Number(limitParam);
+			} else {
+				options.limit = 100;
 			}
 
 			const posts = client.getPosts(options);

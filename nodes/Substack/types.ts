@@ -48,6 +48,20 @@ export interface ISubstackComment {
 	};
 }
 
+export interface ISubstackFollowing {
+	id: number;
+	name?: string;
+	handle?: string;
+	bio?: string;
+	subscriberCount?: number;
+	subscriberCountString?: string;
+	primaryPublication?: {
+		id: number;
+		name: string;
+		subdomain: string;
+	};
+}
+
 export interface IErrorResponse {
 	message: string;
 	node: INode;
