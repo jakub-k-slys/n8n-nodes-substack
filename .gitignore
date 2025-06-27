@@ -6,3 +6,7 @@ dist
 npm-debug.log*
 yarn.lock
 .vscode/launch.json
+
+# n8n development files
+.n8n/
+n8n-data/

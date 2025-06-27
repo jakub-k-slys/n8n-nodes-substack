@@ -1,0 +1,53 @@
+{
+	"name": "n8n Substack Node Development",
+	"image": "mcr.microsoft.com/devcontainers/javascript-node:1-20-bookworm",
+	
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"typescript.preferences.includePackageJsonAutoImports": "auto",
+				"typescript.suggest.autoImports": true,
+				"editor.formatOnSave": true,
+				"editor.defaultFormatter": "esbenp.prettier-vscode",
+				"editor.codeActionsOnSave": {
+					"source.fixAll.eslint": "explicit"
+				},
+				"eslint.workingDirectories": ["."],
+				"files.eol": "\n",
+				"terminal.integrated.defaultProfile.linux": "bash"
+			},
+			
+			"extensions": [
+				"dbaeumer.vscode-eslint",
+				"EditorConfig.EditorConfig", 
+				"esbenp.prettier-vscode",
+				"eamodio.gitlens",
+				"ms-vscode.vscode-typescript-next",
+				"ms-vscode.vscode-json"
+			]
+		}
+	},
+
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {},
+		"ghcr.io/devcontainers/features/github-cli:1": {},
+		"ghcr.io/devcontainers/features/node:1": {
+			"nodeGypDependencies": true,
+			"version": "lts"
+		}
+	},
+
+	"forwardPorts": [5678],
+
+	"postCreateCommand": ".devcontainer/postCreateCommand.sh",
+
+	"remoteUser": "node",
+	"workspaceFolder": "/workspace",
+	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+
+	"remoteEnv": {
+		"NODE_ENV": "development"
+	},
+
+	"postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}"
+}

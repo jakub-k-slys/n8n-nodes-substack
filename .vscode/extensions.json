@@ -3,5 +3,8 @@
 		"dbaeumer.vscode-eslint",
 		"EditorConfig.EditorConfig",
 		"esbenp.prettier-vscode",
+		"eamodio.gitlens",
+		"ms-vscode.vscode-typescript-next",
+		"ms-vscode.vscode-json"
 	]
 }

@@ -1,0 +1,12 @@
+{
+	"typescript.preferences.includePackageJsonAutoImports": "auto",
+	"typescript.suggest.autoImports": true,
+	"editor.formatOnSave": true,
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "explicit"
+	},
+	"eslint.workingDirectories": ["."],
+	"files.eol": "\n",
+	"terminal.integrated.defaultProfile.linux": "bash"
+}
