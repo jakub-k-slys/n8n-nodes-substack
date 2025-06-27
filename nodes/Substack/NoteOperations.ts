@@ -51,17 +51,13 @@ export class NoteOperations {
 		try {
 			// Get parameters for retrieving notes
 			const limit = executeFunctions.getNodeParameter('limit', itemIndex, 10) as number;
-			const offset = executeFunctions.getNodeParameter('offset', itemIndex, 0) as number;
 
 			// Retrieve notes using the substack-api library
-			const response = await client.getNotes({ limit, offset });
-
-			// Format response - SubstackNotes has an items property containing the notes
-			const notes = response.items || [];
+			const notes = client.getNotes({ limit });
 			const formattedNotes: ISubstackNote[] = [];
 
-			// Return each note as a separate item
-			for (const note of notes) {
+			// Iterate through async iterable notes
+			for await (const note of notes) {
 				// Extract note content from the comment field
 				const comment = note.comment;
 				if (comment) {

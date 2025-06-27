@@ -51,6 +51,6 @@
     "n8n-workflow": "^1.82.0"
   },
   "dependencies": {
-    "substack-api": "^0.5.0"
+    "substack-api": "^0.6.0"
   }
 }
