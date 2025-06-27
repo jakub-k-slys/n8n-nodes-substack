@@ -70,40 +70,37 @@ This will:
 Run the test suite:
 
 ```bash
-npm test
+npm test              # Run unit tests
+npm run test:e2e      # Run E2E tests with mocked API
+npm run test:all      # Run both unit and E2E tests
 ```
 
 Run tests in watch mode during development:
 
 ```bash
-npm run test:watch
+npm run test:watch    # Unit tests
+npm run test:e2e:watch # E2E tests
 ```
 
-The project uses Jest for testing. Test files are located next to the files they test with a `.test.ts` suffix.
+The project uses Jest for testing with two test suites:
+
+- **Unit tests** (`tests/unit/`): Test individual functions and utilities
+- **E2E tests** (`tests/e2e/`): Test complete node execution with mocked Substack API
+
+The E2E tests use a sophisticated mocking strategy that simulates the `substack-api` library behavior without making real HTTP requests. This provides fast, reliable testing that doesn't depend on external services.
+
+For detailed testing information, see [TESTING.md](TESTING.md).
 
 ### End-to-End Testing
 
-The project includes end-to-end (E2E) tests that validate integration with the real Substack server. These tests are located in the `tests/e2e/` directory.
+The project includes end-to-end (E2E) tests that validate integration with a mocked Substack server. These tests are located in the `tests/e2e/` directory and use Jest with mocked API responses.
 
-#### Setting Up E2E Tests
+#### Key Features
 
-1. **Set up credentials**: Create a `.env` file in the project root with your Substack API credentials:
-
-   ```bash
-   # Copy the example file
-   cp .env.example .env
-   ```
-
-   Edit the `.env` file and add your credentials:
-
-   ```bash
-   SUBSTACK_API_KEY=your-api-key-here
-   SUBSTACK_HOSTNAME=yoursite.substack.com  # optional
-   ```
-
-   **Important**: Never commit your `.env` file to version control. It's already included in `.gitignore`.
-
-2. **Obtain API credentials**: You'll need a valid Substack API key from your Substack account. Check the Substack documentation for how to obtain API credentials.
+- **Isolated Testing**: Uses mocked `substack-api` library instead of real HTTP requests
+- **Complete Coverage**: Tests note creation, retrieval, post fetching, and error scenarios
+- **Fast Execution**: No network dependencies = faster CI/CD pipeline
+- **Comprehensive Scenarios**: Authentication errors, edge cases, and multi-item processing
 
 #### Running E2E Tests
 
@@ -127,31 +124,32 @@ npm run test:all
 
 #### E2E Test Behavior
 
-- **Without credentials**: Tests will be automatically skipped with a warning message explaining how to set up credentials.
-- **With credentials**: Tests will run against the real Substack API using your provided credentials.
-- **Test isolation**: E2E tests are designed to be read-only and safe to run multiple times without creating unwanted content.
-- **Timeout**: E2E tests have a 30-second timeout to account for network latency.
+- **Mocked API**: Tests use Jest mocks to simulate Substack API responses
+- **No Credentials Required**: Tests run without real Substack API credentials
+- **Test isolation**: Each test runs with fresh mocks and doesn't affect others
+- **Timeout**: E2E tests have a 30-second timeout to account for processing time
 
 #### E2E Test Coverage
 
 The E2E test suite covers:
 
-- **Authentication**: Verifying API key authentication works
-- **Publication operations**: Getting publication details and metadata
-- **Post operations**: Fetching posts, pagination, searching, and individual post retrieval
-- **Comment operations**: Fetching comments for posts and individual comments
-- **Notes operations**: Fetching notes and pagination (note publishing tests are commented out to avoid creating content)
-- **Profile operations**: Getting user profiles and public profiles
+- **Authentication**: API key validation and error handling
+- **Note operations**: Creating and retrieving notes with various parameters
+- **Post operations**: Fetching posts, pagination, and individual post retrieval
+- **Error handling**: Network errors, authentication failures, and malformed responses
+- **Edge cases**: Empty responses, invalid parameters, and multi-item processing
 
 #### Creating New E2E Tests
 
 When adding new E2E tests:
 
-1. Use the conditional test pattern with `skipIfNoCredentials()`
-2. Handle API errors gracefully (some operations may not be available for all accounts)
-3. Avoid tests that create persistent content unless absolutely necessary
-4. Add logging for skipped operations to help with debugging
-5. Follow the existing test structure and naming conventions
+1. Use the mock server utilities in `tests/mocks/`
+2. Test both success and error scenarios
+3. Follow the existing test structure and naming conventions
+4. Include tests for edge cases and error conditions
+5. Use `createMockExecuteFunctions` to simulate n8n execution context
+
+For detailed testing information, see [TESTING.md](TESTING.md).
 
 ### Code Style
 
