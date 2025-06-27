@@ -101,6 +101,34 @@ Additional resources:
 - [Development Guide](docs/development.md)
 - [Testing Guide](TESTING.md)
 
+## Development
+
+### Quick Start with Dev Container
+
+Get started instantly with GitHub Codespaces or VS Code Remote Containers:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/jakub-k-slys/n8n-nodes-substack)
+
+Or clone locally and open in VS Code with the Dev Containers extension.
+
+**What's included:**
+- ⚡ Node.js LTS with all dependencies pre-installed
+- 🧪 Complete testing environment (Jest, unit & E2E tests)  
+- 🔧 Code quality tools (ESLint, Prettier, TypeScript)
+- 📋 Pre-configured VS Code tasks and extensions
+- 🚀 Optional n8n CLI for integration testing
+
+See [.devcontainer/README.md](.devcontainer/README.md) for full details.
+
+### Manual Setup
+
+1. **Prerequisites**: Node.js >=20.15, npm, Git
+2. **Install dependencies**: `npm install`
+3. **Build project**: `npm run build`
+4. **Run tests**: `npm test`
+
+See the [Development Guide](docs/development.md) for detailed instructions.
+
 ## License
 
 [MIT](LICENSE.md)
