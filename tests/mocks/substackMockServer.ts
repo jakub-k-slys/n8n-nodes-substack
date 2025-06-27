@@ -9,6 +9,9 @@ export class SubstackMockServer {
 	static setupSuccessfulMocks() {
 		const MockedSubstack = MockSubstack as jest.MockedClass<typeof MockSubstack>;
 		
+		// Clear any previous mock implementations
+		MockedSubstack.mockClear();
+		
 		// Mock the constructor to return an instance with mocked methods
 		MockedSubstack.mockImplementation(() => ({
 			publishNote: jest.fn().mockResolvedValue(mockNoteResponse),
@@ -28,16 +31,28 @@ export class SubstackMockServer {
 	static setupAuthErrorMocks() {
 		const MockedSubstack = MockSubstack as jest.MockedClass<typeof MockSubstack>;
 		
-		// Mock authentication errors
+		// Clear any previous mock implementations
+		MockedSubstack.mockClear();
+		
+		// Mock authentication errors - use functions to avoid immediate execution
 		MockedSubstack.mockImplementation(() => ({
-			publishNote: jest.fn().mockRejectedValue(new Error('Unauthorized: Invalid API key provided')),
-			getNotes: jest.fn().mockRejectedValue(new Error('Unauthorized: Invalid API key provided')),
-			getPosts: jest.fn().mockRejectedValue(new Error('Unauthorized: Invalid API key provided')),
+			publishNote: jest.fn().mockImplementation(() => {
+				throw new Error('Unauthorized: Invalid API key provided');
+			}),
+			getNotes: jest.fn().mockImplementation(() => {
+				throw new Error('Unauthorized: Invalid API key provided');
+			}),
+			getPosts: jest.fn().mockImplementation(() => {
+				throw new Error('Unauthorized: Invalid API key provided');
+			}),
 		} as any));
 	}
 
 	static setupEmptyResponseMocks() {
 		const MockedSubstack = MockSubstack as jest.MockedClass<typeof MockSubstack>;
+		
+		// Clear any previous mock implementations
+		MockedSubstack.mockClear();
 		
 		// Mock empty responses
 		MockedSubstack.mockImplementation(() => ({
@@ -54,20 +69,35 @@ export class SubstackMockServer {
 	static setupNetworkErrorMocks() {
 		const MockedSubstack = MockSubstack as jest.MockedClass<typeof MockSubstack>;
 		
-		// Mock network errors
+		// Clear any previous mock implementations
+		MockedSubstack.mockClear();
+		
+		// Mock network errors - use functions to avoid immediate execution
 		MockedSubstack.mockImplementation(() => ({
-			publishNote: jest.fn().mockRejectedValue(new Error('fetch failed')),
-			getNotes: jest.fn().mockRejectedValue(new Error('fetch failed')),
-			getPosts: jest.fn().mockRejectedValue(new Error('fetch failed')),
+			publishNote: jest.fn().mockImplementation(() => {
+				throw new Error('fetch failed');
+			}),
+			getNotes: jest.fn().mockImplementation(() => {
+				throw new Error('fetch failed');
+			}),
+			getPosts: jest.fn().mockImplementation(() => {
+				throw new Error('fetch failed');
+			}),
 		} as any));
 	}
 
 	static setupCustomMock(mockImplementation: any) {
 		const MockedSubstack = MockSubstack as jest.MockedClass<typeof MockSubstack>;
+		
+		// Clear any previous mock implementations
+		MockedSubstack.mockClear();
+		
 		MockedSubstack.mockImplementation(() => mockImplementation);
 	}
 
 	static cleanup() {
+		const MockedSubstack = MockSubstack as jest.MockedClass<typeof MockSubstack>;
+		MockedSubstack.mockClear();
 		jest.clearAllMocks();
 	}
 }
