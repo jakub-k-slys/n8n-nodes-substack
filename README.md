@@ -2,6 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/n8n-nodes-substack.svg)](https://badge.fury.io/js/n8n-nodes-substack)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://github.com/jakub-k-slys/n8n-nodes-substack/actions/workflows/test.yaml/badge.svg)](https://github.com/jakub-k-slys/n8n-nodes-substack/actions/workflows/test.yaml)
 
 This n8n community node allows interaction with the Substack API, enabling you to automate content creation and management workflows directly from n8n.
 
@@ -98,6 +99,7 @@ Additional resources:
 - [API Reference](docs/api-reference.md)
 - [Examples](docs/examples.md) 
 - [Development Guide](docs/development.md)
+- [Testing Guide](TESTING.md)
 
 ## License
 
