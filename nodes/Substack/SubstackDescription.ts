@@ -24,6 +24,30 @@ export const postOperations: INodeProperties[] = [
 	},
 ];
 
+// When the resource `comment` is selected, this `operation` parameter will be shown.
+export const commentOperations: INodeProperties[] = [
+	{
+		displayName: 'Operation',
+		name: 'operation',
+		type: 'options',
+		noDataExpression: true,
+		displayOptions: {
+			show: {
+				resource: ['comment'],
+			},
+		},
+		options: [
+			{
+				name: 'Get Many',
+				value: 'getAll',
+				description: 'Get comments for a specific post',
+				action: 'Get many comments',
+			},
+		],
+		default: 'getAll',
+	},
+];
+
 // When the resource `note` is selected, this `operation` parameter will be shown.
 export const noteOperations: INodeProperties[] = [
 	{
@@ -60,8 +84,10 @@ const getAllOperation: INodeProperties[] = [
 		displayName: 'Limit',
 		name: 'limit',
 		type: 'number',
-		default: 50,
-		description: 'Max number of results to return',
+		// eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-limit
+		default: '',
+		// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-limit
+		description: 'Max number of results to return. Leave empty to fetch all posts.',
 		displayOptions: {
 			show: {
 				resource: ['post'],
@@ -79,6 +105,49 @@ export const postFields: INodeProperties[] = [
 	/*                                post:getAll                                */
 	/* -------------------------------------------------------------------------- */
 	...getAllOperation,
+];
+
+// Here we define what to show when the 'getAll' operation is selected for comments.
+const getCommentsOperation: INodeProperties[] = [
+	{
+		displayName: 'Post ID',
+		name: 'postId',
+		type: 'number',
+		default: '',
+		description: 'The ID of the post to get comments for',
+		displayOptions: {
+			show: {
+				resource: ['comment'],
+				operation: ['getAll'],
+			},
+		},
+		required: true,
+	},
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		// eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-limit
+		default: '',
+		// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-limit
+		description: 'Max number of results to return. Leave empty to fetch all comments.',
+		displayOptions: {
+			show: {
+				resource: ['comment'],
+				operation: ['getAll'],
+			},
+		},
+		typeOptions: {
+			minValue: 1,
+		},
+	},
+];
+
+export const commentFields: INodeProperties[] = [
+	/* -------------------------------------------------------------------------- */
+	/*                                comment:getAll                             */
+	/* -------------------------------------------------------------------------- */
+	...getCommentsOperation,
 ];
 
 // Here we define what to show when the 'create' operation is selected.
@@ -109,8 +178,10 @@ const getOperation: INodeProperties[] = [
 		displayName: 'Limit',
 		name: 'limit',
 		type: 'number',
-		default: 50,
-		description: 'Max number of results to return',
+		// eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-limit
+		default: '',
+		// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-limit
+		description: 'Max number of results to return. Leave empty to fetch all notes.',
 		displayOptions: {
 			show: {
 				resource: ['note'],

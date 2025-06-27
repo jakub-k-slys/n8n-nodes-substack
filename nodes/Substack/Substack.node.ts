@@ -6,9 +6,10 @@ import {
 	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { noteFields, noteOperations, postFields, postOperations } from './SubstackDescription';
+import { noteFields, noteOperations, postFields, postOperations, commentFields, commentOperations } from './SubstackDescription';
 import { NoteOperations } from './NoteOperations';
 import { PostOperations } from './PostOperations';
+import { CommentOperations } from './CommentOperations';
 import { SubstackUtils } from './SubstackUtils';
 import { IStandardResponse } from './types';
 
@@ -41,6 +42,10 @@ export class Substack implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
+						name: 'Comment',
+						value: 'comment',
+					},
+					{
 						name: 'Note',
 						value: 'note',
 					},
@@ -56,6 +61,8 @@ export class Substack implements INodeType {
 			...noteFields,
 			...postOperations,
 			...postFields,
+			...commentOperations,
+			...commentFields,
 		],
 	};
 
@@ -84,6 +91,14 @@ export class Substack implements INodeType {
 						response = await NoteOperations.create(this, client, publicationAddress, i);
 					} else if (operation === 'get') {
 						response = await NoteOperations.get(this, client, publicationAddress, i);
+					} else {
+						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
+							itemIndex: i,
+						});
+					}
+				} else if (resource === 'comment') {
+					if (operation === 'getAll') {
+						response = await CommentOperations.getAll(this, client, publicationAddress, i);
 					} else {
 						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
 							itemIndex: i,

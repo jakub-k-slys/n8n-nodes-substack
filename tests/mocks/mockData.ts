@@ -59,6 +59,31 @@ export const mockPostsListResponse = [
 	},
 ];
 
+export const mockCommentsListResponse = [
+	{
+		id: 33333,
+		body: 'Great article! Thanks for sharing.',
+		created_at: '2024-01-15T14:20:00Z',
+		parent_post_id: 98765,
+		author: {
+			id: 11111,
+			name: 'John Doe',
+			is_admin: false,
+		},
+	},
+	{
+		id: 44444,
+		body: 'I have a question about this topic.',
+		created_at: '2024-01-15T15:30:00Z',
+		parent_post_id: 98765,
+		author: {
+			id: 22222,
+			name: 'Jane Smith',
+			is_admin: true,
+		},
+	},
+];
+
 export const mockCredentials = {
 	apiKey: 'test-api-key-12345',
 	publicationAddress: 'https://testblog.substack.com',
