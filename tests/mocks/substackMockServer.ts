@@ -3,6 +3,7 @@ import {
 	mockNoteResponse,
 	mockNotesListResponse,
 	mockPostsListResponse,
+	mockCommentsListResponse,
 } from './mockData';
 
 export class SubstackMockServer {
@@ -25,6 +26,11 @@ export class SubstackMockServer {
 					yield post;
 				}
 			}()),
+			getComments: jest.fn().mockReturnValue(async function* () {
+				for (const comment of mockCommentsListResponse) {
+					yield comment;
+				}
+			}()),
 		} as any));
 	}
 
@@ -45,6 +51,9 @@ export class SubstackMockServer {
 			getPosts: jest.fn().mockImplementation(() => {
 				throw new Error('Unauthorized: Invalid API key provided');
 			}),
+			getComments: jest.fn().mockImplementation(() => {
+				throw new Error('Unauthorized: Invalid API key provided');
+			}),
 		} as any));
 	}
 
@@ -61,6 +70,9 @@ export class SubstackMockServer {
 				// Empty generator
 			}()),
 			getPosts: jest.fn().mockReturnValue(async function* () {
+				// Empty generator
+			}()),
+			getComments: jest.fn().mockReturnValue(async function* () {
 				// Empty generator
 			}()),
 		} as any));
@@ -81,6 +93,9 @@ export class SubstackMockServer {
 				throw new Error('fetch failed');
 			}),
 			getPosts: jest.fn().mockImplementation(() => {
+				throw new Error('fetch failed');
+			}),
+			getComments: jest.fn().mockImplementation(() => {
 				throw new Error('fetch failed');
 			}),
 		} as any));

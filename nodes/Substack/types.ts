@@ -36,6 +36,18 @@ export interface ISubstackPost {
 	description?: string;
 }
 
+export interface ISubstackComment {
+	id: number;
+	body: string;
+	createdAt: string;
+	parentPostId: number;
+	author: {
+		id: number;
+		name: string;
+		isAdmin?: boolean;
+	};
+}
+
 export interface IErrorResponse {
 	message: string;
 	node: INode;

@@ -50,10 +50,16 @@ export class NoteOperations {
 	): Promise<IStandardResponse> {
 		try {
 			// Get parameters for retrieving notes
-			const limit = executeFunctions.getNodeParameter('limit', itemIndex, 10) as number;
+			const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
+			
+			// Prepare options - only include limit if it's specified
+			const options: any = {};
+			if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
+				options.limit = Number(limitParam);
+			}
 
 			// Retrieve notes using the substack-api library
-			const notes = client.getNotes({ limit });
+			const notes = client.getNotes(options);
 			const formattedNotes: ISubstackNote[] = [];
 
 			// Iterate through async iterable notes
