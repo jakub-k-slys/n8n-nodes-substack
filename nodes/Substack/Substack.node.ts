@@ -19,7 +19,8 @@ export class Substack implements INodeType {
 		name: 'substack',
 		icon: { light: 'file:substack.svg', dark: 'file:substack.svg' },
 		group: ['output'],
-		version: 1,
+		defaultVersion: 1,
+		version: [1],
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Interact with Substack API',
 		defaults: {
