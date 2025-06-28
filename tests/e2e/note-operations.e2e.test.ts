@@ -1,5 +1,5 @@
 import { Substack } from '../../nodes/Substack/Substack.node';
-import { SubstackMockServer } from '../mocks/substackMockServer';
+import { SubstackHttpServer } from '../mocks/substackHttpServer';
 import { createMockExecuteFunctions } from '../mocks/mockExecuteFunctions';
 import { mockCredentials } from '../mocks/mockData';
 
@@ -8,17 +8,17 @@ describe('Substack Node E2E - Note Operations', () => {
 
 	beforeEach(() => {
 		substackNode = new Substack();
-		SubstackMockServer.cleanup();
+		SubstackHttpServer.cleanup();
 	});
 
 	afterEach(() => {
-		SubstackMockServer.cleanup();
+		SubstackHttpServer.cleanup();
 	});
 
 	describe('Note Creation', () => {
 		it('should successfully create a note with valid inputs', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -67,7 +67,7 @@ describe('Substack Node E2E - Note Operations', () => {
 
 		it('should handle authentication errors gracefully', async () => {
 			// Setup auth error mocks
-			SubstackMockServer.setupAuthErrorMocks();
+			SubstackHttpServer.setupAuthErrorMocks();
 
 			// Setup execution context with invalid credentials
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -92,7 +92,7 @@ describe('Substack Node E2E - Note Operations', () => {
 	describe('Note Retrieval', () => {
 		it('should successfully retrieve notes with default limit', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -143,7 +143,7 @@ describe('Substack Node E2E - Note Operations', () => {
 
 		it('should handle custom limit parameter', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with custom limit
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -166,7 +166,7 @@ describe('Substack Node E2E - Note Operations', () => {
 
 		it('should handle empty notes list', async () => {
 			// Setup empty response mocks
-			SubstackMockServer.setupEmptyResponseMocks();
+			SubstackHttpServer.setupEmptyResponseMocks();
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -190,7 +190,7 @@ describe('Substack Node E2E - Note Operations', () => {
 	describe('Error Handling', () => {
 		it('should handle network errors', async () => {
 			// Setup network error mocks
-			SubstackMockServer.setupNetworkErrorMocks();
+			SubstackHttpServer.setupNetworkErrorMocks();
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({

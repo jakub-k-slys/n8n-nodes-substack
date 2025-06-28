@@ -1,27 +1,26 @@
 import { Substack } from '../../nodes/Substack/Substack.node';
 import { createMockExecuteFunctions } from '../mocks/mockExecuteFunctions';
-import { SubstackMockServer } from '../mocks/substackMockServer';
+import { SubstackHttpServer } from '../mocks/substackHttpServer';
 import { mockCredentials } from '../mocks/mockData';
 
 // Mock the entire substack-api module
-jest.mock('substack-api');
 
 describe('Substack Node - Comment Operations', () => {
 	let substackNode: Substack;
 
 	beforeEach(() => {
 		substackNode = new Substack();
-		SubstackMockServer.cleanup();
+		SubstackHttpServer.cleanup();
 	});
 
 	afterEach(() => {
-		SubstackMockServer.cleanup();
+		SubstackHttpServer.cleanup();
 	});
 
 	describe('Comment getAll Operation', () => {
 		it('should retrieve comments successfully', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -73,7 +72,7 @@ describe('Substack Node - Comment Operations', () => {
 
 		it('should handle empty limit parameter (fetch all)', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with empty limit
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -97,7 +96,7 @@ describe('Substack Node - Comment Operations', () => {
 
 		it('should handle authentication errors', async () => {
 			// Setup mocks for auth error
-			SubstackMockServer.setupAuthErrorMocks();
+			SubstackHttpServer.setupAuthErrorMocks();
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -116,12 +115,12 @@ describe('Substack Node - Comment Operations', () => {
 			// Execute the node and expect it to throw
 			await expect(
 				substackNode.execute.call(mockExecuteFunctions)
-			).rejects.toThrow('Unauthorized: Invalid API key provided');
+			).rejects.toThrow('Request failed: Unauthorized');
 		});
 
 		it('should handle empty response', async () => {
 			// Setup mocks for empty response
-			SubstackMockServer.setupEmptyResponseMocks();
+			SubstackHttpServer.setupEmptyResponseMocks();
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -145,7 +144,7 @@ describe('Substack Node - Comment Operations', () => {
 
 		it('should handle custom limit parameter', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with custom limit
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -171,7 +170,7 @@ describe('Substack Node - Comment Operations', () => {
 	describe('Comment Operation Errors', () => {
 		it('should throw error for unknown operation', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with invalid operation
 			const mockExecuteFunctions = createMockExecuteFunctions({

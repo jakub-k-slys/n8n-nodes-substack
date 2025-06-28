@@ -23,7 +23,7 @@ npm run test:all           # Run both unit and E2E tests
 
 ## E2E Test Architecture
 
-The E2E tests use a sophisticated mocking strategy to simulate real Substack API interactions without making actual HTTP requests:
+The E2E tests use MSW (Mock Service Worker) to intercept HTTP requests and provide realistic API responses, enabling integration testing with actual network behavior.
 
 ### Mock Components
 
@@ -32,10 +32,11 @@ The E2E tests use a sophisticated mocking strategy to simulate real Substack API
    - Provides controlled node parameters, credentials, and input data
    - Allows testing the actual node execution logic
 
-2. **Mock Substack Server** (`tests/mocks/substackMockServer.ts`)
-   - Mocks the `substack-api` library using Jest mocks
+2. **MSW HTTP Server** (`tests/mocks/substackHttpServer.ts`)
+   - Intercepts real HTTP requests made by the `substack-api` library
    - Provides realistic API responses for different scenarios
    - Supports success, error, and edge case scenarios
+   - Handles all Substack API endpoints with proper pagination
 
 3. **Mock Data** (`tests/mocks/mockData.ts`)
    - Contains static response data matching Substack API format
@@ -80,12 +81,13 @@ Both configurations use:
 
 ### Mock Strategy
 
-Instead of using HTTP interception (like `nock`), we mock the `substack-api` library directly because:
+The E2E tests use MSW (Mock Service Worker) to intercept HTTP requests instead of mocking the library directly because:
 
-1. The library uses Node.js's built-in `fetch` API
-2. Direct library mocking provides more control over responses
-3. Tests run faster without actual HTTP overhead
-4. More reliable test isolation
+1. **Real HTTP Testing**: Tests actual fetch calls and HTTP request/response patterns
+2. **Integration Confidence**: Catches issues with request formatting, headers, and error handling
+3. **Realistic Network Behavior**: Simulates actual network conditions including errors and timeouts
+4. **Better Test Coverage**: Ensures the full request/response pipeline is tested
+5. **Flexibility**: Easy to test different domains, endpoints, and response scenarios
 
 ## Adding New Tests
 
@@ -105,7 +107,7 @@ describe('MyModule', () => {
 
 ```typescript
 import { Substack } from '../../nodes/Substack/Substack.node';
-import { SubstackMockServer } from '../mocks/substackMockServer';
+import { SubstackHttpServer } from '../mocks/substackHttpServer';
 import { createMockExecuteFunctions } from '../mocks/mockExecuteFunctions';
 import { mockCredentials } from '../mocks/mockData';
 
@@ -114,7 +116,7 @@ describe('My E2E Test', () => {
 
   beforeEach(() => {
     substackNode = new Substack();
-    SubstackMockServer.setupSuccessfulMocks();
+    SubstackHttpServer.setupSuccessfulMocks();
   });
 
   it('should execute successfully', async () => {
@@ -140,11 +142,12 @@ describe('My E2E Test', () => {
 
 ## Benefits of This Testing Approach
 
-1. **Isolation**: Tests don't depend on external services
-2. **Speed**: No network requests = faster test execution
-3. **Reliability**: Consistent test results regardless of network conditions
-4. **Comprehensive**: Can test error conditions that are hard to reproduce with real APIs
-5. **CI/CD Friendly**: Tests run in any environment without API credentials
+1. **Realistic Integration Testing**: Tests actual HTTP requests and responses using real network behavior
+2. **Better Coverage**: Validates request formatting, headers, query parameters, and error handling  
+3. **Integration Confidence**: Catches issues with actual API interaction patterns
+4. **Flexible Scenarios**: Easy to test different domains, endpoints, and edge cases
+5. **Future-Proof**: Adding new endpoints or changing request patterns is straightforward
+6. **Debugging Advantage**: HTTP interception makes it easier to debug request/response issues
 
 ## Debugging Tests
 

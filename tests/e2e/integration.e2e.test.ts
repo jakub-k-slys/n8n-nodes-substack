@@ -1,5 +1,5 @@
 import { Substack } from '../../nodes/Substack/Substack.node';
-import { SubstackMockServer } from '../mocks/substackMockServer';
+import { SubstackHttpServer } from '../mocks/substackHttpServer';
 import { createMockExecuteFunctions } from '../mocks/mockExecuteFunctions';
 import { mockCredentials } from '../mocks/mockData';
 
@@ -8,17 +8,17 @@ describe('Substack Node E2E - Integration Tests', () => {
 
 	beforeEach(() => {
 		substackNode = new Substack();
-		SubstackMockServer.cleanup();
+		SubstackHttpServer.cleanup();
 	});
 
 	afterEach(() => {
-		SubstackMockServer.cleanup();
+		SubstackHttpServer.cleanup();
 	});
 
 	describe('Multi-Item Processing', () => {
 		it('should process multiple input items for note creation', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with multiple input items
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -68,7 +68,7 @@ describe('Substack Node E2E - Integration Tests', () => {
 
 		it('should handle partial failures with continueOnFail enabled', async () => {
 			// Setup mocks that will fail for some items
-			SubstackMockServer.setupNetworkErrorMocks();
+			SubstackHttpServer.setupNetworkErrorMocks();
 
 			// Create mock that enables continueOnFail
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -169,7 +169,7 @@ describe('Substack Node E2E - Integration Tests', () => {
 			// This test simulates a real workflow where we create a note and then retrieve all notes
 			
 			// Setup mocks for both operations
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Step 1: Create a note
 			const createNoteMockFunctions = createMockExecuteFunctions({
@@ -208,7 +208,7 @@ describe('Substack Node E2E - Integration Tests', () => {
 		it('should support mixed resource operations in sequence', async () => {
 			// Test accessing both notes and posts with the same credentials
 			
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Get posts
 			const getPostsMockFunctions = createMockExecuteFunctions({
@@ -243,7 +243,7 @@ describe('Substack Node E2E - Integration Tests', () => {
 			// Setup mocks for custom domain
 			const customDomain = 'https://custom-domain.com';
 			
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			const mockExecuteFunctions = createMockExecuteFunctions({
 				nodeParameters: {
@@ -267,7 +267,7 @@ describe('Substack Node E2E - Integration Tests', () => {
 			// Setup mocks with trailing slash
 			const domainWithSlash = 'https://testblog.substack.com/';
 			
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			const mockExecuteFunctions = createMockExecuteFunctions({
 				nodeParameters: {

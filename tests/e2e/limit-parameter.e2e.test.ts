@@ -1,27 +1,26 @@
 import { Substack } from '../../nodes/Substack/Substack.node';
 import { createMockExecuteFunctions } from '../mocks/mockExecuteFunctions';
-import { SubstackMockServer } from '../mocks/substackMockServer';
+import { SubstackHttpServer } from '../mocks/substackHttpServer';
 import { mockCredentials } from '../mocks/mockData';
 
 // Mock the entire substack-api module
-jest.mock('substack-api');
 
 describe('Substack Node - Limit Parameter Handling', () => {
 	let substackNode: Substack;
 
 	beforeEach(() => {
 		substackNode = new Substack();
-		SubstackMockServer.cleanup();
+		SubstackHttpServer.cleanup();
 	});
 
 	afterEach(() => {
-		SubstackMockServer.cleanup();
+		SubstackHttpServer.cleanup();
 	});
 
 	describe('Empty Limit Parameter (Fetch All)', () => {
 		it('should handle empty limit for notes', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with empty limit
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -44,7 +43,7 @@ describe('Substack Node - Limit Parameter Handling', () => {
 
 		it('should handle empty limit for posts', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with empty limit
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -67,7 +66,7 @@ describe('Substack Node - Limit Parameter Handling', () => {
 
 		it('should handle empty limit for comments', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with empty limit
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -93,7 +92,7 @@ describe('Substack Node - Limit Parameter Handling', () => {
 	describe('Null/Undefined Limit Parameter', () => {
 		it('should handle null limit', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with null limit
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -115,7 +114,7 @@ describe('Substack Node - Limit Parameter Handling', () => {
 
 		it('should handle undefined limit', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with undefined limit
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -139,7 +138,7 @@ describe('Substack Node - Limit Parameter Handling', () => {
 	describe('Numeric Limit Parameter', () => {
 		it('should handle numeric limit values', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with numeric limit
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -162,7 +161,7 @@ describe('Substack Node - Limit Parameter Handling', () => {
 
 		it('should handle string numeric limit values', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with string numeric limit
 			const mockExecuteFunctions = createMockExecuteFunctions({
