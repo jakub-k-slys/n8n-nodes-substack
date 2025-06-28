@@ -4,7 +4,6 @@ import { createMockExecuteFunctions } from '../mocks/mockExecuteFunctions';
 import { mockCredentials } from '../mocks/mockData';
 
 // Mock the entire substack-api module
-jest.mock('substack-api');
 
 describe('Substack Node E2E - Follow Operations', () => {
 	let substackNode: Substack;

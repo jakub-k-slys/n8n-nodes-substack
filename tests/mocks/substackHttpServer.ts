@@ -18,8 +18,8 @@ const mockNotesHttpResponse = {
 
 // Create MSW request handlers for Substack API endpoints
 const substackHandlers = [
-	// GET /api/v1/posts - Get posts with pagination
-	http.get('https://testblog.substack.com/api/v1/posts', ({ request }) => {
+	// GET /api/v1/posts - Get posts with pagination (for any domain)
+	http.get('*/api/v1/posts', ({ request }) => {
 		const url = new URL(request.url);
 		const offset = parseInt(url.searchParams.get('offset') || '0');
 		const limit = parseInt(url.searchParams.get('limit') || '20');
@@ -32,26 +32,32 @@ const substackHandlers = [
 		return HttpResponse.json(paginatedPosts);
 	}),
 
-	// GET /api/v1/posts/{slug} - Get specific post
-	http.get('https://testblog.substack.com/api/v1/posts/:slug', ({ params }) => {
-		// Return the first mock post for any slug
-		return HttpResponse.json(mockPostsListResponse[0]);
+	// GET /api/v1/notes - Get notes with cursor pagination (for any domain)
+	http.get('*/api/v1/notes', ({ request }) => {
+		const url = new URL(request.url);
+		const cursor = url.searchParams.get('cursor');
+		
+		// For simplicity, always return the same set of notes
+		// In a real scenario, you'd handle cursor-based pagination
+		// Use cursor to determine if we should return data or empty response
+		return HttpResponse.json(cursor === 'end' ? { items: [], nextCursor: null } : mockNotesHttpResponse);
 	}),
 
-	// GET /api/v1/search - Search posts
-	http.get('https://testblog.substack.com/api/v1/search', ({ request }) => {
-		const url = new URL(request.url);
-		const query = url.searchParams.get('query') || '';
+	// POST /api/v1/comment/feed - Publish note (for any domain)
+	http.post('*/api/v1/comment/feed', async ({ request }) => {
+		const body = await request.json() as any;
 		
-		// Simple search simulation - return all posts if query matches
+		// Return a successful note creation response
 		return HttpResponse.json({
-			results: query ? mockPostsListResponse : [],
-			total: query ? mockPostsListResponse.length : 0,
+			...mockNoteResponse,
+			// Extract text from the complex bodyJson structure if available
+			body: body?.bodyJson?.content?.[0]?.content?.[0]?.text || 'Published note',
 		});
 	}),
 
-	// GET /api/v1/posts/{postId}/comments - Get comments with pagination
-	http.get('https://testblog.substack.com/api/v1/posts/:postId/comments', ({ request, params }) => {
+	// Additional wildcard handlers for better test coverage
+	// GET /api/v1/posts/{postId}/comments - Get comments with pagination (for any domain)
+	http.get('*/api/v1/posts/:postId/comments', ({ request, params }) => {
 		const url = new URL(request.url);
 		const offset = parseInt(url.searchParams.get('offset') || '0');
 		const limit = parseInt(url.searchParams.get('limit') || '20');
@@ -64,36 +70,31 @@ const substackHandlers = [
 		return HttpResponse.json(paginatedComments);
 	}),
 
-	// GET /api/v1/comments/{commentId} - Get specific comment
-	http.get('https://testblog.substack.com/api/v1/comments/:commentId', ({ params }) => {
+	// GET /api/v1/comments/{commentId} - Get specific comment (for any domain)
+	http.get('*/api/v1/comments/:commentId', ({ params }) => {
 		return HttpResponse.json(mockCommentsListResponse[0]);
 	}),
 
-	// GET /api/v1/notes - Get notes with cursor pagination
-	http.get('https://testblog.substack.com/api/v1/notes', ({ request }) => {
-		const url = new URL(request.url);
-		const cursor = url.searchParams.get('cursor');
-		
-		// For simplicity, always return the same set of notes
-		// In a real scenario, you'd handle cursor-based pagination
-		// Use cursor to determine if we should return data or empty response
-		return HttpResponse.json(cursor === 'end' ? { items: [], nextCursor: null } : mockNotesHttpResponse);
+	// GET /api/v1/posts/{slug} - Get specific post (for any domain)
+	http.get('*/api/v1/posts/:slug', ({ params }) => {
+		// Return the first mock post for any slug
+		return HttpResponse.json(mockPostsListResponse[0]);
 	}),
 
-	// POST /api/v1/comment/feed - Publish note
-	http.post('https://testblog.substack.com/api/v1/comment/feed', async ({ request }) => {
-		const body = await request.json() as any;
+	// GET /api/v1/search - Search posts (for any domain)
+	http.get('*/api/v1/search', ({ request }) => {
+		const url = new URL(request.url);
+		const query = url.searchParams.get('query') || '';
 		
-		// Return a successful note creation response
+		// Simple search simulation - return all posts if query matches
 		return HttpResponse.json({
-			...mockNoteResponse,
-			// Extract text from the complex bodyJson structure if available
-			body: body?.bodyJson?.content?.[0]?.content?.[0]?.text || 'Published note',
+			results: query ? mockPostsListResponse : [],
+			total: query ? mockPostsListResponse.length : 0,
 		});
 	}),
 
-	// GET /api/v1/reader/feed/profile/{userId} - Get user profile
-	http.get('https://testblog.substack.com/api/v1/reader/feed/profile/:userId', ({ params }) => {
+	// GET /api/v1/reader/feed/profile/{userId} - Get user profile (for any domain)
+	http.get('*/api/v1/reader/feed/profile/:userId', ({ params }) => {
 		return HttpResponse.json({
 			items: [
 				{
@@ -112,13 +113,13 @@ const substackHandlers = [
 		});
 	}),
 
-	// GET /api/v1/user/{slug}/public_profile - Get public profile
-	http.get('https://testblog.substack.com/api/v1/user/:slug/public_profile', ({ params }) => {
+	// GET /api/v1/user/{slug}/public_profile - Get public profile (for any domain)
+	http.get('*/api/v1/user/:slug/public_profile', ({ params }) => {
 		return HttpResponse.json(mockFollowingProfilesResponse[0]);
 	}),
 
-	// GET /api/v1/feed/following - Get following IDs
-	http.get('https://testblog.substack.com/api/v1/feed/following', () => {
+	// GET /api/v1/feed/following - Get following IDs (for any domain)
+	http.get('*/api/v1/feed/following', () => {
 		return HttpResponse.json(mockFollowingIdsResponse);
 	}),
 ];
@@ -134,15 +135,15 @@ export class SubstackHttpServer {
 	}
 
 	static setupAuthErrorMocks() {
-		// Reset handlers to return auth errors
+		// Reset handlers to return auth errors (wildcard for any domain)
 		substackHttpServer.use(
-			http.get('https://testblog.substack.com/api/v1/*', () => {
+			http.get('*/api/v1/*', () => {
 				return HttpResponse.json(
 					{ error: 'Unauthorized', message: 'Invalid API key provided' },
 					{ status: 401 }
 				);
 			}),
-			http.post('https://testblog.substack.com/api/v1/*', () => {
+			http.post('*/api/v1/*', () => {
 				return HttpResponse.json(
 					{ error: 'Unauthorized', message: 'Invalid API key provided' },
 					{ status: 401 }
@@ -152,34 +153,34 @@ export class SubstackHttpServer {
 	}
 
 	static setupEmptyResponseMocks() {
-		// Reset handlers to return empty responses
+		// Reset handlers to return empty responses (wildcard for any domain)
 		substackHttpServer.use(
-			http.get('https://testblog.substack.com/api/v1/posts', () => {
+			http.get('*/api/v1/posts', () => {
 				return HttpResponse.json([]);
 			}),
-			http.get('https://testblog.substack.com/api/v1/posts/*/comments', () => {
+			http.get('*/api/v1/posts/*/comments', () => {
 				return HttpResponse.json([]);
 			}),
-			http.get('https://testblog.substack.com/api/v1/notes', () => {
+			http.get('*/api/v1/notes', () => {
 				return HttpResponse.json({
 					items: [],
 					nextCursor: null,
 					originalCursorTimestamp: '2024-01-15T10:30:00Z',
 				});
 			}),
-			http.get('https://testblog.substack.com/api/v1/feed/following', () => {
+			http.get('*/api/v1/feed/following', () => {
 				return HttpResponse.json([]);
 			})
 		);
 	}
 
 	static setupNetworkErrorMocks() {
-		// Reset handlers to simulate network errors
+		// Reset handlers to simulate network errors (wildcard for any domain)
 		substackHttpServer.use(
-			http.get('https://testblog.substack.com/api/v1/*', () => {
+			http.get('*/api/v1/*', () => {
 				return HttpResponse.error();
 			}),
-			http.post('https://testblog.substack.com/api/v1/*', () => {
+			http.post('*/api/v1/*', () => {
 				return HttpResponse.error();
 			})
 		);

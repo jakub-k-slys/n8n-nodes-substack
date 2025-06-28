@@ -4,7 +4,6 @@ import { SubstackHttpServer } from '../mocks/substackHttpServer';
 import { mockCredentials } from '../mocks/mockData';
 
 // Mock the entire substack-api module
-jest.mock('substack-api');
 
 describe('Substack Node - Comment Operations', () => {
 	let substackNode: Substack;
@@ -116,7 +115,7 @@ describe('Substack Node - Comment Operations', () => {
 			// Execute the node and expect it to throw
 			await expect(
 				substackNode.execute.call(mockExecuteFunctions)
-			).rejects.toThrow('Unauthorized: Invalid API key provided');
+			).rejects.toThrow('Request failed: Unauthorized');
 		});
 
 		it('should handle empty response', async () => {

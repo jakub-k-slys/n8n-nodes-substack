@@ -4,7 +4,6 @@ import { SubstackHttpServer } from '../mocks/substackHttpServer';
 import { mockCredentials } from '../mocks/mockData';
 
 // Mock the entire substack-api module
-jest.mock('substack-api');
 
 describe('Substack Node - Limit Parameter Handling', () => {
 	let substackNode: Substack;
