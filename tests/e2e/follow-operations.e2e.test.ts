@@ -1,5 +1,5 @@
 import { Substack } from '../../nodes/Substack/Substack.node';
-import { SubstackMockServer } from '../mocks/substackMockServer';
+import { SubstackHttpServer } from '../mocks/substackHttpServer';
 import { createMockExecuteFunctions } from '../mocks/mockExecuteFunctions';
 import { mockCredentials } from '../mocks/mockData';
 
@@ -11,17 +11,17 @@ describe('Substack Node E2E - Follow Operations', () => {
 
 	beforeEach(() => {
 		substackNode = new Substack();
-		SubstackMockServer.cleanup();
+		SubstackHttpServer.cleanup();
 	});
 
 	afterEach(() => {
-		SubstackMockServer.cleanup();
+		SubstackHttpServer.cleanup();
 	});
 
 	describe('Get Following', () => {
 		it('should successfully retrieve following profiles with default limit', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -51,7 +51,7 @@ describe('Substack Node E2E - Follow Operations', () => {
 
 		it('should successfully retrieve following IDs only', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -81,7 +81,7 @@ describe('Substack Node E2E - Follow Operations', () => {
 
 		it('should handle empty limit parameter with default of 100', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with empty limit
 			const mockExecuteFunctions = createMockExecuteFunctions({

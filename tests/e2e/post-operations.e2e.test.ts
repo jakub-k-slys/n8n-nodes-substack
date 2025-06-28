@@ -1,5 +1,5 @@
 import { Substack } from '../../nodes/Substack/Substack.node';
-import { SubstackMockServer } from '../mocks/substackMockServer';
+import { SubstackHttpServer } from '../mocks/substackHttpServer';
 import { createMockExecuteFunctions } from '../mocks/mockExecuteFunctions';
 import { mockCredentials } from '../mocks/mockData';
 
@@ -8,17 +8,17 @@ describe('Substack Node E2E - Post Operations', () => {
 
 	beforeEach(() => {
 		substackNode = new Substack();
-		SubstackMockServer.cleanup();
+		SubstackHttpServer.cleanup();
 	});
 
 	afterEach(() => {
-		SubstackMockServer.cleanup();
+		SubstackHttpServer.cleanup();
 	});
 
 	describe('Post Retrieval', () => {
 		it('should successfully retrieve posts with default limit', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -69,7 +69,7 @@ describe('Substack Node E2E - Post Operations', () => {
 
 		it('should handle custom limit parameter', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with custom limit
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -92,7 +92,7 @@ describe('Substack Node E2E - Post Operations', () => {
 
 		it('should handle empty posts list', async () => {
 			// Setup empty response mocks
-			SubstackMockServer.setupEmptyResponseMocks();
+			SubstackHttpServer.setupEmptyResponseMocks();
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -114,7 +114,7 @@ describe('Substack Node E2E - Post Operations', () => {
 
 		it('should handle authentication errors gracefully', async () => {
 			// Setup auth error mocks
-			SubstackMockServer.setupAuthErrorMocks();
+			SubstackHttpServer.setupAuthErrorMocks();
 
 			// Setup execution context with invalid credentials
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -136,7 +136,7 @@ describe('Substack Node E2E - Post Operations', () => {
 
 		it('should handle network errors', async () => {
 			// Setup network error mocks
-			SubstackMockServer.setupNetworkErrorMocks();
+			SubstackHttpServer.setupNetworkErrorMocks();
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -173,7 +173,7 @@ describe('Substack Node E2E - Post Operations', () => {
 	describe('Edge Cases and Pagination', () => {
 		it('should handle very large limit values', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with large limit
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -196,7 +196,7 @@ describe('Substack Node E2E - Post Operations', () => {
 
 		it('should handle zero limit', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Setup execution context with zero limit
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -217,7 +217,7 @@ describe('Substack Node E2E - Post Operations', () => {
 		});
 
 		it('should handle malformed post data gracefully', async () => {
-			// Setup mock with malformed data
+			// Setup mock with malformed data using custom MSW handler
 			const malformedResponse = [
 				{
 					// Missing required fields
@@ -227,14 +227,13 @@ describe('Substack Node E2E - Post Operations', () => {
 				},
 			];
 
-			// Mock the API response directly through the library mock
-			SubstackMockServer.setupCustomMock({
-				getPosts: jest.fn().mockReturnValue(async function* () {
-					yield malformedResponse[0];
-				}()),
-				publishNote: jest.fn(),
-				getNotes: jest.fn(),
-			});
+			// Setup custom MSW handler for malformed data
+			const { http, HttpResponse } = require('msw');
+			SubstackHttpServer.setupCustomMock([
+				http.get('https://testblog.substack.com/api/v1/posts', () => {
+					return HttpResponse.json(malformedResponse);
+				}),
+			]);
 
 			const mockExecuteFunctions = createMockExecuteFunctions({
 				nodeParameters: {

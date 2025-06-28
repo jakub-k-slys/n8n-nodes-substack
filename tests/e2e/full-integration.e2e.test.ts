@@ -1,6 +1,6 @@
 import { Substack } from '../../nodes/Substack/Substack.node';
 import { createMockExecuteFunctions } from '../mocks/mockExecuteFunctions';
-import { SubstackMockServer } from '../mocks/substackMockServer';
+import { SubstackHttpServer } from '../mocks/substackHttpServer';
 import { mockCredentials } from '../mocks/mockData';
 
 // Mock the entire substack-api module
@@ -11,17 +11,17 @@ describe('Substack Node - Full Integration Test', () => {
 
 	beforeEach(() => {
 		substackNode = new Substack();
-		SubstackMockServer.cleanup();
+		SubstackHttpServer.cleanup();
 	});
 
 	afterEach(() => {
-		SubstackMockServer.cleanup();
+		SubstackHttpServer.cleanup();
 	});
 
 	describe('Complete Implementation Verification', () => {
 		it('should support all three resource types with empty limit defaults', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Test Notes operation
 			const notesMockExecuteFunctions = createMockExecuteFunctions({
@@ -69,7 +69,7 @@ describe('Substack Node - Full Integration Test', () => {
 
 		it('should verify client reuse pattern is implemented', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Test that client is instantiated only once per execution
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -95,7 +95,7 @@ describe('Substack Node - Full Integration Test', () => {
 
 		it('should handle async iteration for all operations', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Test async iteration by verifying multiple items are returned
 			const operations = [
@@ -126,7 +126,7 @@ describe('Substack Node - Full Integration Test', () => {
 
 		it('should maintain backward compatibility with numeric limits', async () => {
 			// Setup mocks
-			SubstackMockServer.setupSuccessfulMocks();
+			SubstackHttpServer.setupSuccessfulMocks();
 
 			// Test that numeric limits still work
 			const mockExecuteFunctions = createMockExecuteFunctions({
