@@ -36,6 +36,9 @@ describe('Substack Node - Comment Operations', () => {
 			// Execute the node
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
+			// Debug: log the result
+			console.log('Result:', JSON.stringify(result, null, 2));
+
 			// Verify results
 			expect(result).toBeDefined();
 			expect(result[0]).toBeDefined();

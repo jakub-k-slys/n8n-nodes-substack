@@ -70,6 +70,28 @@ const substackHandlers = [
 		return HttpResponse.json(mockNotes);
 	}),
 
+	// GET /api/v1/users/{userId}/notes - Get user notes (for entity model)
+	http.get('*/api/v1/users/:userId/notes', ({ request, params }) => {
+		const url = new URL(request.url);
+		const limit = parseInt(url.searchParams.get('limit') || '25');
+		
+		// Return mock notes for the entity model
+		const mockNotes = Array.from({ length: Math.min(limit, 3) }, (_, i) => ({
+			id: `note-${i + 1}`,
+			body: `Test note ${i + 1}`,
+			likesCount: i * 2,
+			author: {
+				id: parseInt(params.userId as string),
+				name: 'Test User',
+				handle: 'testuser',
+				avatarUrl: 'https://testblog.substack.com/avatar.jpg',
+			},
+			publishedAt: new Date(Date.now() - i * 86400000).toISOString(),
+		}));
+		
+		return HttpResponse.json(mockNotes);
+	}),
+
 	// GET /api/v1/me/posts - Get own posts (for entity model)
 	http.get('*/api/v1/me/posts', ({ request }) => {
 		const url = new URL(request.url);
@@ -83,6 +105,29 @@ const substackHandlers = [
 			likesCount: i * 5,
 			author: {
 				id: 12345,
+				name: 'Test User',
+				handle: 'testuser',
+				avatarUrl: 'https://testblog.substack.com/avatar.jpg',
+			},
+			publishedAt: new Date(Date.now() - i * 86400000).toISOString(),
+		}));
+		
+		return HttpResponse.json(mockPosts);
+	}),
+
+	// GET /api/v1/users/{userId}/posts - Get user posts (for entity model)
+	http.get('*/api/v1/users/:userId/posts', ({ request, params }) => {
+		const url = new URL(request.url);
+		const limit = parseInt(url.searchParams.get('limit') || '25');
+		
+		// Return mock posts for the entity model
+		const mockPosts = Array.from({ length: Math.min(limit, 3) }, (_, i) => ({
+			id: i + 1,
+			title: `Test Post ${i + 1}`,
+			body: `Test post content ${i + 1}`,
+			likesCount: i * 5,
+			author: {
+				id: parseInt(params.userId as string),
 				name: 'Test User',
 				handle: 'testuser',
 				avatarUrl: 'https://testblog.substack.com/avatar.jpg',
@@ -111,8 +156,27 @@ const substackHandlers = [
 		return HttpResponse.json(mockFollowees);
 	}),
 
+	// GET /api/v1/users/{userId}/followees - Get users someone follows (for entity model)
+	http.get('*/api/v1/users/:userId/followees', ({ request, params }) => {
+		const url = new URL(request.url);
+		const limit = parseInt(url.searchParams.get('limit') || '25');
+		
+		// Return mock followees for the entity model
+		const mockFollowees = Array.from({ length: Math.min(limit, 3) }, (_, i) => ({
+			id: i + 100,
+			slug: `followee-${i + 1}`,
+			name: `Followee ${i + 1}`,
+			url: `https://followee${i + 1}.substack.com/profile/${i + 100}`,
+			avatarUrl: `https://followee${i + 1}.substack.com/avatar.jpg`,
+			bio: `Bio for followee ${i + 1}`,
+		}));
+		
+		return HttpResponse.json(mockFollowees);
+	}),
+
 	// GET /api/v1/posts/{postId}/comments - Get comments for a post (for entity model)
 	http.get('*/api/v1/posts/:postId/comments', ({ request, params }) => {
+		console.log('Comments endpoint hit:', request.url, 'params:', params);
 		const url = new URL(request.url);
 		const limit = parseInt(url.searchParams.get('limit') || '25');
 		
@@ -123,11 +187,12 @@ const substackHandlers = [
 			author: {
 				id: i + 200,
 				name: `Commenter ${i + 1}`,
-				isAdmin: i === 0,
+				is_admin: i === 0,
 			},
-			createdAt: new Date(Date.now() - i * 3600000).toISOString(),
+			created_at: new Date(Date.now() - i * 3600000).toISOString(),
 		}));
 		
+		console.log('Returning comments:', mockComments);
 		return HttpResponse.json(mockComments);
 	}),
 
@@ -167,12 +232,6 @@ const substackHandlers = [
 			body: body?.bodyJson?.content?.[0]?.content?.[0]?.text || 'Published note',
 		});
 	}),
-		return HttpResponse.json({
-			...mockNoteResponse,
-			// Extract text from the complex bodyJson structure if available
-			body: body?.bodyJson?.content?.[0]?.content?.[0]?.text || 'Published note',
-		});
-	}),
 
 	// Additional wildcard handlers for better test coverage
 	// GET /api/v1/posts/{postId}/comments - Get comments with pagination (for any domain)
@@ -194,10 +253,22 @@ const substackHandlers = [
 		return HttpResponse.json(mockCommentsListResponse[0]);
 	}),
 
-	// GET /api/v1/posts/{slug} - Get specific post (for any domain)
-	http.get('*/api/v1/posts/:slug', ({ params }) => {
-		// Return the first mock post for any slug
-		return HttpResponse.json(mockPostsListResponse[0]);
+	// GET /api/v1/posts/{postId} - Get specific post (for entity model)
+	http.get('*/api/v1/posts/:postId', ({ params }) => {
+		// Return a mock post for the entity model
+		return HttpResponse.json({
+			id: parseInt(params.postId as string),
+			title: `Test Post ${params.postId}`,
+			body: `Test post content for post ${params.postId}`,
+			likesCount: 10,
+			author: {
+				id: 12345,
+				name: 'Test User',
+				handle: 'testuser',
+				avatarUrl: 'https://testblog.substack.com/avatar.jpg',
+			},
+			publishedAt: new Date().toISOString(),
+		});
 	}),
 
 	// GET /api/v1/search - Search posts (for any domain)
@@ -240,6 +311,12 @@ const substackHandlers = [
 	// GET /api/v1/feed/following - Get following IDs (for any domain)
 	http.get('*/api/v1/feed/following', () => {
 		return HttpResponse.json(mockFollowingIdsResponse);
+	}),
+
+	// Catch-all for debugging - GET /api/v1/* (should be placed last)
+	http.get('*/api/v1/*', ({ request }) => {
+		console.log('Unhandled GET request:', request.url);
+		return HttpResponse.json({ error: 'Endpoint not implemented in mock' }, { status: 404 });
 	}),
 ];
 
