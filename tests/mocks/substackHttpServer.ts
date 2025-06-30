@@ -176,7 +176,6 @@ const substackHandlers = [
 
 	// GET /api/v1/posts/{postId}/comments - Get comments for a post (for entity model)
 	http.get('*/api/v1/posts/:postId/comments', ({ request, params }) => {
-		console.log('Comments endpoint hit:', request.url, 'params:', params);
 		const url = new URL(request.url);
 		const limit = parseInt(url.searchParams.get('limit') || '25');
 		
@@ -192,7 +191,6 @@ const substackHandlers = [
 			created_at: new Date(Date.now() - i * 3600000).toISOString(),
 		}));
 		
-		console.log('Returning comments:', mockComments);
 		return HttpResponse.json(mockComments);
 	}),
 
@@ -315,7 +313,6 @@ const substackHandlers = [
 
 	// Catch-all for debugging - GET /api/v1/* (should be placed last)
 	http.get('*/api/v1/*', ({ request }) => {
-		console.log('Unhandled GET request:', request.url);
 		return HttpResponse.json({ error: 'Endpoint not implemented in mock' }, { status: 404 });
 	}),
 ];
