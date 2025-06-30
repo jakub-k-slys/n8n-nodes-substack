@@ -23,8 +23,9 @@ export class FollowOperations {
 			let followingData: ISubstackFollowing[] = [];
 			let count = 0;
 
-			// Use the new client.followees() async iterator
-			for await (const profile of client.followees()) {
+			// Use the new ownProfile.followees() async iterator
+			const ownProfile = await client.ownProfile();
+			for await (const profile of ownProfile.followees()) {
 				if (count >= limit) break;
 
 				if (returnType === 'ids') {
