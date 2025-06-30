@@ -1,5 +1,5 @@
 import { IExecuteFunctions } from 'n8n-workflow';
-import { Substack as SubstackClient } from 'substack-api';
+import { SubstackClient } from 'substack-api';
 import { ISubstackPost, IStandardResponse } from './types';
 import { SubstackUtils } from './SubstackUtils';
 
@@ -21,21 +21,22 @@ export class PostOperations {
 				options.limit = 100;
 			}
 
-			const posts = client.getPosts(options);
+			// Get own profile and retrieve posts using the new entity model
+			const ownProfile = await client.ownProfile();
 			const formattedPosts: ISubstackPost[] = [];
 
 			// Iterate through async iterable posts
-			for await (const post of posts) {
+			for await (const post of ownProfile.posts(options)) {
 				formattedPosts.push({
 					id: post.id,
 					title: post.title || '',
-					subtitle: post.subtitle,
+					subtitle: '', // Not available in new API entity
 					url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
-					postDate: post.post_date,
-					type: post.type,
-					published: post.published,
-					paywalled: post.paywalled,
-					description: post.description,
+					postDate: post.publishedAt.toISOString(),
+					type: 'newsletter', // Default type for posts
+					published: true, // Posts from entity are published
+					paywalled: false, // Not available in new API entity
+					description: post.body ? post.body.substring(0, 200) + '...' : '',
 				});
 			}
 

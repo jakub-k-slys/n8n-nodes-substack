@@ -1,5 +1,5 @@
 import { IExecuteFunctions } from 'n8n-workflow';
-import { Substack as SubstackClient } from 'substack-api';
+import { SubstackClient } from 'substack-api';
 import { ISubstackFollowing, IStandardResponse } from './types';
 import { SubstackUtils } from './SubstackUtils';
 
@@ -21,38 +21,30 @@ export class FollowOperations {
 			}
 
 			let followingData: ISubstackFollowing[] = [];
+			let count = 0;
 
-			if (returnType === 'ids') {
-				// Get following IDs only
-				const followingIds = await client.getFollowingIds();
-				
-				// Apply limit to the results
-				const limitedIds = limit ? followingIds.slice(0, limit) : followingIds;
-				
-				followingData = limitedIds.map(id => ({
-					id,
-				}));
-			} else {
-				// Get full profiles (default)
-				const followingProfiles = await client.getFollowingProfiles();
-				
-				// Apply limit to the results
-				const limitedProfiles = limit ? followingProfiles.slice(0, limit) : followingProfiles;
-				
-				followingData = limitedProfiles.map(profile => ({
-					id: profile.id,
-					name: profile.name,
-					handle: profile.handle,
-					bio: profile.bio,
-					subscriberCount: typeof profile.subscriberCount === 'string' ? 
-						parseInt(profile.subscriberCount) || 0 : profile.subscriberCount,
-					subscriberCountString: profile.subscriberCountString,
-					primaryPublication: profile.primaryPublication ? {
-						id: profile.primaryPublication.id,
-						name: profile.primaryPublication.name,
-						subdomain: profile.primaryPublication.subdomain,
-					} : undefined,
-				}));
+			// Use the new client.followees() async iterator
+			for await (const profile of client.followees()) {
+				if (count >= limit) break;
+
+				if (returnType === 'ids') {
+					// Return only IDs
+					followingData.push({
+						id: profile.id,
+					});
+				} else {
+					// Return full profiles (default)
+					followingData.push({
+						id: profile.id,
+						name: profile.name,
+						handle: profile.slug,
+						bio: profile.bio,
+						subscriberCount: 0, // Not available in new API
+						subscriberCountString: '0',
+						primaryPublication: undefined, // Could be extracted if needed
+					});
+				}
+				count++;
 			}
 
 			return {
