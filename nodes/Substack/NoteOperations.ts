@@ -1,5 +1,5 @@
 import { IExecuteFunctions, NodeOperationError } from 'n8n-workflow';
-import { Substack as SubstackClient } from 'substack-api';
+import { SubstackClient } from 'substack-api';
 import { IStandardResponse, ISubstackNote } from './types';
 import { SubstackUtils } from './SubstackUtils';
 
@@ -19,27 +19,36 @@ export class NoteOperations {
 			});
 		}
 
-		// Publish the note using the substack-api library
-		const response = await client.publishNote(body);
+		try {
+			// Get own profile first, then create note
+			const ownProfile = await client.ownProfile();
+			const response = await ownProfile.createNote({ body });
 
-		// Format response to match expected output format
-		const formattedNote: ISubstackNote = {
-			noteId: response.id.toString(),
-			body: response.body || body,
-			url: SubstackUtils.formatUrl(publicationAddress, `/p/${response.id}`),
-			date: response.date,
-			status: response.status,
-			userId: response.user_id.toString(),
-		};
+			// Format response to match expected output format
+			const formattedNote: ISubstackNote = {
+				noteId: response.id?.toString() || 'unknown',
+				body: response.body || body,
+				url: SubstackUtils.formatUrl(publicationAddress, `/p/${response.id || 'unknown'}`),
+				date: response.publishedAt?.toISOString() || new Date().toISOString(),
+				status: 'published',
+				userId: response.author?.id?.toString() || 'unknown',
+			};
 
-		return {
-			success: true,
-			data: formattedNote,
-			metadata: {
-				date: response.date,
-				status: response.status,
-			},
-		};
+			return {
+				success: true,
+				data: formattedNote,
+				metadata: {
+					date: response.publishedAt?.toISOString(),
+					status: 'published',
+				},
+			};
+		} catch (error) {
+			return SubstackUtils.formatErrorResponse({
+				message: error.message,
+				node: executeFunctions.getNode(),
+				itemIndex,
+			});
+		}
 	}
 
 	static async get(
@@ -53,35 +62,34 @@ export class NoteOperations {
 			const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
 			
 			// Apply default limit of 100 if not specified
-			const options: any = {};
+			let limit = 100;
 			if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
-				options.limit = Number(limitParam);
-			} else {
-				options.limit = 100;
+				limit = Number(limitParam);
 			}
 
-			// Retrieve notes using the substack-api library
-			const notes = client.getNotes(options);
+			// Get own profile first, then get notes
+			const ownProfile = await client.ownProfile();
+			const notesIterable = await ownProfile.notes();
 			const formattedNotes: ISubstackNote[] = [];
 
-			// Iterate through async iterable notes
-			for await (const note of notes) {
-				// Extract note content from the comment field
-				const comment = note.comment;
-				if (comment) {
-					formattedNotes.push({
-						noteId: comment.id.toString(),
-						body: comment.body || '',
-						url: SubstackUtils.formatUrl(publicationAddress, `/p/${comment.id}`),
-						date: comment.date,
-						status: 'published',
-						userId: comment.user_id.toString(),
-						likes: comment.reaction_count || 0,
-						restacks: comment.restacks || 0,
-						type: comment.type,
-						entityKey: note.entity_key,
-					});
-				}
+			// Iterate through async iterable notes with limit
+			let count = 0;
+			for await (const note of notesIterable) {
+				if (count >= limit) break;
+				
+				formattedNotes.push({
+					noteId: note.id?.toString() || 'unknown',
+					body: note.body || '',
+					url: SubstackUtils.formatUrl(publicationAddress, `/p/${note.id || 'unknown'}`),
+					date: note.publishedAt?.toISOString() || new Date().toISOString(),
+					status: 'published',
+					userId: note.author?.id?.toString() || 'unknown',
+					likes: note.likesCount || 0,
+					restacks: 0, // Not available in new API
+					type: 'note',
+					entityKey: note.id,
+				});
+				count++;
 			}
 
 			return {

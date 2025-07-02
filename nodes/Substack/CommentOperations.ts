@@ -1,5 +1,5 @@
 import { IExecuteFunctions } from 'n8n-workflow';
-import { Substack as SubstackClient } from 'substack-api';
+import { SubstackClient } from 'substack-api';
 import { ISubstackComment, IStandardResponse } from './types';
 import { SubstackUtils } from './SubstackUtils';
 
@@ -15,29 +15,33 @@ export class CommentOperations {
 			const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
 			
 			// Apply default limit of 100 if not specified
-			const options: any = {};
+			let limit = 100;
 			if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
-				options.limit = Number(limitParam);
-			} else {
-				options.limit = 100;
+				limit = Number(limitParam);
 			}
 
-			const comments = client.getComments(postId, options);
+			// Get the post first, then get its comments
+			const post = await client.postForId(postId.toString());
+			const commentsIterable = await post.comments();
 			const formattedComments: ISubstackComment[] = [];
 
-			// Iterate through async iterable comments
-			for await (const comment of comments) {
+			// Iterate through async iterable comments with limit
+			let count = 0;
+			for await (const comment of commentsIterable) {
+				if (count >= limit) break;
+				
 				formattedComments.push({
 					id: comment.id,
 					body: comment.body,
-					createdAt: comment.created_at,
-					parentPostId: comment.parent_post_id,
+					createdAt: comment.createdAt.toISOString(),
+					parentPostId: postId, // Use the provided postId since it's not in the comment object
 					author: {
 						id: comment.author.id,
 						name: comment.author.name,
-						isAdmin: comment.author.is_admin,
+						isAdmin: comment.author.isAdmin || false,
 					},
 				});
+				count++;
 			}
 
 			return {

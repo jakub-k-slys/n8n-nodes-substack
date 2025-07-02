@@ -18,18 +18,72 @@ const mockNotesHttpResponse = {
 
 // Create MSW request handlers for Substack API endpoints
 const substackHandlers = [
-	// GET /api/v1/posts - Get posts with pagination (for any domain)
-	http.get('*/api/v1/posts', ({ request }) => {
-		const url = new URL(request.url);
-		const offset = parseInt(url.searchParams.get('offset') || '0');
-		const limit = parseInt(url.searchParams.get('limit') || '20');
+	// NEW ENDPOINTS for substack-api v0.12.2+
+	
+	// GET /api/v1/subscription - Get own profile subscription info (used by ownProfile())
+	http.get('*/api/v1/subscription', () => {
+		return HttpResponse.json({
+			id: 123456,
+			type: 'active',
+			status: 'active',
+			subscriber: {
+				id: 12345,
+				name: 'Test User',
+				handle: 'testuser',
+				email: 'test@example.com',
+			},
+		});
+	}),
+
+	// GET /api/v1/subscriptions - Get own profile subscription info (alternative endpoint)
+	http.get('*/api/v1/subscriptions', () => {
+		return HttpResponse.json({
+			id: 123456,
+			type: 'active',
+			status: 'active',
+			subscriber: {
+				id: 12345,
+				name: 'Test User',
+				handle: 'testuser',
+				email: 'test@example.com',
+			},
+		});
+	}),
+
+	// GET /api/v1/user/{userId}/profile - Get user profile by ID (used by ownProfile())
+	http.get('*/api/v1/user/:userId/profile', ({ params }) => {
+		return HttpResponse.json({
+			items: [
+				{
+					entity_key: `user-${params.userId}`,
+					type: 'profile',
+					context: {
+						users: [
+							{
+								id: Number(params.userId),
+								handle: 'testuser',
+								name: 'Test User',
+								photo_url: 'https://example.com/avatar.jpg',
+								bio: 'Test bio',
+							},
+						],
+						timestamp: '2024-01-15T10:30:00Z',
+					},
+				},
+			],
+		});
+	}),
+
+	// POST /api/v1/notes - Create note (new endpoint for v0.12.2+)
+	http.post('*/api/v1/notes', async ({ request }) => {
+		const body = await request.json() as any;
 		
-		// Simulate pagination
-		const start = offset;
-		const end = start + limit;
-		const paginatedPosts = mockPostsListResponse.slice(start, end);
-		
-		return HttpResponse.json(paginatedPosts);
+		// Return a successful note creation response
+		return HttpResponse.json({
+			...mockNoteResponse,
+			// Extract text from the body property
+			body: body?.body || 'Published note',
+		});
 	}),
 
 	// GET /api/v1/notes - Get notes with cursor pagination (for any domain)
@@ -53,6 +107,22 @@ const substackHandlers = [
 			// Extract text from the complex bodyJson structure if available
 			body: body?.bodyJson?.content?.[0]?.content?.[0]?.text || 'Published note',
 		});
+	}),
+
+	// OLD ENDPOINTS (for backwards compatibility)
+	
+	// GET /api/v1/posts - Get posts with pagination (for any domain)
+	http.get('*/api/v1/posts', ({ request }) => {
+		const url = new URL(request.url);
+		const offset = parseInt(url.searchParams.get('offset') || '0');
+		const limit = parseInt(url.searchParams.get('limit') || '20');
+		
+		// Simulate pagination
+		const start = offset;
+		const end = start + limit;
+		const paginatedPosts = mockPostsListResponse.slice(start, end);
+		
+		return HttpResponse.json(paginatedPosts);
 	}),
 
 	// Additional wildcard handlers for better test coverage
