@@ -32,12 +32,15 @@ const substackHandlers = [
 				handle: 'testuser',
 				email: 'test@example.com',
 			},
+			context: {
+				timestamp: '2024-01-15T10:30:00Z',
+			},
 		});
 	}),
 
 	// GET /api/v1/subscriptions - Get own profile subscription info (alternative endpoint)
 	http.get('*/api/v1/subscriptions', () => {
-		return HttpResponse.json({
+		return HttpResponse.json([{
 			id: 123456,
 			type: 'active',
 			status: 'active',
@@ -47,12 +50,17 @@ const substackHandlers = [
 				handle: 'testuser',
 				email: 'test@example.com',
 			},
-		});
+			context: {
+				timestamp: '2024-01-15T10:30:00Z',
+			},
+		}]);
 	}),
 
 	// GET /api/v1/user/{userId}/profile - Get user profile by ID (used by ownProfile())
 	http.get('*/api/v1/user/:userId/profile', ({ params }) => {
 		return HttpResponse.json({
+			originalCursorTimestamp: '2024-01-15T10:30:00Z',
+			nextCursor: null,
 			items: [
 				{
 					entity_key: `user-${params.userId}`,
@@ -68,21 +76,114 @@ const substackHandlers = [
 							},
 						],
 						timestamp: '2024-01-15T10:30:00Z',
+						type: 'profile',
 					},
 				},
 			],
 		});
 	}),
 
+	// GET /api/v1/profile/posts - Get posts from profile
+	http.get('*/api/v1/profile/posts', ({ request }) => {
+		const url = new URL(request.url);
+		const profileUserId = url.searchParams.get('profile_user_id');
+		const limit = parseInt(url.searchParams.get('limit') || '20');
+		const offset = parseInt(url.searchParams.get('offset') || '0');
+		
+		const posts = mockPostsListResponse.slice(offset, offset + limit).map(post => ({
+			id: post.id,
+			title: post.title,
+			body: post.description || 'Post body content',
+			likesCount: 0,
+			author: {
+				id: Number(profileUserId) || 12345,
+				name: 'Test User',
+				handle: 'testuser',
+				avatarUrl: 'https://example.com/avatar.jpg',
+			},
+			publishedAt: post.post_date,
+		}));
+		
+		return HttpResponse.json(posts);
+	}),
+
+	// GET /api/v1/profile/notes - Get notes from profile  
+	http.get('*/api/v1/profile/notes', ({ request }) => {
+		const url = new URL(request.url);
+		const profileUserId = url.searchParams.get('profile_user_id');
+		const limit = parseInt(url.searchParams.get('limit') || '20');
+		const offset = parseInt(url.searchParams.get('offset') || '0');
+		
+		const notes = mockNotesListResponse.slice(offset, offset + limit).map(note => ({
+			id: note.comment.id.toString(),
+			body: note.comment.body,
+			likesCount: note.comment.reaction_count || 0,
+			author: {
+				id: Number(profileUserId) || 12345,
+				name: 'Test User',
+				handle: 'testuser',
+				avatarUrl: 'https://example.com/avatar.jpg',
+			},
+			publishedAt: note.comment.date,
+		}));
+		
+		return HttpResponse.json(notes);
+	}),
+
+	// GET /api/v1/profile/followees - Get followees from profile
+	http.get('*/api/v1/profile/followees', ({ request }) => {
+		const url = new URL(request.url);
+		const limit = parseInt(url.searchParams.get('limit') || '20');
+		const offset = parseInt(url.searchParams.get('offset') || '0');
+		
+		const followees = mockFollowingProfilesResponse.slice(offset, offset + limit).map(profile => ({
+			id: profile.id,
+			slug: profile.handle,
+			name: profile.name,
+			url: `https://${profile.handle}.substack.com`,
+			avatarUrl: 'https://example.com/avatar.jpg',
+			bio: profile.bio,
+		}));
+		
+		return HttpResponse.json(followees);
+	}),
+
+	// GET /api/v1/posts/{postId}/comments - Get comments for a post
+	http.get('*/api/v1/posts/:postId/comments', ({ params, request }) => {
+		const url = new URL(request.url);
+		const limit = parseInt(url.searchParams.get('limit') || '20');
+		const offset = parseInt(url.searchParams.get('offset') || '0');
+		
+		const comments = mockCommentsListResponse.slice(offset, offset + limit).map(comment => ({
+			id: comment.id,
+			body: comment.body,
+			author: {
+				id: comment.author.id,
+				name: comment.author.name,
+				isAdmin: comment.author.is_admin,
+			},
+			createdAt: comment.created_at,
+		}));
+		
+		return HttpResponse.json(comments);
+	}),
+
 	// POST /api/v1/notes - Create note (new endpoint for v0.12.2+)
 	http.post('*/api/v1/notes', async ({ request }) => {
 		const body = await request.json() as any;
 		
-		// Return a successful note creation response
+		// Return a successful note creation response in new API format
 		return HttpResponse.json({
-			...mockNoteResponse,
-			// Extract text from the body property
+			id: '12345',
 			body: body?.body || 'Published note',
+			likesCount: 0,
+			author: {
+				id: 12345,
+				name: 'Test User',
+				handle: 'testuser',
+				avatarUrl: 'https://example.com/avatar.jpg',
+			},
+			publishedAt: new Date().toISOString(),
 		});
 	}),
 
@@ -191,6 +292,20 @@ const substackHandlers = [
 	// GET /api/v1/feed/following - Get following IDs (for any domain)
 	http.get('*/api/v1/feed/following', () => {
 		return HttpResponse.json(mockFollowingIdsResponse);
+	}),
+
+	// DEBUG: Catch-all handler to see what requests are missing
+	http.all('*/api/v1/*', ({ request }) => {
+		console.warn(`[MSW DEBUG] Unhandled request: ${request.method} ${request.url}`);
+		// Return minimal valid response
+		return HttpResponse.json({
+			error: 'Unhandled endpoint',
+			method: request.method,
+			url: request.url,
+			context: {
+				timestamp: '2024-01-15T10:30:00Z',
+			},
+		});
 	}),
 ];
 
