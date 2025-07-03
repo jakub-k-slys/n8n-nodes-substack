@@ -78,16 +78,16 @@ export class NoteOperations {
 				if (count >= limit) break;
 				
 				formattedNotes.push({
-					noteId: note.id?.toString() || 'unknown',
+					noteId: (note as any).rawData?.comment?.id?.toString() || note.id?.toString() || 'unknown', // Extract comment ID for noteId
 					body: note.body || '',
-					url: SubstackUtils.formatUrl(publicationAddress, `/p/${note.id || 'unknown'}`),
-					date: note.publishedAt?.toISOString() || new Date().toISOString(),
+					url: SubstackUtils.formatUrl(publicationAddress, `/p/${(note as any).rawData?.comment?.id || note.id || 'unknown'}`),
+					date: (note as any).rawData?.context?.timestamp || note.publishedAt?.toISOString() || new Date().toISOString(),
 					status: 'published',
 					userId: note.author?.id?.toString() || 'unknown',
 					likes: note.likesCount || 0,
-					restacks: 0, // Not available in new API
+					restacks: (note as any).rawData?.comment?.restacks || 0, // Try to get restacks from rawData
 					type: 'note',
-					entityKey: note.id,
+					entityKey: (note as any).rawData?.entity_key || note.id, // Use original entity_key if available
 				});
 				count++;
 			}

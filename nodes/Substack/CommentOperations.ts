@@ -33,7 +33,7 @@ export class CommentOperations {
 				formattedComments.push({
 					id: comment.id,
 					body: comment.body,
-					createdAt: comment.createdAt.toISOString(),
+					createdAt: (comment as any).rawData?.created_at || comment.createdAt.toISOString(),
 					parentPostId: postId, // Use the provided postId since it's not in the comment object
 					author: {
 						id: comment.author.id,

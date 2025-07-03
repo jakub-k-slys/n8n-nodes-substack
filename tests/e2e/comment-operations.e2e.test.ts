@@ -115,7 +115,7 @@ describe('Substack Node - Comment Operations', () => {
 			// Execute the node and expect it to throw
 			await expect(
 				substackNode.execute.call(mockExecuteFunctions)
-			).rejects.toThrow('Request failed: Unauthorized');
+			).rejects.toThrow('HTTP 401: Unauthorized'); // Updated to match new API error format
 		});
 
 		it('should handle empty response', async () => {

@@ -29,17 +29,22 @@ export class PostOperations {
 			for await (const post of postsIterable) {
 				if (count >= limit) break;
 				
-				formattedPosts.push({
-					id: post.id,
-					title: post.title || '',
-					subtitle: '', // Not available in the new API
-					url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
-					postDate: post.publishedAt?.toISOString() || new Date().toISOString(),
-					type: 'newsletter', // Default type since not available in new API
-					published: true, // Assuming published if it's returned
-					paywalled: false, // Not available in new API
-					description: post.body ? post.body.substring(0, 200) + '...' : '', // Use beginning of body as description
-				});
+				try {
+					formattedPosts.push({
+						id: post.id,
+						title: post.title || '',
+						subtitle: (post as any).rawData?.subtitle || '', // Access original subtitle from rawData
+						url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
+						postDate: (post as any).rawData?.post_date || (post.publishedAt && !isNaN(post.publishedAt.getTime()) ? post.publishedAt.toISOString() : new Date().toISOString()),
+						type: (post as any).rawData?.type || 'newsletter', // Access original type from rawData
+						published: (post as any).rawData?.published ?? true, // Access original published status
+						paywalled: (post as any).rawData?.paywalled ?? false, // Access original paywalled status
+						description: (post as any).rawData?.description || post.body || '', // Use original description if available
+					});
+				} catch (error) {
+					// Skip malformed posts but continue processing
+					console.warn(`Skipped malformed post: ${error.message}`);
+				}
 				count++;
 			}
 
