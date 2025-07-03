@@ -1,5 +1,5 @@
 import { IExecuteFunctions } from 'n8n-workflow';
-import { Substack as SubstackClient } from 'substack-api';
+import { SubstackClient } from 'substack-api';
 import { ISubstackFollowing, IStandardResponse } from './types';
 import { SubstackUtils } from './SubstackUtils';
 
@@ -22,37 +22,33 @@ export class FollowOperations {
 
 			let followingData: ISubstackFollowing[] = [];
 
-			if (returnType === 'ids') {
-				// Get following IDs only
-				const followingIds = await client.getFollowingIds();
+			// Get own profile first
+			const ownProfile = await client.ownProfile();
+			const followeesIterable = await ownProfile.followees();
+			
+			// Iterate through async iterable followees with limit
+			let count = 0;
+			for await (const followee of followeesIterable) {
+				if (count >= limit) break;
 				
-				// Apply limit to the results
-				const limitedIds = limit ? followingIds.slice(0, limit) : followingIds;
-				
-				followingData = limitedIds.map(id => ({
-					id,
-				}));
-			} else {
-				// Get full profiles (default)
-				const followingProfiles = await client.getFollowingProfiles();
-				
-				// Apply limit to the results
-				const limitedProfiles = limit ? followingProfiles.slice(0, limit) : followingProfiles;
-				
-				followingData = limitedProfiles.map(profile => ({
-					id: profile.id,
-					name: profile.name,
-					handle: profile.handle,
-					bio: profile.bio,
-					subscriberCount: typeof profile.subscriberCount === 'string' ? 
-						parseInt(profile.subscriberCount) || 0 : profile.subscriberCount,
-					subscriberCountString: profile.subscriberCountString,
-					primaryPublication: profile.primaryPublication ? {
-						id: profile.primaryPublication.id,
-						name: profile.primaryPublication.name,
-						subdomain: profile.primaryPublication.subdomain,
-					} : undefined,
-				}));
+				if (returnType === 'ids') {
+					// Get followees and extract IDs only
+					followingData.push({
+						id: followee.id,
+					});
+				} else {
+					// Get full profiles (default)
+					followingData.push({
+						id: followee.id,
+						name: followee.name,
+						handle: followee.slug, // Use slug as handle
+						bio: followee.bio,
+						subscriberCount: 0, // Not available in new API structure
+						subscriberCountString: '', // Not available in new API structure
+						primaryPublication: undefined, // Not available in new API structure
+					});
+				}
+				count++;
 			}
 
 			return {

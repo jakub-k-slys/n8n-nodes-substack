@@ -224,14 +224,15 @@ describe('Substack Node E2E - Post Operations', () => {
 					id: 123,
 					// title is missing
 					type: 'newsletter',
+					post_date: '2024-01-10T12:00:00Z', // Add valid date to prevent Date parsing error
 				},
 			];
 
 			// Setup custom MSW handler for malformed data
 			const { http, HttpResponse } = require('msw');
 			SubstackHttpServer.setupCustomMock([
-				http.get('https://testblog.substack.com/api/v1/posts', () => {
-					return HttpResponse.json(malformedResponse);
+				http.get('*/api/v1/profile/posts', () => {
+					return HttpResponse.json({ posts: [malformedResponse[0]] });
 				}),
 			]);
 

@@ -1,6 +1,9 @@
 import { IExecuteFunctions, INode, NodeOperationError } from 'n8n-workflow';
-import { Substack as SubstackClient } from 'substack-api';
+import { SubstackClient } from 'substack-api';
 import { IErrorResponse, IStandardResponse } from './types';
+
+// Cache for SubstackClient instances to reuse across executions
+const clientCache = new Map<string, SubstackClient>();
 
 export class SubstackUtils {
 	static async initializeClient(executeFunctions: IExecuteFunctions) {
@@ -22,11 +25,19 @@ export class SubstackUtils {
 			throw new NodeOperationError(executeFunctions.getNode(), 'Invalid publication URL provided');
 		}
 
-		// Initialize Substack client
-		const client = new SubstackClient({
-			hostname,
-			apiKey: apiKey as string,
-		});
+		// Create cache key from hostname and apiKey
+		const cacheKey = `${hostname}:${apiKey}`;
+		
+		// Check if we have a cached client
+		let client = clientCache.get(cacheKey);
+		if (!client) {
+			// Initialize Substack client and cache it
+			client = new SubstackClient({
+				hostname,
+				apiKey: apiKey as string,
+			});
+			clientCache.set(cacheKey, client);
+		}
 
 		return { client, publicationAddress: publicationAddress as string };
 	}
