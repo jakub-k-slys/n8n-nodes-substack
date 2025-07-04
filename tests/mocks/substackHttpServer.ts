@@ -173,6 +173,28 @@ const substackHandlers = [
 		});
 	}),
 
+	// GET /api/v1/post/{postId}/comments - Get comments for a post (singular endpoint)
+	http.get('*/api/v1/post/:postId/comments', ({ params, request }) => {
+		const url = new URL(request.url);
+		const limit = parseInt(url.searchParams.get('limit') || '20');
+		const offset = parseInt(url.searchParams.get('offset') || '0');
+		
+		const comments = mockCommentsListResponse.slice(offset, offset + limit).map(comment => ({
+			id: comment.id,
+			body: comment.body,
+			author: {
+				id: comment.author.id,
+				name: comment.author.name,
+				is_admin: comment.author.is_admin,
+			},
+			created_at: comment.created_at, // Keep original field name for Comment constructor
+		}));
+		
+		return HttpResponse.json({
+			comments: comments,
+		});
+	}),
+
 	// POST /api/v1/notes - Create note (new endpoint for v0.12.2+)
 	http.post('*/api/v1/notes', async ({ request }) => {
 		const body = await request.json() as any;
@@ -358,8 +380,14 @@ export class SubstackHttpServer {
 			http.get('*/api/v1/posts/*/comments', () => {
 				return HttpResponse.json({ comments: [] });
 			}),
+			http.get('*/api/v1/post/*/comments', () => {
+				return HttpResponse.json({ comments: [] });
+			}),
 			http.get('*/api/v1/users/*/notes', () => {
 				return HttpResponse.json({ notes: [] });
+			}),
+			http.get('*/api/v1/notes', () => {
+				return HttpResponse.json({ items: [], nextCursor: null });
 			}),
 			http.get('*/api/v1/feed/following', () => {
 				return HttpResponse.json([]);

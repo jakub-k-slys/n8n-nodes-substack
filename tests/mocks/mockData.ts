@@ -21,6 +21,15 @@ export const mockNotesListResponse = [
 			reaction_count: 5,
 			restacks: 2,
 		},
+		context: {
+			timestamp: '2024-01-15T10:30:00Z',
+			users: [{
+				id: 67890,
+				name: 'Test User',
+				handle: 'testuser',
+				photo_url: 'https://example.com/avatar.jpg',
+			}],
+		},
 	},
 	{
 		entity_key: 'note_2',
@@ -32,6 +41,15 @@ export const mockNotesListResponse = [
 			type: 'note',
 			reaction_count: 3,
 			restacks: 1,
+		},
+		context: {
+			timestamp: '2024-01-14T15:45:00Z',
+			users: [{
+				id: 67890,
+				name: 'Test User',
+				handle: 'testuser',
+				photo_url: 'https://example.com/avatar.jpg',
+			}],
 		},
 	},
 ];
