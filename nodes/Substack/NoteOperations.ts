@@ -22,23 +22,23 @@ export class NoteOperations {
 		try {
 			// Get own profile first, then create note
 			const ownProfile = await client.ownProfile();
-			const response = await ownProfile.createNote({ body });
+			const response = await ownProfile.newNote(body).publish();
 
 			// Format response to match expected output format
 			const formattedNote: ISubstackNote = {
 				noteId: response.id?.toString() || 'unknown',
 				body: response.body || body,
 				url: SubstackUtils.formatUrl(publicationAddress, `/p/${response.id || 'unknown'}`),
-				date: response.publishedAt?.toISOString() || new Date().toISOString(),
+				date: response.date || new Date().toISOString(),
 				status: 'published',
-				userId: response.author?.id?.toString() || 'unknown',
+				userId: response.user_id?.toString() || 'unknown',
 			};
 
 			return {
 				success: true,
 				data: formattedNote,
 				metadata: {
-					date: response.publishedAt?.toISOString(),
+					date: response.date,
 					status: 'published',
 				},
 			};
