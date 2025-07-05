@@ -28,11 +28,12 @@
     "prepublishOnly": "npm run build && npx eslint -c eslint.prepublish.config.js nodes credentials package.json",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:unit": "jest --config jest.unit.config.js",
-    "test:unit:watch": "jest --config jest.unit.config.js --watch",
+    "test:unit": "jest",
+    "test:unit:watch": "jest --watch",
     "test:e2e": "jest --config jest.e2e.config.js",
     "test:e2e:watch": "jest --config jest.e2e.config.js --watch",
-    "test:all": "npm run test:unit && npm run test:e2e"
+    "test:all": "npm run test:unit && npm run test:e2e",
+    "test:legacy": "jest --config jest.config.js"
   },
   "files": [
     "dist"
