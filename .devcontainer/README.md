@@ -40,7 +40,7 @@ This directory contains the development container configuration for the n8n Subs
 - **EditorConfig** (`EditorConfig.EditorConfig`) - Editor consistency
 
 ### Testing & Building
-- **Jest** - Unit and E2E testing framework
+- **Jest** - Unit testing framework
 - **Gulp** - Build task automation
 - **TypeScript Compiler** - Code compilation
 - **n8n CLI** - For integration testing (optional)
@@ -53,8 +53,6 @@ Access these through VS Code Command Palette (Ctrl+Shift+P) → "Tasks: Run Task
 |------|---------|-------------|
 | **Build Project** | `npm run build` | Compile TypeScript and build icons |
 | **Run Tests** | `npm test` | Execute unit tests |
-| **Run E2E Tests** | `npm run test:e2e` | Execute end-to-end tests |
-| **Run All Tests** | `npm run test:all` | Execute both unit and E2E tests |
 | **Lint Code** | `npm run lint` | Check code style and quality |
 | **Fix Lint Issues** | `npm run lintfix` | Auto-fix linting issues |
 | **Format Code** | `npm run format` | Format code with Prettier |
@@ -143,7 +141,7 @@ When developing in the container:
 
 1. **Follow the workflow**: Format → Lint → Test → Build
 2. **Use provided tasks**: Leverage VS Code tasks for consistency
-3. **Test thoroughly**: Run both unit and E2E tests
+3. **Test thoroughly**: Run unit tests
 4. **Keep it clean**: Let auto-formatting and linting handle style
 
 The dev container ensures all contributors have the same development environment, reducing "works on my machine" issues and streamlining the contribution process.

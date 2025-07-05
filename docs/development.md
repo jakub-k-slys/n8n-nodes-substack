@@ -38,13 +38,12 @@ substack-api/
 │   ├── types.ts         # TypeScript type definitions
 │   └── index.ts         # Public API exports
 ├── tests/
-│   └── e2e/             # End-to-end tests
+│   └── unit/             # Unit tests
 ├── docs/
 │   └── source/          # Documentation source files
 ├── dist/               # Compiled JavaScript files
 ├── .env.example         # Environment variables template
 ├── jest.config.js       # Jest configuration for unit tests
-├── jest.e2e.config.js   # Jest configuration for E2E tests
 ├── package.json         # Project configuration
 ├── tsconfig.json        # TypeScript configuration
 └── README.md            # Project overview
@@ -71,83 +70,19 @@ Run the test suite:
 
 ```bash
 npm test              # Run unit tests
-npm run test:e2e      # Run E2E tests with mocked API
-npm run test:all      # Run both unit and E2E tests
 ```
 
 Run tests in watch mode during development:
 
 ```bash
 npm run test:watch    # Unit tests
-npm run test:e2e:watch # E2E tests
 ```
 
-The project uses Jest for testing with two test suites:
+The project uses Jest for testing:
 
-- **Unit tests** (`tests/unit/`): Test individual functions and utilities
-- **E2E tests** (`tests/e2e/`): Test complete node execution with mocked Substack API
+- **Unit tests** (`tests/unit/`): Test individual functions and node logic using mocked Substack client methods
 
-The E2E tests use a sophisticated mocking strategy that simulates the `substack-api` library behavior without making real HTTP requests. This provides fast, reliable testing that doesn't depend on external services.
-
-For detailed testing information, see [TESTING.md](TESTING.md).
-
-### End-to-End Testing
-
-The project includes end-to-end (E2E) tests that validate integration with a mocked Substack server. These tests are located in the `tests/e2e/` directory and use Jest with mocked API responses.
-
-#### Key Features
-
-- **Isolated Testing**: Uses mocked `substack-api` library instead of real HTTP requests
-- **Complete Coverage**: Tests note creation, retrieval, post fetching, and error scenarios
-- **Fast Execution**: No network dependencies = faster CI/CD pipeline
-- **Comprehensive Scenarios**: Authentication errors, edge cases, and multi-item processing
-
-#### Running E2E Tests
-
-Run all E2E tests:
-
-```bash
-npm run test:e2e
-```
-
-Run E2E tests in watch mode:
-
-```bash
-npm run test:e2e:watch
-```
-
-Run both unit and E2E tests:
-
-```bash
-npm run test:all
-```
-
-#### E2E Test Behavior
-
-- **Mocked API**: Tests use Jest mocks to simulate Substack API responses
-- **No Credentials Required**: Tests run without real Substack API credentials
-- **Test isolation**: Each test runs with fresh mocks and doesn't affect others
-- **Timeout**: E2E tests have a 30-second timeout to account for processing time
-
-#### E2E Test Coverage
-
-The E2E test suite covers:
-
-- **Authentication**: API key validation and error handling
-- **Note operations**: Creating and retrieving notes with various parameters
-- **Post operations**: Fetching posts, pagination, and individual post retrieval
-- **Error handling**: Network errors, authentication failures, and malformed responses
-- **Edge cases**: Empty responses, invalid parameters, and multi-item processing
-
-#### Creating New E2E Tests
-
-When adding new E2E tests:
-
-1. Use the mock server utilities in `tests/mocks/`
-2. Test both success and error scenarios
-3. Follow the existing test structure and naming conventions
-4. Include tests for edge cases and error conditions
-5. Use `createMockExecuteFunctions` to simulate n8n execution context
+The unit tests use direct mocking of the `substack-api` module to test node logic without any HTTP dependencies, providing fast and reliable testing.
 
 For detailed testing information, see [TESTING.md](TESTING.md).
 
