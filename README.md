@@ -113,7 +113,7 @@ Or clone locally and open in VS Code with the Dev Containers extension.
 
 **What's included:**
 - ⚡ Node.js LTS with all dependencies pre-installed
-- 🧪 Complete testing environment (Jest, unit & E2E tests)  
+- 🧪 Complete testing environment (Jest, unit tests)  
 - 🔧 Code quality tools (ESLint, Prettier, TypeScript)
 - 📋 Pre-configured VS Code tasks and extensions
 - 🚀 Optional n8n CLI for integration testing
