@@ -6,11 +6,18 @@ import {
 	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { noteFields, noteOperations, postFields, postOperations, commentFields, commentOperations, followFields, followOperations } from './SubstackDescription';
-import { NoteOperations } from './NoteOperations';
-import { PostOperations } from './PostOperations';
-import { CommentOperations } from './CommentOperations';
-import { FollowOperations } from './FollowOperations';
+import { profileFields } from '../Profile.fields';
+import { profileOperations } from '../Profile.operations';
+import { postFields } from '../Post.fields';
+import { postOperations } from '../Post.operations';
+import { noteFields } from '../Note.fields';
+import { noteOperations } from '../Note.operations';
+import { commentFields } from '../Comment.fields';
+import { commentOperations } from '../Comment.operations';
+import { ProfileOperations } from '../Profile.operations.class';
+import { PostOperations } from '../Post.operations.class';
+import { NoteOperations } from '../Note.operations.class';
+import { CommentOperations } from '../Comment.operations.class';
 import { SubstackUtils } from './SubstackUtils';
 import { IStandardResponse } from './types';
 
@@ -48,10 +55,6 @@ export class Substack implements INodeType {
 						value: 'comment',
 					},
 					{
-						name: 'Follow',
-						value: 'follow',
-					},
-					{
 						name: 'Note',
 						value: 'note',
 					},
@@ -59,18 +62,22 @@ export class Substack implements INodeType {
 						name: 'Post',
 						value: 'post',
 					},
+					{
+						name: 'Profile',
+						value: 'profile',
+					},
 				],
-				default: 'note',
+				default: 'profile',
 			},
 
-			...noteOperations,
-			...noteFields,
+			...profileOperations,
+			...profileFields,
 			...postOperations,
 			...postFields,
+			...noteOperations,
+			...noteFields,
 			...commentOperations,
 			...commentFields,
-			...followOperations,
-			...followFields,
 		],
 	};
 
@@ -86,35 +93,47 @@ export class Substack implements INodeType {
 
 				let response: IStandardResponse;
 
-				if (resource === 'post') {
-					if (operation === 'getAll') {
-						response = await PostOperations.getAll(this, client, publicationAddress, i);
+				if (resource === 'profile') {
+					if (operation === 'getOwnProfile') {
+						response = await ProfileOperations.getOwnProfile(this, client, publicationAddress, i);
+					} else if (operation === 'getProfileBySlug') {
+						response = await ProfileOperations.getProfileBySlug(this, client, publicationAddress, i);
+					} else if (operation === 'getProfileById') {
+						response = await ProfileOperations.getProfileById(this, client, publicationAddress, i);
+					} else if (operation === 'getFollowees') {
+						response = await ProfileOperations.getFollowees(this, client, publicationAddress, i);
+					} else {
+						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
+							itemIndex: i,
+						});
+					}
+				} else if (resource === 'post') {
+					if (operation === 'getPostsBySlug') {
+						response = await PostOperations.getPostsBySlug(this, client, publicationAddress, i);
+					} else if (operation === 'getPostsById') {
+						response = await PostOperations.getPostsById(this, client, publicationAddress, i);
+					} else if (operation === 'getPostById') {
+						response = await PostOperations.getPostById(this, client, publicationAddress, i);
 					} else {
 						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
 							itemIndex: i,
 						});
 					}
 				} else if (resource === 'note') {
-					if (operation === 'create') {
-						response = await NoteOperations.create(this, client, publicationAddress, i);
-					} else if (operation === 'get') {
-						response = await NoteOperations.get(this, client, publicationAddress, i);
+					if (operation === 'getNotesBySlug') {
+						response = await NoteOperations.getNotesBySlug(this, client, publicationAddress, i);
+					} else if (operation === 'getNotesById') {
+						response = await NoteOperations.getNotesById(this, client, publicationAddress, i);
+					} else if (operation === 'getNoteById') {
+						response = await NoteOperations.getNoteById(this, client, publicationAddress, i);
 					} else {
 						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
 							itemIndex: i,
 						});
 					}
 				} else if (resource === 'comment') {
-					if (operation === 'getAll') {
-						response = await CommentOperations.getAll(this, client, publicationAddress, i);
-					} else {
-						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
-							itemIndex: i,
-						});
-					}
-				} else if (resource === 'follow') {
-					if (operation === 'getFollowing') {
-						response = await FollowOperations.getFollowing(this, client, publicationAddress, i);
+					if (operation === 'getCommentById') {
+						response = await CommentOperations.getCommentById(this, client, publicationAddress, i);
 					} else {
 						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
 							itemIndex: i,
