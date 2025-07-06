@@ -13,13 +13,13 @@ export const postOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Get Posts from Profile by Slug',
+				name: 'Get Posts From Profile by Slug',
 				value: 'getPostsBySlug',
 				description: 'Get posts from a profile by its publication slug',
 				action: 'Get posts by slug',
 			},
 			{
-				name: 'Get Posts from Profile by ID',
+				name: 'Get Posts From Profile by ID',
 				value: 'getPostsById',
 				description: 'Get posts from a profile by its user ID',
 				action: 'Get posts by ID',

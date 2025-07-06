@@ -13,13 +13,13 @@ export const noteOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Get Notes from Profile by Slug',
+				name: 'Get Notes From Profile by Slug',
 				value: 'getNotesBySlug',
 				description: 'Get notes from a profile by its publication slug',
 				action: 'Get notes by slug',
 			},
 			{
-				name: 'Get Notes from Profile by ID',
+				name: 'Get Notes From Profile by ID',
 				value: 'getNotesById',
 				description: 'Get notes from a profile by its user ID',
 				action: 'Get notes by ID',
