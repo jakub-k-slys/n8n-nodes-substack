@@ -7,19 +7,41 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { profileFields } from '../Profile.fields';
-import { profileOperations } from '../Profile.operations';
+import { profileOperations, profileOperationHandlers } from '../Profile.operations';
 import { postFields } from '../Post.fields';
-import { postOperations } from '../Post.operations';
+import { postOperations, postOperationHandlers } from '../Post.operations';
 import { noteFields } from '../Note.fields';
-import { noteOperations } from '../Note.operations';
+import { noteOperations, noteOperationHandlers } from '../Note.operations';
+import { followFields } from '../Follow.fields';
+import { followOperations, followOperationHandlers } from '../Follow.operations';
 import { commentFields } from '../Comment.fields';
-import { commentOperations } from '../Comment.operations';
-import { ProfileOperations } from '../Profile.operations.class';
-import { PostOperations } from '../Post.operations.class';
-import { NoteOperations } from '../Note.operations.class';
-import { CommentOperations } from '../Comment.operations.class';
+import { commentOperations, commentOperationHandlers } from '../Comment.operations';
+
 import { SubstackUtils } from './SubstackUtils';
 import { IStandardResponse } from './types';
+	export enum SubstackResource {
+	Profile = 'profile',
+	Post = 'post',
+	Note = 'note',
+	Comment = 'comment',
+	Follow = 'follow',
+}
+
+type OperationHandlerMap = {
+	[SubstackResource.Profile]: typeof profileOperationHandlers;
+	[SubstackResource.Post]: typeof postOperationHandlers;
+	[SubstackResource.Note]: typeof noteOperationHandlers;
+	[SubstackResource.Comment]: typeof commentOperationHandlers;
+	[SubstackResource.Follow]: typeof followOperationHandlers;
+};
+
+const resourceOperationHandlers: OperationHandlerMap = {
+	[SubstackResource.Profile]: profileOperationHandlers,
+	[SubstackResource.Post]: postOperationHandlers,
+	[SubstackResource.Note]: noteOperationHandlers,
+	[SubstackResource.Comment]: commentOperationHandlers,
+	[SubstackResource.Follow]: followOperationHandlers,
+};
 
 export class Substack implements INodeType {
 	description: INodeTypeDescription = {
@@ -48,26 +70,31 @@ export class Substack implements INodeType {
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
+				// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
 				noDataExpression: true,
 				options: [
 					{
 						name: 'Comment',
-						value: 'comment',
+						value: SubstackResource.Comment,
+					},
+					{
+						name: 'Follow',
+						value: SubstackResource.Follow,
 					},
 					{
 						name: 'Note',
-						value: 'note',
+						value: SubstackResource.Note,
 					},
 					{
 						name: 'Post',
-						value: 'post',
+						value: SubstackResource.Post,
 					},
 					{
 						name: 'Profile',
-						value: 'profile',
+						value: SubstackResource.Profile,
 					},
 				],
-				default: 'profile',
+				default: SubstackResource.Profile,
 			},
 
 			...profileOperations,
@@ -78,6 +105,8 @@ export class Substack implements INodeType {
 			...noteFields,
 			...commentOperations,
 			...commentFields,
+			...followOperations,
+			...followFields,
 		],
 	};
 
@@ -88,62 +117,24 @@ export class Substack implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const resource = this.getNodeParameter('resource', i) as string;
+				const resource = this.getNodeParameter('resource', i) as SubstackResource;
 				const operation = this.getNodeParameter('operation', i) as string;
 
-				let response: IStandardResponse;
-
-				if (resource === 'profile') {
-					if (operation === 'getOwnProfile') {
-						response = await ProfileOperations.getOwnProfile(this, client, publicationAddress, i);
-					} else if (operation === 'getProfileBySlug') {
-						response = await ProfileOperations.getProfileBySlug(this, client, publicationAddress, i);
-					} else if (operation === 'getProfileById') {
-						response = await ProfileOperations.getProfileById(this, client, publicationAddress, i);
-					} else if (operation === 'getFollowees') {
-						response = await ProfileOperations.getFollowees(this, client, publicationAddress, i);
-					} else {
-						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
-							itemIndex: i,
-						});
-					}
-				} else if (resource === 'post') {
-					if (operation === 'getPostsBySlug') {
-						response = await PostOperations.getPostsBySlug(this, client, publicationAddress, i);
-					} else if (operation === 'getPostsById') {
-						response = await PostOperations.getPostsById(this, client, publicationAddress, i);
-					} else if (operation === 'getPostById') {
-						response = await PostOperations.getPostById(this, client, publicationAddress, i);
-					} else {
-						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
-							itemIndex: i,
-						});
-					}
-				} else if (resource === 'note') {
-					if (operation === 'getNotesBySlug') {
-						response = await NoteOperations.getNotesBySlug(this, client, publicationAddress, i);
-					} else if (operation === 'getNotesById') {
-						response = await NoteOperations.getNotesById(this, client, publicationAddress, i);
-					} else if (operation === 'getNoteById') {
-						response = await NoteOperations.getNoteById(this, client, publicationAddress, i);
-					} else {
-						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
-							itemIndex: i,
-						});
-					}
-				} else if (resource === 'comment') {
-					if (operation === 'getCommentById') {
-						response = await CommentOperations.getCommentById(this, client, publicationAddress, i);
-					} else {
-						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
-							itemIndex: i,
-						});
-					}
-				} else {
+				const resourceHandlers = resourceOperationHandlers[resource];
+				if (!resourceHandlers) {
 					throw new NodeOperationError(this.getNode(), `Unknown resource: ${resource}`, {
 						itemIndex: i,
 					});
 				}
+
+				const operationHandler = (resourceHandlers as any)[operation];
+				if (!operationHandler) {
+					throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation} for resource: ${resource}`, {
+						itemIndex: i,
+					});
+				}
+
+				const response: IStandardResponse = await operationHandler(this, client, publicationAddress, i);
 
 				if (!response.success) {
 					if (this.continueOnFail()) {

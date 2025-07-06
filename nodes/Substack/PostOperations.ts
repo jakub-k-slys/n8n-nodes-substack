@@ -43,7 +43,6 @@ export class PostOperations {
 					});
 				} catch (error) {
 					// Skip malformed posts but continue processing
-					console.warn(`Skipped malformed post: ${error.message}`);
 				}
 				count++;
 			}
