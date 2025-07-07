@@ -4,7 +4,6 @@ import { IStandardResponse, ISubstackNote } from './types';
 import { SubstackUtils } from './SubstackUtils';
 
 export enum NoteOperation {
-	Create = 'create',
 	Get = 'get',
 	GetNotesBySlug = 'getNotesBySlug',
 	GetNotesById = 'getNotesById',
@@ -24,12 +23,6 @@ export const noteOperations: INodeProperties[] = [
 			},
 		},
 		options: [
-			{
-				name: 'Create Note',
-				value: NoteOperation.Create,
-				description: 'Create a new note',
-				action: 'Create note',
-			},
 			{
 				name: 'Get Notes',
 				value: NoteOperation.Get,
@@ -57,55 +50,6 @@ export const noteOperations: INodeProperties[] = [
 		],
 	},
 ];
-
-async function create(
-	executeFunctions: IExecuteFunctions,
-	client: SubstackClient,
-	publicationAddress: string,
-	itemIndex: number,
-): Promise<IStandardResponse> {
-	try {
-		// Get note body
-		const body = executeFunctions.getNodeParameter('body', itemIndex) as string;
-
-		if (!body) {
-			throw new Error('Body is required');
-		}
-
-		// Get own profile first, then create note
-		const ownProfile = await client.ownProfile();
-		const response = await ownProfile.newNote(body).publish();
-
-		// Format response to match expected output format
-		const formattedNote: ISubstackNote = {
-			noteId: response.id?.toString() || 'unknown',
-			body: response.body || body,
-			url: SubstackUtils.formatUrl(publicationAddress, `/p/${response.id || 'unknown'}`),
-			date: response.date || new Date().toISOString(),
-			status: 'published',
-			userId: response.user_id?.toString() || 'unknown',
-			likes: 0,
-			restacks: 0,
-			type: 'note',
-			entityKey: response.id?.toString() || 'unknown',
-		};
-
-		return {
-			success: true,
-			data: formattedNote,
-			metadata: {
-				date: response.date,
-				status: 'published',
-			},
-		};
-	} catch (error) {
-		return SubstackUtils.formatErrorResponse({
-			message: error.message,
-			node: executeFunctions.getNode(),
-			itemIndex,
-		});
-	}
-}
 
 async function get(
 	executeFunctions: IExecuteFunctions,
@@ -362,7 +306,6 @@ export const noteOperationHandlers: Record<
 		itemIndex: number,
 	) => Promise<IStandardResponse>
 > = {
-	[NoteOperation.Create]: create,
 	[NoteOperation.Get]: get,
 	[NoteOperation.GetNotesBySlug]: getNotesBySlug,
 	[NoteOperation.GetNotesById]: getNotesById,

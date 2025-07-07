@@ -55,111 +55,10 @@ describe('Substack Node Unit Tests - Integration', () => {
 		});
 	});
 
-	describe('Multi-Item Processing', () => {
-		it('should process multiple input items correctly', async () => {
-			// Setup execution context with multiple input items
-			const mockExecuteFunctions = createMockExecuteFunctions({
-				nodeParameters: {
-					resource: 'note',
-					operation: 'create',
-					body: 'Test note content',
-				},
-				credentials: mockCredentials,
-			});
-
-			// Mock multiple input items
-			mockExecuteFunctions.getInputData = jest.fn().mockReturnValue([
-				{ json: { content: 'First item' } },
-				{ json: { content: 'Second item' } },
-				{ json: { content: 'Third item' } },
-			]);
-
-			// Execute the node
-			const result = await substackNode.execute.call(mockExecuteFunctions);
-
-			// Verify that client was called for each item
-			expect(mockClient.ownProfile).toHaveBeenCalledTimes(3);
-			expect(mockOwnProfile.newNote).toHaveBeenCalledTimes(3);
-			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(3);
-
-			// Verify results for each item
-			expect(result[0]).toHaveLength(3);
-			result[0].forEach((output, index) => {
-				expect(output.pairedItem).toEqual({ item: index });
-				expect(output.json.noteId).toBe('12345');
-			});
-		});
-
-		it('should handle mixed success and failure with continueOnFail', async () => {
-			// Setup client to fail on second call
-			let callCount = 0;
-			mockNoteBuilder.publish.mockImplementation(() => {
-				callCount++;
-				if (callCount === 2) {
-					throw new Error('API Error on second item');
-				}
-				return Promise.resolve({
-					id: 12345,
-					body: 'Test note content',
-					date: '2024-01-15T10:30:00Z',
-					user_id: 67890,
-				});
-			});
-
-			// Setup execution context with multiple input items
-			const mockExecuteFunctions = createMockExecuteFunctions({
-				nodeParameters: {
-					resource: 'note',
-					operation: 'create',
-					body: 'Test note content',
-				},
-				credentials: mockCredentials,
-			});
-
-			// Mock multiple input items
-			mockExecuteFunctions.getInputData = jest.fn().mockReturnValue([
-				{ json: { content: 'First item' } },
-				{ json: { content: 'Second item' } },
-				{ json: { content: 'Third item' } },
-			]);
-
-			// Mock continueOnFail to return true
-			mockExecuteFunctions.continueOnFail = jest.fn().mockReturnValue(true);
-
-			// Execute the node
-			const result = await substackNode.execute.call(mockExecuteFunctions);
-
-			// Verify results: success, error, success
-			expect(result[0]).toHaveLength(3);
-			
-			// First item should succeed
-			expect(result[0][0].json.noteId).toBe('12345');
-			
-			// Second item should have error
-			expect(result[0][1].json).toHaveProperty('error');
-			
-			// Third item should succeed
-			expect(result[0][2].json.noteId).toBe('12345');
-		});
-	});
-
 	describe('Cross-Resource Operations', () => {
 		it('should handle different resources with same execution function', async () => {
 			// Test that we can switch between resources in the same test
 			// This validates that mocking doesn't interfere between operations
-
-			// First, test note creation
-			const noteExecuteFunctions = createMockExecuteFunctions({
-				nodeParameters: {
-					resource: 'note',
-					operation: 'create',
-					body: 'Test note',
-				},
-				credentials: mockCredentials,
-			});
-
-			const noteResult = await substackNode.execute.call(noteExecuteFunctions);
-			expect(noteResult[0][0].json.noteId).toBe('12345');
 
 			// Then test post retrieval
 			const postExecuteFunctions = createMockExecuteFunctions({
@@ -237,13 +136,13 @@ describe('Substack Node Unit Tests - Integration', () => {
 
 	describe('Parameter Validation', () => {
 		it('should validate all resource types', async () => {
-			const resources = ['note', 'post', 'comment', 'follow'];
+			const resources = ['note', 'post', 'comment'];
 			
 			for (const resource of resources) {
 				const mockExecuteFunctions = createMockExecuteFunctions({
 					nodeParameters: {
 						resource: resource,
-						operation: resource === 'note' ? 'create' : 
+						operation: resource === 'note' ? 'get' : 
 								  resource === 'post' ? 'getAll' :
 								  resource === 'comment' ? 'getAll' : 'getFollowing',
 						...(resource === 'note' && { body: 'Test content' }),
@@ -260,7 +159,7 @@ describe('Substack Node Unit Tests - Integration', () => {
 
 		it('should validate all operation types', async () => {
 			// Test note operations
-			for (const operation of ['create', 'get']) {
+			for (const operation of ['get']) {
 				const mockExecuteFunctions = createMockExecuteFunctions({
 					nodeParameters: {
 						resource: 'note',
@@ -298,40 +197,10 @@ describe('Substack Node Unit Tests - Integration', () => {
 
 			const commentResult = await substackNode.execute.call(commentExecuteFunctions);
 			expect(commentResult).toBeDefined();
-
-			// Test follow operations
-			const followExecuteFunctions = createMockExecuteFunctions({
-				nodeParameters: {
-					resource: 'follow',
-					operation: 'getFollowing',
-				},
-				credentials: mockCredentials,
-			});
-
-			const followResult = await substackNode.execute.call(followExecuteFunctions);
-			expect(followResult).toBeDefined();
 		});
 	});
 
 	describe('Client Method Chain Verification', () => {
-		it('should verify complete note creation chain', async () => {
-			const mockExecuteFunctions = createMockExecuteFunctions({
-				nodeParameters: {
-					resource: 'note',
-					operation: 'create',
-					body: 'Test note content',
-				},
-				credentials: mockCredentials,
-			});
-
-			await substackNode.execute.call(mockExecuteFunctions);
-
-			// Verify the complete method chain
-			expect(mockClient.ownProfile).toHaveBeenCalledTimes(1);
-			expect(mockOwnProfile.newNote).toHaveBeenCalledWith('Test note content');
-			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
-		});
-
 		it('should verify complete comment retrieval chain', async () => {
 			const mockExecuteFunctions = createMockExecuteFunctions({
 				nodeParameters: {
