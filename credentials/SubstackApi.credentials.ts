@@ -39,7 +39,7 @@ export class SubstackApi implements ICredentialType {
 		type: 'generic',
 		properties: {
 			headers: {
-				Cookie: '=connect.sid={{credentials.apiKey}}',
+				Cookie: '=connect.sid={{$credentials.apiKey}}',
 			},
 		},
 	};
@@ -50,7 +50,7 @@ export class SubstackApi implements ICredentialType {
 			url: '/api/v1/subscription',
 			method: 'GET',
 			headers: {
-				Cookie: '=connect.sid={{credentials.apiKey}}',
+				Cookie: '=connect.sid={{$credentials.apiKey}}',
 			},
 		},
 	};
