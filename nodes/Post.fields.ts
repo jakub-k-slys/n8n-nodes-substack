@@ -2,6 +2,25 @@ import { INodeProperties } from 'n8n-workflow';
 
 export const postFields: INodeProperties[] = [
 	/* -------------------------------------------------------------------------- */
+	/*                              post:getAll                                  */
+	/* -------------------------------------------------------------------------- */
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		default: 50,
+		description: 'Max number of results to return',
+		displayOptions: {
+			show: {
+				resource: ['post'],
+				operation: ['getAll'],
+			},
+		},
+		typeOptions: {
+			minValue: 1,
+		},
+	},
+	/* -------------------------------------------------------------------------- */
 	/*                              post:getPostsBySlug                          */
 	/* -------------------------------------------------------------------------- */
 	{

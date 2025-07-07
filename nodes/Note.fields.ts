@@ -2,6 +2,42 @@ import { INodeProperties } from 'n8n-workflow';
 
 export const noteFields: INodeProperties[] = [
 	/* -------------------------------------------------------------------------- */
+	/*                              note:create                                  */
+	/* -------------------------------------------------------------------------- */
+	{
+		displayName: 'Body',
+		name: 'body',
+		type: 'string',
+		default: '',
+		description: 'The content of the note',
+		displayOptions: {
+			show: {
+				resource: ['note'],
+				operation: ['create'],
+			},
+		},
+		required: true,
+	},
+	/* -------------------------------------------------------------------------- */
+	/*                              note:get                                     */
+	/* -------------------------------------------------------------------------- */
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		default: 50,
+		description: 'Max number of results to return',
+		displayOptions: {
+			show: {
+				resource: ['note'],
+				operation: ['get'],
+			},
+		},
+		typeOptions: {
+			minValue: 1,
+		},
+	},
+	/* -------------------------------------------------------------------------- */
 	/*                              note:getNotesBySlug                          */
 	/* -------------------------------------------------------------------------- */
 	{
