@@ -1,6 +1,7 @@
 import {
 	IAuthenticateGeneric,
 	ICredentialTestFunctions,
+	ICredentialTestRequest,
 	ICredentialType,
 	ICredentialsDecrypted,
 	IDataObject,
@@ -48,31 +49,15 @@ export class SubstackApi implements ICredentialType {
 		},
 	};
 
-	methods = {
-		credentialTest: {
-			async test(this: ICredentialTestFunctions, credential: ICredentialsDecrypted): Promise<INodeCredentialTestResult> {
-				const credentials = credential.data as IDataObject;
-				const substackClient = new SubstackClient({
-					hostname: credentials.publicationAddress as string,
-					apiKey: credentials.apiKey as string,
-				});
-
-				try {
-					const isValid = await substackClient.testConnectivity();
-					if (!isValid) {
-						throw new Error('Invalid credentials');
-					}
-					return {
-						status: 'OK',
-						message: 'Connection successful!',
-					};
-				} catch (error) {
-					return {
-						status: 'Error',
-						message: error.message,
-					};
-				}
-			},
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: '={{"https://"$credentials.publicationAddress}}',
+			url: '/api/v1/subscription',
+			method: 'GET',
+			headers: {
+				Cookie: '={{"connect.sid=" + $credentials.apiKey}}',
+			}
 		},
-	};
+
+	}
 }
