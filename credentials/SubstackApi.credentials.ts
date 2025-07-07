@@ -1,9 +1,13 @@
 import {
 	IAuthenticateGeneric,
-	ICredentialTestRequest,
+	ICredentialTestFunctions,
 	ICredentialType,
+	ICredentialsDecrypted,
+	IDataObject,
+	INodeCredentialTestResult,
 	INodeProperties,
 } from 'n8n-workflow';
+import { SubstackClient } from 'substack-api'
 
 export class SubstackApi implements ICredentialType {
 	name = 'substackApi';
@@ -44,11 +48,31 @@ export class SubstackApi implements ICredentialType {
 		},
 	};
 
-	// The block below tells how this credential can be tested
-	test: ICredentialTestRequest = {
-		request: {
-			baseURL: '={{$credentials.publicationAddress}}',
-			url: '/api/v1/feed/following',
+	methods = {
+		credentialTest: {
+			async test(this: ICredentialTestFunctions, credential: ICredentialsDecrypted): Promise<INodeCredentialTestResult> {
+				const credentials = credential.data as IDataObject;
+				const substackClient = new SubstackClient({
+					hostname: credentials.publicationAddress as string,
+					apiKey: credentials.apiKey as string,
+				});
+
+				try {
+					const isValid = await substackClient.testConnectivity();
+					if (!isValid) {
+						throw new Error('Invalid credentials');
+					}
+					return {
+						status: 'OK',
+						message: 'Connection successful!',
+					};
+				} catch (error) {
+					return {
+						status: 'Error',
+						message: error.message,
+					};
+				}
+			},
 		},
 	};
 }
