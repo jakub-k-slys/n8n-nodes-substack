@@ -38,6 +38,8 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 
 		// Setup method chain mocks
 		mockClient.ownProfile.mockResolvedValue(mockOwnProfile);
+		mockClient.profileForSlug.mockResolvedValue(mockOwnProfile);
+		mockClient.profileForId.mockResolvedValue(mockOwnProfile);
 
 		// Mock SubstackUtils.initializeClient to return our mocked client
 		const { SubstackUtils } = require('../../nodes/Substack/SubstackUtils');
@@ -53,7 +55,8 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 			const mockExecuteFunctions = createMockExecuteFunctions({
 				nodeParameters: {
 					resource: 'post',
-					operation: 'getAll',
+					operation: 'getPostsBySlug',
+					slug: 'testblog',
 					// limit will use default
 				},
 				credentials: mockCredentials,
@@ -63,7 +66,8 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
 			// Verify client method calls
-			expect(mockClient.ownProfile).toHaveBeenCalledTimes(1);
+			expect(mockClient.profileForSlug).toHaveBeenCalledTimes(1);
+			expect(mockClient.profileForSlug).toHaveBeenCalledWith('testblog');
 			expect(mockOwnProfile.posts).toHaveBeenCalledTimes(1);
 
 			// Verify results

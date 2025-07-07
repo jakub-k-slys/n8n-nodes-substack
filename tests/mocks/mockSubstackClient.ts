@@ -70,6 +70,10 @@ export const createMockNoteBuilder = () => ({
 });
 
 export const createMockOwnProfile = () => ({
+	id: 12345,
+	name: 'Test User',
+	slug: 'testuser',
+	bio: 'Test bio for user',
 	newNote: jest.fn().mockReturnValue(createMockNoteBuilder()),
 	notes: jest.fn().mockResolvedValue(createMockAsyncIterable(mockClientNotesData)),
 	posts: jest.fn().mockResolvedValue(createMockAsyncIterable(mockClientPostsData)),
@@ -83,6 +87,10 @@ export const createMockPost = () => ({
 export const createMockSubstackClient = () => ({
 	ownProfile: jest.fn().mockResolvedValue(createMockOwnProfile()),
 	postForId: jest.fn().mockResolvedValue(createMockPost()),
+	profileForSlug: jest.fn().mockResolvedValue(createMockOwnProfile()),
+	profileForId: jest.fn().mockResolvedValue(createMockOwnProfile()),
+	noteForId: jest.fn().mockResolvedValue(mockClientNotesData[0]),
+	commentForId: jest.fn().mockResolvedValue(mockClientCommentsData[0]),
 });
 
 // Mock the entire substack-api module
