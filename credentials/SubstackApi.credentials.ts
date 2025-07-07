@@ -1,14 +1,9 @@
 import {
 	IAuthenticateGeneric,
-	ICredentialTestFunctions,
 	ICredentialTestRequest,
 	ICredentialType,
-	ICredentialsDecrypted,
-	IDataObject,
-	INodeCredentialTestResult,
 	INodeProperties,
 } from 'n8n-workflow';
-import { SubstackClient } from 'substack-api'
 
 export class SubstackApi implements ICredentialType {
 	name = 'substackApi';
@@ -56,8 +51,7 @@ export class SubstackApi implements ICredentialType {
 			method: 'GET',
 			headers: {
 				Cookie: '={{"connect.sid=" + $credentials.apiKey}}',
-			}
+			},
 		},
-
-	}
+	};
 }
