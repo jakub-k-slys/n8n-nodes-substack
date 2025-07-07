@@ -22,10 +22,8 @@ export const noteFields: INodeProperties[] = [
 		displayName: 'Limit',
 		name: 'limit',
 		type: 'number',
-		// eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-limit
-		default: '',
-		// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-limit
-		description: 'Max number of results to return. Defaults to 100 if not specified.',
+		default: 50,
+		description: 'Max number of results to return',
 		displayOptions: {
 			show: {
 				resource: ['note'],
@@ -43,7 +41,7 @@ export const noteFields: INodeProperties[] = [
 		displayName: 'User ID',
 		name: 'userId',
 		type: 'number',
-		default: '',
+		default: 0,
 		description: 'The user ID to get notes for',
 		displayOptions: {
 			show: {
@@ -57,10 +55,8 @@ export const noteFields: INodeProperties[] = [
 		displayName: 'Limit',
 		name: 'limit',
 		type: 'number',
-		// eslint-disable-next-line n8n-nodes-base/node-param-default-wrong-for-limit
-		default: '',
-		// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-limit
-		description: 'Max number of results to return. Defaults to 100 if not specified.',
+		default: 50,
+		description: 'Max number of results to return',
 		displayOptions: {
 			show: {
 				resource: ['note'],
