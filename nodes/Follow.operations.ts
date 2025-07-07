@@ -12,7 +12,7 @@ export const followOperations: INodeProperties[] = [
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
-		default: FollowOperation.GetFollowing,
+		default: 'getFollowing',
 		noDataExpression: true,
 		displayOptions: {
 			show: {

@@ -16,7 +16,7 @@ export const noteOperations: INodeProperties[] = [
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
-		default: NoteOperation.Create,
+		default: 'create',
 		noDataExpression: true,
 		displayOptions: {
 			show: {

@@ -15,7 +15,7 @@ export const postOperations: INodeProperties[] = [
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
-		default: PostOperation.GetAll,
+		default: 'getAll',
 		noDataExpression: true,
 		displayOptions: {
 			show: {

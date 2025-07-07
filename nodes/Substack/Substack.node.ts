@@ -70,7 +70,7 @@ export class Substack implements INodeType {
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
-				default: SubstackResource.Profile,
+				default: 'profile',
 				noDataExpression: true,
 				options: [
 					{

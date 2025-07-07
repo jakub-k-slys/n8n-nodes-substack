@@ -15,7 +15,7 @@ export const profileOperations: INodeProperties[] = [
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
-		default: ProfileOperation.GetOwnProfile,
+		default: 'getOwnProfile',
 		noDataExpression: true,
 		displayOptions: {
 			show: {

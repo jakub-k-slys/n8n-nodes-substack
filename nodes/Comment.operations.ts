@@ -13,7 +13,7 @@ export const commentOperations: INodeProperties[] = [
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
-		default: CommentOperation.GetAll,
+		default: 'getAll',
 		noDataExpression: true,
 		displayOptions: {
 			show: {
