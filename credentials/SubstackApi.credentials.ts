@@ -39,7 +39,7 @@ export class SubstackApi implements ICredentialType {
 		type: 'generic',
 		properties: {
 			headers: {
-				Authorization: '={{"Bearer " + $credentials.apiKey}}',
+				Cookie: '={{"connect.sid=" + $credentials.apiKey}}',
 			},
 		},
 	};
