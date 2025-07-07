@@ -1,7 +1,7 @@
 import { IExecuteFunctions, INodeProperties } from 'n8n-workflow';
 import { SubstackClient } from 'substack-api';
-import { ISubstackPost, IStandardResponse } from './Substack/types';
-import { SubstackUtils } from './Substack/SubstackUtils';
+import { ISubstackPost, IStandardResponse } from './types';
+import { SubstackUtils } from './SubstackUtils';
 
 export enum PostOperation {
 	GetAll = 'getAll',
@@ -59,7 +59,7 @@ async function getAll(
 ): Promise<IStandardResponse> {
 	try {
 		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
-		
+
 		// Apply default limit of 100 if not specified
 		let limit = 100;
 		if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
@@ -75,14 +75,18 @@ async function getAll(
 		let count = 0;
 		for await (const post of postsIterable) {
 			if (count >= limit) break;
-			
+
 			try {
 				formattedPosts.push({
 					id: post.id,
 					title: post.title || '',
 					subtitle: (post as any).rawData?.subtitle || '',
 					url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
-					postDate: (post as any).rawData?.post_date || (post.publishedAt && !isNaN(post.publishedAt.getTime()) ? post.publishedAt.toISOString() : new Date().toISOString()),
+					postDate:
+						(post as any).rawData?.post_date ||
+						(post.publishedAt && !isNaN(post.publishedAt.getTime())
+							? post.publishedAt.toISOString()
+							: new Date().toISOString()),
 					type: (post as any).rawData?.type || 'newsletter',
 					published: (post as any).rawData?.published ?? true,
 					paywalled: (post as any).rawData?.paywalled ?? false,
@@ -119,7 +123,7 @@ async function getPostsBySlug(
 	try {
 		const slug = executeFunctions.getNodeParameter('slug', itemIndex) as string;
 		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
-		
+
 		// Apply default limit of 100 if not specified
 		let limit = 100;
 		if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
@@ -135,14 +139,18 @@ async function getPostsBySlug(
 		let count = 0;
 		for await (const post of postsIterable) {
 			if (count >= limit) break;
-			
+
 			try {
 				formattedPosts.push({
 					id: post.id,
 					title: post.title || '',
 					subtitle: (post as any).rawData?.subtitle || '',
 					url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
-					postDate: (post as any).rawData?.post_date || (post.publishedAt && !isNaN(post.publishedAt.getTime()) ? post.publishedAt.toISOString() : new Date().toISOString()),
+					postDate:
+						(post as any).rawData?.post_date ||
+						(post.publishedAt && !isNaN(post.publishedAt.getTime())
+							? post.publishedAt.toISOString()
+							: new Date().toISOString()),
 					type: (post as any).rawData?.type || 'newsletter',
 					published: (post as any).rawData?.published ?? true,
 					paywalled: (post as any).rawData?.paywalled ?? false,
@@ -179,7 +187,7 @@ async function getPostsById(
 	try {
 		const userId = executeFunctions.getNodeParameter('userId', itemIndex) as number;
 		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
-		
+
 		// Apply default limit of 100 if not specified
 		let limit = 100;
 		if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
@@ -195,14 +203,18 @@ async function getPostsById(
 		let count = 0;
 		for await (const post of postsIterable) {
 			if (count >= limit) break;
-			
+
 			try {
 				formattedPosts.push({
 					id: post.id,
 					title: post.title || '',
 					subtitle: (post as any).rawData?.subtitle || '',
 					url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
-					postDate: (post as any).rawData?.post_date || (post.publishedAt && !isNaN(post.publishedAt.getTime()) ? post.publishedAt.toISOString() : new Date().toISOString()),
+					postDate:
+						(post as any).rawData?.post_date ||
+						(post.publishedAt && !isNaN(post.publishedAt.getTime())
+							? post.publishedAt.toISOString()
+							: new Date().toISOString()),
 					type: (post as any).rawData?.type || 'newsletter',
 					published: (post as any).rawData?.published ?? true,
 					paywalled: (post as any).rawData?.paywalled ?? false,
@@ -241,13 +253,17 @@ async function getPostById(
 
 		// Get post by ID using client.postForId(postId)
 		const post = await client.postForId(postId);
-		
+
 		const formattedPost: ISubstackPost = {
 			id: post.id,
 			title: post.title || '',
 			subtitle: (post as any).rawData?.subtitle || '',
 			url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
-			postDate: (post as any).rawData?.post_date || (post.publishedAt && !isNaN(post.publishedAt.getTime()) ? post.publishedAt.toISOString() : new Date().toISOString()),
+			postDate:
+				(post as any).rawData?.post_date ||
+				(post.publishedAt && !isNaN(post.publishedAt.getTime())
+					? post.publishedAt.toISOString()
+					: new Date().toISOString()),
 			type: (post as any).rawData?.type || 'newsletter',
 			published: (post as any).rawData?.published ?? true,
 			paywalled: (post as any).rawData?.paywalled ?? false,
@@ -270,12 +286,15 @@ async function getPostById(
 	}
 }
 
-export const postOperationHandlers: Record<PostOperation, (
-	executeFunctions: IExecuteFunctions,
-	client: SubstackClient,
-	publicationAddress: string,
-	itemIndex: number,
-) => Promise<IStandardResponse>> = {
+export const postOperationHandlers: Record<
+	PostOperation,
+	(
+		executeFunctions: IExecuteFunctions,
+		client: SubstackClient,
+		publicationAddress: string,
+		itemIndex: number,
+	) => Promise<IStandardResponse>
+> = {
 	[PostOperation.GetAll]: getAll,
 	[PostOperation.GetPostsBySlug]: getPostsBySlug,
 	[PostOperation.GetPostsById]: getPostsById,

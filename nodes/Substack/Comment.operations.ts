@@ -1,7 +1,7 @@
 import { IExecuteFunctions, INodeProperties } from 'n8n-workflow';
 import { SubstackClient } from 'substack-api';
-import { ISubstackComment, IStandardResponse } from './Substack/types';
-import { SubstackUtils } from './Substack/SubstackUtils';
+import { ISubstackComment, IStandardResponse } from './types';
+import { SubstackUtils } from './SubstackUtils';
 
 export enum CommentOperation {
 	GetAll = 'getAll',
@@ -46,7 +46,7 @@ async function getAll(
 	try {
 		const postId = executeFunctions.getNodeParameter('postId', itemIndex) as number;
 		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
-		
+
 		// Apply default limit of 100 if not specified
 		let limit = 100;
 		if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
@@ -62,7 +62,7 @@ async function getAll(
 		let count = 0;
 		for await (const comment of commentsIterable) {
 			if (count >= limit) break;
-			
+
 			formattedComments.push({
 				id: comment.id,
 				body: comment.body,
@@ -104,7 +104,7 @@ async function getCommentById(
 
 		// Get comment by ID using client.commentForId(id)
 		const comment = await client.commentForId(commentId);
-		
+
 		const formattedComment: ISubstackComment = {
 			id: comment.id,
 			body: comment.body,
@@ -133,12 +133,15 @@ async function getCommentById(
 	}
 }
 
-export const commentOperationHandlers: Record<CommentOperation, (
-	executeFunctions: IExecuteFunctions,
-	client: SubstackClient,
-	publicationAddress: string,
-	itemIndex: number,
-) => Promise<IStandardResponse>> = {
+export const commentOperationHandlers: Record<
+	CommentOperation,
+	(
+		executeFunctions: IExecuteFunctions,
+		client: SubstackClient,
+		publicationAddress: string,
+		itemIndex: number,
+	) => Promise<IStandardResponse>
+> = {
 	[CommentOperation.GetAll]: getAll,
 	[CommentOperation.GetCommentById]: getCommentById,
 };

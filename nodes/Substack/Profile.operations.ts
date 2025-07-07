@@ -1,7 +1,7 @@
 import { IExecuteFunctions, INodeProperties } from 'n8n-workflow';
 import { SubstackClient } from 'substack-api';
-import { ISubstackFollowing, IStandardResponse } from './Substack/types';
-import { SubstackUtils } from './Substack/SubstackUtils';
+import { ISubstackFollowing, IStandardResponse } from './types';
+import { SubstackUtils } from './SubstackUtils';
 
 export enum ProfileOperation {
 	GetOwnProfile = 'getOwnProfile',
@@ -60,7 +60,7 @@ async function getOwnProfile(
 	try {
 		// Get own profile using client.ownProfile()
 		const profile = await client.ownProfile();
-		
+
 		const profileData = {
 			id: profile.id,
 			name: profile.name,
@@ -95,7 +95,7 @@ async function getProfileBySlug(
 
 		// Get profile by slug using client.profileForSlug(slug)
 		const profile = await client.profileForSlug(slug);
-		
+
 		const profileData = {
 			id: profile.id,
 			name: profile.name,
@@ -130,7 +130,7 @@ async function getProfileById(
 
 		// Get profile by ID using client.profileForId(id)
 		const profile = await client.profileForId(userId);
-		
+
 		const profileData = {
 			id: profile.id,
 			name: profile.name,
@@ -161,9 +161,13 @@ async function getFollowees(
 	itemIndex: number,
 ): Promise<IStandardResponse> {
 	try {
-		const returnType = executeFunctions.getNodeParameter('returnType', itemIndex, 'profiles') as string;
+		const returnType = executeFunctions.getNodeParameter(
+			'returnType',
+			itemIndex,
+			'profiles',
+		) as string;
 		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
-		
+
 		// Apply default limit of 100 if not specified
 		let limit = 100;
 		if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
@@ -175,12 +179,12 @@ async function getFollowees(
 		// Get own profile first, then get followees using ownProfile.followees()
 		const ownProfile = await client.ownProfile();
 		const followeesIterable = await ownProfile.followees();
-		
+
 		// Iterate through async iterable followees with limit
 		let count = 0;
 		for await (const followee of followeesIterable) {
 			if (count >= limit) break;
-			
+
 			if (returnType === 'ids') {
 				// Get followees and extract IDs only
 				followingData.push({
@@ -217,12 +221,15 @@ async function getFollowees(
 	}
 }
 
-export const profileOperationHandlers: Record<ProfileOperation, (
-	executeFunctions: IExecuteFunctions,
-	client: SubstackClient,
-	publicationAddress: string,
-	itemIndex: number,
-) => Promise<IStandardResponse>> = {
+export const profileOperationHandlers: Record<
+	ProfileOperation,
+	(
+		executeFunctions: IExecuteFunctions,
+		client: SubstackClient,
+		publicationAddress: string,
+		itemIndex: number,
+	) => Promise<IStandardResponse>
+> = {
 	[ProfileOperation.GetOwnProfile]: getOwnProfile,
 	[ProfileOperation.GetProfileBySlug]: getProfileBySlug,
 	[ProfileOperation.GetProfileById]: getProfileById,
