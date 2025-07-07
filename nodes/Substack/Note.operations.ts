@@ -1,7 +1,7 @@
 import { IExecuteFunctions, INodeProperties } from 'n8n-workflow';
 import { SubstackClient } from 'substack-api';
-import { IStandardResponse, ISubstackNote } from './Substack/types';
-import { SubstackUtils } from './Substack/SubstackUtils';
+import { IStandardResponse, ISubstackNote } from './types';
+import { SubstackUtils } from './SubstackUtils';
 
 export enum NoteOperation {
 	Create = 'create',
@@ -116,7 +116,7 @@ async function get(
 	try {
 		// Get parameters for retrieving notes
 		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
-		
+
 		// Apply default limit of 100 if not specified
 		let limit = 100;
 		if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
@@ -132,12 +132,18 @@ async function get(
 		let count = 0;
 		for await (const note of notesIterable) {
 			if (count >= limit) break;
-			
+
 			formattedNotes.push({
 				noteId: (note as any).rawData?.comment?.id?.toString() || note.id?.toString() || 'unknown',
 				body: note.body || '',
-				url: SubstackUtils.formatUrl(publicationAddress, `/p/${(note as any).rawData?.comment?.id || note.id || 'unknown'}`),
-				date: (note as any).rawData?.context?.timestamp || note.publishedAt?.toISOString() || new Date().toISOString(),
+				url: SubstackUtils.formatUrl(
+					publicationAddress,
+					`/p/${(note as any).rawData?.comment?.id || note.id || 'unknown'}`,
+				),
+				date:
+					(note as any).rawData?.context?.timestamp ||
+					note.publishedAt?.toISOString() ||
+					new Date().toISOString(),
 				status: 'published',
 				userId: note.author?.id?.toString() || 'unknown',
 				likes: note.likesCount || 0,
@@ -173,7 +179,7 @@ async function getNotesBySlug(
 	try {
 		const slug = executeFunctions.getNodeParameter('slug', itemIndex) as string;
 		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
-		
+
 		// Apply default limit of 100 if not specified
 		let limit = 100;
 		if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
@@ -189,13 +195,20 @@ async function getNotesBySlug(
 		let count = 0;
 		for await (const note of notesIterable) {
 			if (count >= limit) break;
-			
+
 			try {
 				formattedNotes.push({
-					noteId: (note as any).rawData?.comment?.id?.toString() || note.id?.toString() || 'unknown',
+					noteId:
+						(note as any).rawData?.comment?.id?.toString() || note.id?.toString() || 'unknown',
 					body: note.body || '',
-					url: SubstackUtils.formatUrl(publicationAddress, `/p/${(note as any).rawData?.comment?.id || note.id || 'unknown'}`),
-					date: (note as any).rawData?.context?.timestamp || note.publishedAt?.toISOString() || new Date().toISOString(),
+					url: SubstackUtils.formatUrl(
+						publicationAddress,
+						`/p/${(note as any).rawData?.comment?.id || note.id || 'unknown'}`,
+					),
+					date:
+						(note as any).rawData?.context?.timestamp ||
+						note.publishedAt?.toISOString() ||
+						new Date().toISOString(),
 					status: 'published',
 					userId: note.author?.id?.toString() || 'unknown',
 					likes: note.likesCount || 0,
@@ -234,7 +247,7 @@ async function getNotesById(
 	try {
 		const userId = executeFunctions.getNodeParameter('userId', itemIndex) as number;
 		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
-		
+
 		// Apply default limit of 100 if not specified
 		let limit = 100;
 		if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
@@ -250,13 +263,20 @@ async function getNotesById(
 		let count = 0;
 		for await (const note of notesIterable) {
 			if (count >= limit) break;
-			
+
 			try {
 				formattedNotes.push({
-					noteId: (note as any).rawData?.comment?.id?.toString() || note.id?.toString() || 'unknown',
+					noteId:
+						(note as any).rawData?.comment?.id?.toString() || note.id?.toString() || 'unknown',
 					body: note.body || '',
-					url: SubstackUtils.formatUrl(publicationAddress, `/p/${(note as any).rawData?.comment?.id || note.id || 'unknown'}`),
-					date: (note as any).rawData?.context?.timestamp || note.publishedAt?.toISOString() || new Date().toISOString(),
+					url: SubstackUtils.formatUrl(
+						publicationAddress,
+						`/p/${(note as any).rawData?.comment?.id || note.id || 'unknown'}`,
+					),
+					date:
+						(note as any).rawData?.context?.timestamp ||
+						note.publishedAt?.toISOString() ||
+						new Date().toISOString(),
 					status: 'published',
 					userId: note.author?.id?.toString() || 'unknown',
 					likes: note.likesCount || 0,
@@ -297,12 +317,18 @@ async function getNoteById(
 
 		// Get note by ID using client.noteForId(noteId)
 		const note = await client.noteForId(noteId);
-		
+
 		const formattedNote: ISubstackNote = {
 			noteId: (note as any).rawData?.comment?.id?.toString() || note.id?.toString() || 'unknown',
 			body: note.body || '',
-			url: SubstackUtils.formatUrl(publicationAddress, `/p/${(note as any).rawData?.comment?.id || note.id || 'unknown'}`),
-			date: (note as any).rawData?.context?.timestamp || note.publishedAt?.toISOString() || new Date().toISOString(),
+			url: SubstackUtils.formatUrl(
+				publicationAddress,
+				`/p/${(note as any).rawData?.comment?.id || note.id || 'unknown'}`,
+			),
+			date:
+				(note as any).rawData?.context?.timestamp ||
+				note.publishedAt?.toISOString() ||
+				new Date().toISOString(),
 			status: 'published',
 			userId: note.author?.id?.toString() || 'unknown',
 			likes: note.likesCount || 0,
@@ -327,12 +353,15 @@ async function getNoteById(
 	}
 }
 
-export const noteOperationHandlers: Record<NoteOperation, (
-	executeFunctions: IExecuteFunctions,
-	client: SubstackClient,
-	publicationAddress: string,
-	itemIndex: number,
-) => Promise<IStandardResponse>> = {
+export const noteOperationHandlers: Record<
+	NoteOperation,
+	(
+		executeFunctions: IExecuteFunctions,
+		client: SubstackClient,
+		publicationAddress: string,
+		itemIndex: number,
+	) => Promise<IStandardResponse>
+> = {
 	[NoteOperation.Create]: create,
 	[NoteOperation.Get]: get,
 	[NoteOperation.GetNotesBySlug]: getNotesBySlug,

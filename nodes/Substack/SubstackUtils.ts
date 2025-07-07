@@ -27,7 +27,7 @@ export class SubstackUtils {
 
 		// Create cache key from hostname and apiKey
 		const cacheKey = `${hostname}:${apiKey}`;
-		
+
 		// Check if we have a cached client
 		let client = clientCache.get(cacheKey);
 		if (!client) {

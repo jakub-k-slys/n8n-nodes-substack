@@ -6,20 +6,20 @@ import {
 	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { profileFields } from '../Profile.fields';
-import { profileOperations, profileOperationHandlers } from '../Profile.operations';
-import { postFields } from '../Post.fields';
-import { postOperations, postOperationHandlers } from '../Post.operations';
-import { noteFields } from '../Note.fields';
-import { noteOperations, noteOperationHandlers } from '../Note.operations';
-import { followFields } from '../Follow.fields';
-import { followOperations, followOperationHandlers } from '../Follow.operations';
-import { commentFields } from '../Comment.fields';
-import { commentOperations, commentOperationHandlers } from '../Comment.operations';
+import { profileFields } from './Profile.fields';
+import { profileOperations, profileOperationHandlers } from './Profile.operations';
+import { postFields } from './Post.fields';
+import { postOperations, postOperationHandlers } from './Post.operations';
+import { noteFields } from './Note.fields';
+import { noteOperations, noteOperationHandlers } from './Note.operations';
+import { followFields } from './Follow.fields';
+import { followOperations, followOperationHandlers } from './Follow.operations';
+import { commentFields } from './Comment.fields';
+import { commentOperations, commentOperationHandlers } from './Comment.operations';
 
 import { SubstackUtils } from './SubstackUtils';
 import { IStandardResponse } from './types';
-	export enum SubstackResource {
+export enum SubstackResource {
 	Profile = 'profile',
 	Post = 'post',
 	Note = 'note',
@@ -127,13 +127,23 @@ export class Substack implements INodeType {
 						});
 					}
 					// If resource exists but operation doesn't
-					throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation} for resource: ${resource}`, {
-						itemIndex: i,
-					});
+					throw new NodeOperationError(
+						this.getNode(),
+						`Unknown operation: ${operation} for resource: ${resource}`,
+						{
+							itemIndex: i,
+						},
+					);
 				};
 
-				const operationHandler = (resourceOperationHandlers[resource] as any)?.[operation] || fallback;
-				const response: IStandardResponse = await operationHandler(this, client, publicationAddress, i);
+				const operationHandler =
+					(resourceOperationHandlers[resource] as any)?.[operation] || fallback;
+				const response: IStandardResponse = await operationHandler(
+					this,
+					client,
+					publicationAddress,
+					i,
+				);
 
 				if (!response.success) {
 					if (this.continueOnFail()) {

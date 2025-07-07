@@ -1,25 +1,8 @@
 import { INodeProperties } from 'n8n-workflow';
 
-export const noteFields: INodeProperties[] = [
+export const postFields: INodeProperties[] = [
 	/* -------------------------------------------------------------------------- */
-	/*                              note:create                                  */
-	/* -------------------------------------------------------------------------- */
-	{
-		displayName: 'Body',
-		name: 'body',
-		type: 'string',
-		default: '',
-		description: 'The content of the note',
-		displayOptions: {
-			show: {
-				resource: ['note'],
-				operation: ['create'],
-			},
-		},
-		required: true,
-	},
-	/* -------------------------------------------------------------------------- */
-	/*                              note:get                                     */
+	/*                              post:getAll                                  */
 	/* -------------------------------------------------------------------------- */
 	{
 		displayName: 'Limit',
@@ -29,8 +12,8 @@ export const noteFields: INodeProperties[] = [
 		description: 'Max number of results to return',
 		displayOptions: {
 			show: {
-				resource: ['note'],
-				operation: ['get'],
+				resource: ['post'],
+				operation: ['getAll'],
 			},
 		},
 		typeOptions: {
@@ -38,7 +21,7 @@ export const noteFields: INodeProperties[] = [
 		},
 	},
 	/* -------------------------------------------------------------------------- */
-	/*                              note:getNotesBySlug                          */
+	/*                              post:getPostsBySlug                          */
 	/* -------------------------------------------------------------------------- */
 	{
 		displayName: 'Slug',
@@ -48,8 +31,8 @@ export const noteFields: INodeProperties[] = [
 		description: 'The publication slug (subdomain)',
 		displayOptions: {
 			show: {
-				resource: ['note'],
-				operation: ['getNotesBySlug'],
+				resource: ['post'],
+				operation: ['getPostsBySlug'],
 			},
 		},
 		required: true,
@@ -62,8 +45,8 @@ export const noteFields: INodeProperties[] = [
 		description: 'Max number of results to return',
 		displayOptions: {
 			show: {
-				resource: ['note'],
-				operation: ['getNotesBySlug'],
+				resource: ['post'],
+				operation: ['getPostsBySlug'],
 			},
 		},
 		typeOptions: {
@@ -71,18 +54,18 @@ export const noteFields: INodeProperties[] = [
 		},
 	},
 	/* -------------------------------------------------------------------------- */
-	/*                              note:getNotesById                            */
+	/*                              post:getPostsById                            */
 	/* -------------------------------------------------------------------------- */
 	{
 		displayName: 'User ID',
 		name: 'userId',
 		type: 'number',
 		default: 0,
-		description: 'The user ID to get notes for',
+		description: 'The user ID to get posts for',
 		displayOptions: {
 			show: {
-				resource: ['note'],
-				operation: ['getNotesById'],
+				resource: ['post'],
+				operation: ['getPostsById'],
 			},
 		},
 		required: true,
@@ -95,8 +78,8 @@ export const noteFields: INodeProperties[] = [
 		description: 'Max number of results to return',
 		displayOptions: {
 			show: {
-				resource: ['note'],
-				operation: ['getNotesById'],
+				resource: ['post'],
+				operation: ['getPostsById'],
 			},
 		},
 		typeOptions: {
@@ -104,18 +87,18 @@ export const noteFields: INodeProperties[] = [
 		},
 	},
 	/* -------------------------------------------------------------------------- */
-	/*                              note:getNoteById                             */
+	/*                              post:getPostById                             */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Note ID',
-		name: 'noteId',
+		displayName: 'Post ID',
+		name: 'postId',
 		type: 'string',
 		default: '',
-		description: 'The ID of the note to retrieve',
+		description: 'The ID of the post to retrieve',
 		displayOptions: {
 			show: {
-				resource: ['note'],
-				operation: ['getNoteById'],
+				resource: ['post'],
+				operation: ['getPostById'],
 			},
 		},
 		required: true,
