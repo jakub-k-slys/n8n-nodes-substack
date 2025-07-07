@@ -12,7 +12,7 @@ export const followOperations: INodeProperties[] = [
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
-		// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
+		default: FollowOperation.GetFollowing,
 		noDataExpression: true,
 		displayOptions: {
 			show: {
@@ -27,7 +27,6 @@ export const followOperations: INodeProperties[] = [
 				action: 'Get following',
 			},
 		],
-		default: FollowOperation.GetFollowing,
 	},
 ];
 

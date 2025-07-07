@@ -13,7 +13,7 @@ export const commentOperations: INodeProperties[] = [
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
-		// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
+		default: CommentOperation.GetAll,
 		noDataExpression: true,
 		displayOptions: {
 			show: {
@@ -34,7 +34,6 @@ export const commentOperations: INodeProperties[] = [
 				action: 'Get comment by ID',
 			},
 		],
-		default: CommentOperation.GetAll,
 	},
 ];
 

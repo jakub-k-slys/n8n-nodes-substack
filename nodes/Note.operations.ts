@@ -16,7 +16,7 @@ export const noteOperations: INodeProperties[] = [
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
-		// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
+		default: NoteOperation.Create,
 		noDataExpression: true,
 		displayOptions: {
 			show: {
@@ -55,7 +55,6 @@ export const noteOperations: INodeProperties[] = [
 				action: 'Get note by ID',
 			},
 		],
-		default: NoteOperation.Create,
 	},
 ];
 

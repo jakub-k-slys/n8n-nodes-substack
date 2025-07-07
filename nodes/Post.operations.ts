@@ -15,7 +15,7 @@ export const postOperations: INodeProperties[] = [
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
-		// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
+		default: PostOperation.GetAll,
 		noDataExpression: true,
 		displayOptions: {
 			show: {
@@ -48,7 +48,6 @@ export const postOperations: INodeProperties[] = [
 				action: 'Get post by ID',
 			},
 		],
-		default: PostOperation.GetAll,
 	},
 ];
 

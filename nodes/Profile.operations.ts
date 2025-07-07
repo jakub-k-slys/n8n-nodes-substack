@@ -15,7 +15,7 @@ export const profileOperations: INodeProperties[] = [
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
-		// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
+		default: ProfileOperation.GetOwnProfile,
 		noDataExpression: true,
 		displayOptions: {
 			show: {
@@ -48,7 +48,6 @@ export const profileOperations: INodeProperties[] = [
 				action: 'Get followees',
 			},
 		],
-		default: ProfileOperation.GetOwnProfile,
 	},
 ];
 

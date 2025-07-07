@@ -70,7 +70,7 @@ export class Substack implements INodeType {
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
-				// eslint-disable-next-line n8n-nodes-base/node-param-default-missing
+				default: SubstackResource.Profile,
 				noDataExpression: true,
 				options: [
 					{
@@ -94,7 +94,6 @@ export class Substack implements INodeType {
 						value: SubstackResource.Profile,
 					},
 				],
-				default: SubstackResource.Profile,
 			},
 
 			...profileOperations,
@@ -120,20 +119,20 @@ export class Substack implements INodeType {
 				const resource = this.getNodeParameter('resource', i) as SubstackResource;
 				const operation = this.getNodeParameter('operation', i) as string;
 
-				const resourceHandlers = resourceOperationHandlers[resource];
-				if (!resourceHandlers) {
-					throw new NodeOperationError(this.getNode(), `Unknown resource: ${resource}`, {
-						itemIndex: i,
-					});
-				}
-
-				const operationHandler = (resourceHandlers as any)[operation];
-				if (!operationHandler) {
+				const fallback = () => {
+					// Check if resource exists first
+					if (!resourceOperationHandlers[resource]) {
+						throw new NodeOperationError(this.getNode(), `Unknown resource: ${resource}`, {
+							itemIndex: i,
+						});
+					}
+					// If resource exists but operation doesn't
 					throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation} for resource: ${resource}`, {
 						itemIndex: i,
 					});
-				}
+				};
 
+				const operationHandler = (resourceOperationHandlers[resource] as any)?.[operation] || fallback;
 				const response: IStandardResponse = await operationHandler(this, client, publicationAddress, i);
 
 				if (!response.success) {
