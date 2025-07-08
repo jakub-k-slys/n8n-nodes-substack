@@ -4,34 +4,32 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://github.com/jakub-k-slys/n8n-nodes-substack/actions/workflows/test.yaml/badge.svg)](https://github.com/jakub-k-slys/n8n-nodes-substack/actions/workflows/test.yaml)
 
-This n8n community node allows interaction with the Substack API, enabling you to automate content creation and management workflows directly from n8n.
+This n8n community node provides read-only access to the Substack API, enabling you to automate content discovery and analytics workflows with Substack publications.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
 ## Features
 
-- **Authenticate with Substack**: Secure API key authentication using publication address and API key
-- **Create Notes**: Publish Substack notes programmatically with title and body content
-- **Retrieve Posts**: Get posts from your publication with pagination support (limit and offset parameters)
-- **Powered by substack-api**: Uses the robust [substack-api](https://www.npmjs.com/package/substack-api) library for reliable API interactions
+- **Profile Operations**: Get profile information, followees, and publication data
+- **Post Operations**: Retrieve posts with pagination support
+- **Note Operations**: Access notes from publications
+- **Comment Operations**: Get comments for posts
+- **Secure Authentication**: API key authentication with publication address
+- **Powered by substack-api**: Uses the robust [substack-api](https://www.npmjs.com/package/substack-api) library
 
 ## Quick Start
 
-Here are simple workflows for the available operations:
-
-### Create a Substack Note
+### Get Your Profile Information
 
 ```json
 {
   "nodes": [
     {
-      "name": "Create Substack Note",
-      "type": "n8n-nodes-substack.substack", 
+      "name": "Get My Profile",
+      "type": "n8n-nodes-substack.substack",
       "parameters": {
-        "resource": "note",
-        "operation": "create",
-        "title": "Hello from n8n!",
-        "body": "This note was created automatically using n8n."
+        "resource": "profile",
+        "operation": "getOwnProfile"
       },
       "credentials": {
         "substackApi": "your-credential-id"
@@ -41,19 +39,18 @@ Here are simple workflows for the available operations:
 }
 ```
 
-### Retrieve Posts from Publication
+### Retrieve Recent Posts
 
 ```json
 {
   "nodes": [
     {
-      "name": "Get Substack Posts",
+      "name": "Get Recent Posts",
       "type": "n8n-nodes-substack.substack",
       "parameters": {
-        "resource": "post", 
+        "resource": "post",
         "operation": "getAll",
-        "limit": 10,
-        "offset": 0
+        "limit": 10
       },
       "credentials": {
         "substackApi": "your-credential-id"
@@ -91,43 +88,12 @@ Then restart your n8n instance.
 
 ## Documentation
 
-For comprehensive usage instructions, configuration options, and examples:
+📖 **[Complete Documentation](docs/)** - Comprehensive guides for all operations
 
-📖 **[Full Documentation](docs/n8n-usage.md)**
-
-Additional resources:
-- [API Reference](docs/api-reference.md)
-- [Examples](docs/examples.md) 
-- [Development Guide](docs/development.md)
-- [Testing Guide](TESTING.md)
-
-## Development
-
-### Quick Start with Dev Container
-
-Get started instantly with GitHub Codespaces or VS Code Remote Containers:
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/jakub-k-slys/n8n-nodes-substack)
-
-Or clone locally and open in VS Code with the Dev Containers extension.
-
-**What's included:**
-- ⚡ Node.js LTS with all dependencies pre-installed
-- 🧪 Complete testing environment (Jest, unit tests)  
-- 🔧 Code quality tools (ESLint, Prettier, TypeScript)
-- 📋 Pre-configured VS Code tasks and extensions
-- 🚀 Optional n8n CLI for integration testing
-
-See [.devcontainer/README.md](.devcontainer/README.md) for full details.
-
-### Manual Setup
-
-1. **Prerequisites**: Node.js >=20.15, npm, Git
-2. **Install dependencies**: `npm install`
-3. **Build project**: `npm run build`
-4. **Run tests**: `npm test`
-
-See the [Development Guide](docs/development.md) for detailed instructions.
+- **[Resource Guides](docs/resources/)** - Detailed documentation for Profile, Post, Note, and Comment operations
+- **[Development Guide](docs/contributing.md)** - Contributing to the project
+- **[Testing Guide](docs/testing.md)** - Testing practices and procedures
+- **[Architecture](docs/design.md)** - Design decisions and project structure
 
 ## License
 
