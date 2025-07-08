@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Corrected documentation to reflect read-only operations (no create operations)
 - Improved project structure documentation
 - Enhanced installation and setup instructions
+- Updated substack-api dependency to v0.15.1 for latest features and fixes
 
 ### Removed
 - Incorrect references to "Create Notes" functionality (only read operations exist)
