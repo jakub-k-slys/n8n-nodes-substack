@@ -87,17 +87,23 @@ Retrieves posts from your Substack publication with pagination support.
 Creates a new Substack note.
 
 **Parameters:**
-- **Title** (required): The headline of the note
-- **Body** (required): The content of the note (supports plain text or HTML)
+- **Title** (optional): The headline of the note
+- **Body** (required): The content of the note
+- **Content Type** (optional): Choose between 'Simple Text' or 'Advanced (JSON)' formatting
+- **Visibility** (optional): Who can see the note ('Everyone' or 'Subscribers')
 
 **Example Output:**
 ```json
 {
-  "title": "My Note Title",
   "success": true,
-  "noteId": 12345,
+  "title": "My Note Title",
+  "noteId": "12345",
   "body": "Note content here",
-  "date": "2023-12-01T10:00:00.000Z"
+  "url": "https://myblog.substack.com/p/12345",
+  "date": "2023-12-01T10:00:00.000Z",
+  "status": "published",
+  "userId": "67890",
+  "visibility": "everyone"
 }
 ```
 

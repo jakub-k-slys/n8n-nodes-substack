@@ -12,10 +12,10 @@ This n8n community node provides read-only access to the Substack API, enabling 
 
 - **Profile Operations**: Get profile information, followees, and publication data
 - **Post Operations**: Retrieve posts with pagination support
-- **Note Operations**: Access notes from publications
+- **Note Operations**: Access notes from publications and create new notes programmatically with optional title and body content, supporting both simple text and advanced JSON formatting
 - **Comment Operations**: Get comments for posts
 - **Secure Authentication**: API key authentication with publication address
-- **Powered by substack-api**: Uses the robust [substack-api](https://www.npmjs.com/package/substack-api) library
+- **Powered by substack-api**: Uses the robust [substack-api](https://www.npmjs.com/package/substack-api) library for reliable API interactions
 
 ## Quick Start
 

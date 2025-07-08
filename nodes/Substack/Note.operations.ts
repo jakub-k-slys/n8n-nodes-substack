@@ -4,6 +4,7 @@ import { IStandardResponse, ISubstackNote } from './types';
 import { SubstackUtils } from './SubstackUtils';
 
 export enum NoteOperation {
+	Create = 'create',
 	Get = 'get',
 	GetNotesBySlug = 'getNotesBySlug',
 	GetNotesById = 'getNotesById',
@@ -23,6 +24,12 @@ export const noteOperations: INodeProperties[] = [
 			},
 		},
 		options: [
+			{
+				name: 'Create Note',
+				value: NoteOperation.Create,
+				description: 'Create a new Substack note',
+				action: 'Create note',
+			},
 			{
 				name: 'Get Notes',
 				value: NoteOperation.Get,
@@ -297,6 +304,94 @@ async function getNoteById(
 	}
 }
 
+async function create(
+	executeFunctions: IExecuteFunctions,
+	client: SubstackClient,
+	publicationAddress: string,
+	itemIndex: number,
+): Promise<IStandardResponse> {
+	try {
+		const title = executeFunctions.getNodeParameter('title', itemIndex) as string;
+		const body = executeFunctions.getNodeParameter('body', itemIndex) as string;
+		const contentType = executeFunctions.getNodeParameter('contentType', itemIndex, 'simple') as string;
+		const visibility = executeFunctions.getNodeParameter('visibility', itemIndex, 'everyone') as string;
+
+		// Get own profile to create notes
+		const ownProfile = await client.ownProfile();
+		
+		let response;
+
+		if (contentType === 'simple') {
+			// Use simple builder pattern for plain text
+			const noteBuilder = title ? ownProfile.newNote(title) : ownProfile.newNote();
+			if (body) {
+				noteBuilder.paragraph(body);
+			}
+			response = await noteBuilder.publish();
+		} else {
+			// Use builder pattern for rich text
+			const noteBuilder = title ? ownProfile.newNote(title) : ownProfile.newNote();
+			
+			// For advanced mode, parse body as structured content
+			try {
+				const bodyData = JSON.parse(body);
+				// Add content based on structured format
+				if (bodyData.paragraphs && Array.isArray(bodyData.paragraphs)) {
+					bodyData.paragraphs.forEach((paragraph: any) => {
+						const paragraphBuilder = noteBuilder.paragraph();
+						if (paragraph.text) {
+							paragraphBuilder.text(paragraph.text);
+						}
+						if (paragraph.bold) {
+							paragraphBuilder.bold(paragraph.bold);
+						}
+						if (paragraph.italic) {
+							paragraphBuilder.italic(paragraph.italic);
+						}
+						if (paragraph.code) {
+							paragraphBuilder.code(paragraph.code);
+						}
+					});
+				} else {
+					// Fallback to simple paragraph
+					noteBuilder.paragraph(body);
+				}
+			} catch {
+				// If JSON parsing fails, treat as simple text
+				noteBuilder.paragraph(body);
+			}
+			
+			response = await noteBuilder.publish();
+		}
+
+		const formattedResponse = {
+			success: true,
+			title: title || '',
+			noteId: response.id.toString(),
+			body: response.body || body,
+			url: SubstackUtils.formatUrl(publicationAddress, `/p/${response.id}`),
+			date: response.date || new Date().toISOString(),
+			status: response.status || 'published',
+			userId: response.user_id?.toString() || 'unknown',
+			visibility: visibility,
+		};
+
+		return {
+			success: true,
+			data: formattedResponse,
+			metadata: {
+				status: 'success',
+			},
+		};
+	} catch (error) {
+		return SubstackUtils.formatErrorResponse({
+			message: error.message,
+			node: executeFunctions.getNode(),
+			itemIndex,
+		});
+	}
+}
+
 export const noteOperationHandlers: Record<
 	NoteOperation,
 	(
@@ -306,6 +401,7 @@ export const noteOperationHandlers: Record<
 		itemIndex: number,
 	) => Promise<IStandardResponse>
 > = {
+	[NoteOperation.Create]: create,
 	[NoteOperation.Get]: get,
 	[NoteOperation.GetNotesBySlug]: getNotesBySlug,
 	[NoteOperation.GetNotesById]: getNotesById,
