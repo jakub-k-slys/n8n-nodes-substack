@@ -65,7 +65,17 @@ export function createMockAsyncIterable<T>(data: T[]): AsyncIterable<T> {
 }
 
 // Mock method chains
+export const createMockParagraphBuilder = () => ({
+	text: jest.fn().mockReturnThis(),
+	bold: jest.fn().mockReturnThis(),
+	italic: jest.fn().mockReturnThis(),
+	code: jest.fn().mockReturnThis(),
+	paragraph: jest.fn().mockReturnThis(),
+	publish: jest.fn().mockResolvedValue(mockClientNoteResponse),
+});
+
 export const createMockNoteBuilder = () => ({
+	paragraph: jest.fn().mockReturnValue(createMockParagraphBuilder()),
 	publish: jest.fn().mockResolvedValue(mockClientNoteResponse),
 });
 
