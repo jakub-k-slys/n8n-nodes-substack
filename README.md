@@ -11,7 +11,7 @@ This n8n community node allows interaction with the Substack API, enabling you t
 ## Features
 
 - **Authenticate with Substack**: Secure API key authentication using publication address and API key
-- **Create Notes**: Publish Substack notes programmatically with title and body content
+- **Create Notes**: Publish Substack notes programmatically with optional title and body content, supporting both simple text and advanced JSON formatting
 - **Retrieve Posts**: Get posts from your publication with pagination support (limit and offset parameters)
 - **Powered by substack-api**: Uses the robust [substack-api](https://www.npmjs.com/package/substack-api) library for reliable API interactions
 
