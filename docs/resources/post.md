@@ -130,6 +130,8 @@ Retrieve a specific post by its unique ID.
 }
 ```
 
+**Note:** This operation uses the correct Substack API endpoint (`https://substack.com/api/v1/posts/by-id/${id}`) via the `substack-api` library (v0.15.1+), which resolves the previous 404 error issue that occurred with older API endpoint implementations.
+
 ## Use Cases
 
 - **Content Analytics**: Track post performance and publication metrics

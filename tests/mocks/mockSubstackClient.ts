@@ -91,6 +91,18 @@ export const createMockOwnProfile = () => ({
 });
 
 export const createMockPost = () => ({
+	id: 98765,
+	title: 'Test Post Title',
+	body: 'This is a test post for integration testing.',
+	publishedAt: new Date('2024-01-10T12:00:00Z'),
+	rawData: {
+		subtitle: 'A comprehensive guide to testing',
+		post_date: '2024-01-10T12:00:00Z',
+		type: 'newsletter',
+		published: true,
+		paywalled: false,
+		description: 'This is a test post for integration testing.',
+	},
 	comments: jest.fn().mockResolvedValue(createMockAsyncIterable(mockClientCommentsData)),
 });
 
