@@ -251,8 +251,8 @@ async function getPostById(
 	try {
 		const postId = executeFunctions.getNodeParameter('postId', itemIndex) as string;
 
-		// Get post by ID using client.postForId(postId)
-		const post = await client.postForId(postId);
+		// Get post by ID using client.postForId(postId) - convert string to number
+		const post = await client.postForId(parseInt(postId, 10));
 
 		const formattedPost: ISubstackPost = {
 			id: post.id,

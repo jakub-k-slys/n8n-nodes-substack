@@ -44,7 +44,13 @@ async function getAll(
 	itemIndex: number,
 ): Promise<IStandardResponse> {
 	try {
-		const postId = executeFunctions.getNodeParameter('postId', itemIndex) as number;
+		const postIdParam = executeFunctions.getNodeParameter('postId', itemIndex) as number | string;
+		const postId = typeof postIdParam === 'string' ? parseInt(postIdParam, 10) : postIdParam;
+		
+		// Validate postId
+		if (!postId || isNaN(postId)) {
+			throw new Error('Invalid postId: must be a valid number');
+		}
 		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
 
 		// Apply default limit of 100 if not specified
@@ -54,7 +60,7 @@ async function getAll(
 		}
 
 		// Get the post first, then get its comments
-		const post = await client.postForId(postId.toString());
+		const post = await client.postForId(postId);
 		const commentsIterable = await post.comments();
 		const formattedComments: ISubstackComment[] = [];
 
@@ -102,8 +108,8 @@ async function getCommentById(
 	try {
 		const commentId = executeFunctions.getNodeParameter('commentId', itemIndex) as string;
 
-		// Get comment by ID using client.commentForId(id)
-		const comment = await client.commentForId(commentId);
+		// Get comment by ID using client.commentForId(id) - convert string to number
+		const comment = await client.commentForId(parseInt(commentId, 10));
 
 		const formattedComment: ISubstackComment = {
 			id: comment.id,

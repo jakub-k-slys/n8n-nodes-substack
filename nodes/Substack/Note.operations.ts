@@ -266,8 +266,8 @@ async function getNoteById(
 	try {
 		const noteId = executeFunctions.getNodeParameter('noteId', itemIndex) as string;
 
-		// Get note by ID using client.noteForId(noteId)
-		const note = await client.noteForId(noteId);
+		// Get note by ID using client.noteForId(noteId) - convert string to number
+		const note = await client.noteForId(parseInt(noteId, 10));
 
 		const formattedNote: ISubstackNote = {
 			noteId: (note as any).rawData?.comment?.id?.toString() || note.id?.toString() || 'unknown',

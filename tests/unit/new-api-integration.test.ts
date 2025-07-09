@@ -137,7 +137,7 @@ describe('Substack Node - New API Integration Tests', () => {
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
 			expect(mockClient.postForId).toHaveBeenCalledTimes(1);
-			expect(mockClient.postForId).toHaveBeenCalledWith('12345');
+			expect(mockClient.postForId).toHaveBeenCalledWith(12345);
 			expect(result[0]).toBeDefined();
 		});
 	});
@@ -174,7 +174,7 @@ describe('Substack Node - New API Integration Tests', () => {
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
 			expect(mockClient.noteForId).toHaveBeenCalledTimes(1);
-			expect(mockClient.noteForId).toHaveBeenCalledWith('12345');
+			expect(mockClient.noteForId).toHaveBeenCalledWith(12345);
 			expect(result[0]).toBeDefined();
 		});
 	});
@@ -193,7 +193,7 @@ describe('Substack Node - New API Integration Tests', () => {
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
 			expect(mockClient.commentForId).toHaveBeenCalledTimes(1);
-			expect(mockClient.commentForId).toHaveBeenCalledWith('12345');
+			expect(mockClient.commentForId).toHaveBeenCalledWith(12345);
 			expect(result[0]).toBeDefined();
 		});
 	});
