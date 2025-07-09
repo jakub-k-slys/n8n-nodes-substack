@@ -64,7 +64,7 @@ describe('Substack Node Unit Tests - Comment Operations', () => {
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
 			// Verify client method calls
-			expect(mockClient.postForId).toHaveBeenCalledWith('98765');
+			expect(mockClient.postForId).toHaveBeenCalledWith(98765);
 			expect(mockPost.comments).toHaveBeenCalledTimes(1);
 
 			// Verify results
@@ -103,7 +103,7 @@ describe('Substack Node Unit Tests - Comment Operations', () => {
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
 			// Verify client method calls
-			expect(mockClient.postForId).toHaveBeenCalledWith('98765');
+			expect(mockClient.postForId).toHaveBeenCalledWith(98765);
 			expect(mockPost.comments).toHaveBeenCalledTimes(1);
 
 			// Verify results - should only get 1 item due to limit
@@ -159,7 +159,7 @@ describe('Substack Node Unit Tests - Comment Operations', () => {
 			).rejects.toThrow();
 
 			// Verify client methods were called
-			expect(mockClient.postForId).toHaveBeenCalledWith('98765');
+			expect(mockClient.postForId).toHaveBeenCalledWith(98765);
 			expect(mockPost.comments).toHaveBeenCalledTimes(1);
 		});
 
@@ -183,7 +183,7 @@ describe('Substack Node Unit Tests - Comment Operations', () => {
 			).rejects.toThrow();
 
 			// Verify client methods were called
-			expect(mockClient.postForId).toHaveBeenCalledWith('999999');
+			expect(mockClient.postForId).toHaveBeenCalledWith(999999);
 		});
 
 		it('should handle continueOnFail mode for comment retrieval', async () => {
@@ -244,7 +244,7 @@ describe('Substack Node Unit Tests - Comment Operations', () => {
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
 			// Should work fine and convert to string for API call
-			expect(mockClient.postForId).toHaveBeenCalledWith('98765');
+			expect(mockClient.postForId).toHaveBeenCalledWith(98765);
 			expect(result[0].length).toBe(2);
 		});
 	});

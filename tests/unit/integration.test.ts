@@ -214,7 +214,7 @@ describe('Substack Node Unit Tests - Integration', () => {
 			await substackNode.execute.call(mockExecuteFunctions);
 
 			// Verify the complete method chain
-			expect(mockClient.postForId).toHaveBeenCalledWith('98765');
+			expect(mockClient.postForId).toHaveBeenCalledWith(98765);
 			expect(mockPost.comments).toHaveBeenCalledTimes(1);
 		});
 

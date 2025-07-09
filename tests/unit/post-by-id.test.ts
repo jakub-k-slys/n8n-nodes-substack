@@ -62,7 +62,7 @@ describe('Substack Node - getPostById Operation', () => {
 
 			// Verify client method was called correctly
 			expect(mockClient.postForId).toHaveBeenCalledTimes(1);
-			expect(mockClient.postForId).toHaveBeenCalledWith('98765');
+			expect(mockClient.postForId).toHaveBeenCalledWith(98765);
 
 			// Verify results structure
 			expect(result).toBeDefined();
@@ -170,7 +170,7 @@ describe('Substack Node - getPostById Operation', () => {
 				substackNode.execute.call(mockExecuteFunctions)
 			).rejects.toThrow('Post not found');
 
-			expect(mockClient.postForId).toHaveBeenCalledWith('999999');
+			expect(mockClient.postForId).toHaveBeenCalledWith(999999);
 		});
 
 		it('should handle numeric postId parameter', async () => {
@@ -204,7 +204,7 @@ describe('Substack Node - getPostById Operation', () => {
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
 			// Verify the API is called with the correct ID
-			expect(mockClient.postForId).toHaveBeenCalledWith('159325011');
+			expect(mockClient.postForId).toHaveBeenCalledWith(159325011);
 			expect(result[0]).toBeDefined();
 			expect(result[0][0].json).toHaveProperty('id');
 			expect(result[0][0].json).toHaveProperty('title');
