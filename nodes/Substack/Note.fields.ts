@@ -57,7 +57,7 @@ export const noteFields: INodeProperties[] = [
 			{
 				name: 'Advanced (Markdown)',
 				value: 'advanced',
-				description: 'Supports Markdown formatting: **bold**, *italic*, # headings, - lists, [links](url)',
+				description: 'Supports Markdown formatting: **bold**, *italic*, # headings, - lists, [links](URL)',
 			},
 		],
 	},
