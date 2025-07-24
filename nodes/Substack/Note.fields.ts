@@ -23,7 +23,7 @@ export const noteFields: INodeProperties[] = [
 		name: 'body',
 		type: 'string',
 		default: '',
-		description: 'The content of the note',
+		description: 'The content of the note. Use Markdown formatting in Advanced mode.',
 		displayOptions: {
 			show: {
 				resource: ['note'],
@@ -34,7 +34,7 @@ export const noteFields: INodeProperties[] = [
 		typeOptions: {
 			rows: 4,
 		},
-		placeholder: 'Write your note content here...',
+		placeholder: 'Write your note content here... (Markdown supported in Advanced mode: **bold**, *italic*, # headings, [links](url))',
 	},
 	{
 		displayName: 'Content Type',
@@ -55,9 +55,9 @@ export const noteFields: INodeProperties[] = [
 				description: 'Plain text content',
 			},
 			{
-				name: 'Advanced (JSON)',
+				name: 'Advanced (Markdown)',
 				value: 'advanced',
-				description: 'Structured JSON for rich formatting',
+				description: 'Supports Markdown formatting: **bold**, *italic*, # headings, - lists, [links](url)',
 			},
 		],
 	},

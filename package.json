@@ -50,7 +50,6 @@
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
     "gulp": "^5.0.0",
     "jest": "^30.0.3",
-
     "prettier": "^3.5.3",
     "ts-jest": "^29.2.5",
     "typescript": "^5.8.2"

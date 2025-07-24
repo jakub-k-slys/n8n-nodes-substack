@@ -2,6 +2,7 @@ import { IExecuteFunctions, INodeProperties } from 'n8n-workflow';
 import { SubstackClient } from 'substack-api';
 import { IStandardResponse, ISubstackNote } from './types';
 import { SubstackUtils } from './SubstackUtils';
+import { MarkdownParser } from './MarkdownParser';
 
 export enum NoteOperation {
 	Create = 'create',
@@ -316,6 +317,15 @@ async function create(
 		const contentType = executeFunctions.getNodeParameter('contentType', itemIndex, 'simple') as string;
 		const visibility = executeFunctions.getNodeParameter('visibility', itemIndex, 'everyone') as string;
 
+		// Input validation for empty body
+		if (!body || !body.trim()) {
+			return SubstackUtils.formatErrorResponse({
+				message: 'Note body cannot be empty',
+				node: executeFunctions.getNode(),
+				itemIndex,
+			});
+		}
+
 		// Get own profile to create notes
 		const ownProfile = await client.ownProfile();
 		
@@ -329,39 +339,21 @@ async function create(
 			}
 			response = await noteBuilder.publish();
 		} else {
-			// Use builder pattern for rich text
+			// Use markdown parsing for advanced mode
 			const noteBuilder = title ? ownProfile.newNote(title) : ownProfile.newNote();
 			
-			// For advanced mode, parse body as structured content
 			try {
-				const bodyData = JSON.parse(body);
-				// Add content based on structured format
-				if (bodyData.paragraphs && Array.isArray(bodyData.paragraphs)) {
-					bodyData.paragraphs.forEach((paragraph: any) => {
-						const paragraphBuilder = noteBuilder.paragraph();
-						if (paragraph.text) {
-							paragraphBuilder.text(paragraph.text);
-						}
-						if (paragraph.bold) {
-							paragraphBuilder.bold(paragraph.bold);
-						}
-						if (paragraph.italic) {
-							paragraphBuilder.italic(paragraph.italic);
-						}
-						if (paragraph.code) {
-							paragraphBuilder.code(paragraph.code);
-						}
-					});
-				} else {
-					// Fallback to simple paragraph
-					noteBuilder.paragraph(body);
-				}
-			} catch {
-				// If JSON parsing fails, treat as simple text
-				noteBuilder.paragraph(body);
+				// Parse markdown and apply to note builder
+				MarkdownParser.parseMarkdownToNote(body, noteBuilder);
+				response = await noteBuilder.publish();
+			} catch (markdownError) {
+				// If markdown parsing fails, return error
+				return SubstackUtils.formatErrorResponse({
+					message: `Markdown parsing failed: ${markdownError.message}`,
+					node: executeFunctions.getNode(),
+					itemIndex,
+				});
 			}
-			
-			response = await noteBuilder.publish();
 		}
 
 		const formattedResponse = {
