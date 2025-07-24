@@ -1,4 +1,4 @@
-const marked = require('marked');
+import { marked } from 'marked';
 
 /**
  * Markdown parser for Substack notes using the marked library
