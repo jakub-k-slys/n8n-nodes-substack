@@ -304,23 +304,24 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 			expect(mockOwnProfile.newNote).toHaveBeenCalledWith(); // Called without title
 		});
 
-		it('should successfully create an advanced note with JSON content', async () => {
-			const advancedContent = JSON.stringify({
-				paragraphs: [
-					{ text: 'Regular text paragraph' },
-					{ bold: 'Bold text' },
-					{ italic: 'Italic text' },
-					{ code: 'Code text' }
-				]
-			});
+		it('should successfully create an advanced note with Markdown content', async () => {
+			const markdownContent = `## Hello from n8n
+
+This is a note with **bold**, *italic*, and a [link](https://n8n.io).
+
+- First bullet point
+- Second bullet point
+
+1. Numbered item
+2. Another numbered item`;
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					title: 'Advanced Note',
-					body: advancedContent,
+					title: 'Markdown Note',
+					body: markdownContent,
 					contentType: 'advanced',
 					visibility: 'subscribers',
 				},
@@ -335,32 +336,28 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 			expect(result[0][0].json).toHaveProperty('visibility', 'subscribers');
 
 			// Verify client methods were called
-			expect(mockOwnProfile.newNote).toHaveBeenCalledWith('Advanced Note');
+			expect(mockOwnProfile.newNote).toHaveBeenCalledWith('Markdown Note');
 			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
 		});
 
-		it('should handle advanced content parsing errors gracefully', async () => {
-			// Setup execution context with invalid JSON
+		it('should handle empty body validation in advanced mode', async () => {
+			// Setup execution context with empty body
 			const mockExecuteFunctions = createMockExecuteFunctions({
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					title: 'Fallback Note',
-					body: 'Invalid JSON content that should fallback to simple text',
+					title: 'Empty Note',
+					body: '   ', // Whitespace only
 					contentType: 'advanced',
 					visibility: 'everyone',
 				},
 				credentials: mockCredentials,
 			});
 
-			// Execute the node
-			const result = await substackNode.execute.call(mockExecuteFunctions);
-
-			// Verify the result - should still succeed
-			expect(result[0][0].json).toHaveProperty('success', true);
-
-			// Verify fallback behavior
-			expect(mockNoteBuilder.paragraph).toHaveBeenCalledWith('Invalid JSON content that should fallback to simple text');
+			// Execute and expect error
+			await expect(
+				substackNode.execute.call(mockExecuteFunctions)
+			).rejects.toThrow('Note body cannot be empty');
 		});
 
 		it('should handle creation errors appropriately', async () => {

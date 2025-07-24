@@ -45,12 +45,12 @@
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
+    "@types/marked": "^5.0.2",
     "@typescript-eslint/parser": "~8.37.0",
     "eslint": "^9.29.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
     "gulp": "^5.0.0",
     "jest": "^30.0.3",
-
     "prettier": "^3.5.3",
     "ts-jest": "^29.2.5",
     "typescript": "^5.8.2"
@@ -59,6 +59,7 @@
     "n8n-workflow": "^1.82.0"
   },
   "dependencies": {
+    "marked": "^4.3.0",
     "substack-api": "^0.17.0"
   }
 }
