@@ -1,5 +1,7 @@
+const marked = require('marked');
+
 /**
- * Simple markdown parser for Substack notes
+ * Markdown parser for Substack notes using the marked library
  * Supports: headings, bold, italic, code, links, lists
  */
 export class MarkdownParser {
@@ -11,213 +13,139 @@ export class MarkdownParser {
 			throw new Error('Note body cannot be empty');
 		}
 
-		const lines = markdown.split('\n');
-		let i = 0;
-
-		while (i < lines.length) {
-			const line = lines[i];
-			
-			if (!line.trim()) {
-				// Skip empty lines
-				i++;
-				continue;
-			}
-
-			if (this.isHeading(line)) {
-				this.processHeading(line, noteBuilder);
-			} else if (this.isUnorderedListItem(line)) {
-				i = this.processUnorderedList(lines, i, noteBuilder);
-				continue; // i is already incremented in processUnorderedList
-			} else if (this.isOrderedListItem(line)) {
-				i = this.processOrderedList(lines, i, noteBuilder);
-				continue; // i is already incremented in processOrderedList
-			} else {
-				// Regular paragraph
-				this.processParagraph(line, noteBuilder);
-			}
-			
-			i++;
-		}
+		// Parse markdown into tokens using marked
+		const tokens = marked.lexer(markdown);
+		
+		// Process each token and convert to NoteBuilder calls
+		this.processTokens(tokens, noteBuilder);
 
 		return noteBuilder;
 	}
 
 	/**
-	 * Check if line is a heading
+	 * Process marked tokens and convert to NoteBuilder calls
 	 */
-	private static isHeading(line: string): boolean {
-		return /^#{1,6}\s+/.test(line.trim());
+	private static processTokens(tokens: any[], noteBuilder: any): void {
+		for (const token of tokens) {
+			switch (token.type) {
+				case 'heading':
+					this.processHeading(token, noteBuilder);
+					break;
+				case 'paragraph':
+					this.processParagraph(token, noteBuilder);
+					break;
+				case 'list':
+					this.processList(token, noteBuilder);
+					break;
+				case 'space':
+					// Skip empty space tokens
+					break;
+				default:
+					// Handle other token types as paragraphs
+					if (token.text) {
+						const paragraphBuilder = noteBuilder.paragraph();
+						paragraphBuilder.text(token.text);
+					}
+					break;
+			}
+		}
 	}
 
 	/**
-	 * Check if line is an unordered list item
+	 * Process heading token
 	 */
-	private static isUnorderedListItem(line: string): boolean {
-		return /^[\s]*[-*+]\s+/.test(line);
-	}
-
-	/**
-	 * Check if line is an ordered list item
-	 */
-	private static isOrderedListItem(line: string): boolean {
-		return /^[\s]*\d+\.\s+/.test(line);
-	}
-
-	/**
-	 * Process heading and add to note builder
-	 */
-	private static processHeading(line: string, noteBuilder: any): void {
-		const headingText = line.replace(/^#{1,6}\s+/, '').trim();
+	private static processHeading(token: any, noteBuilder: any): void {
 		const paragraphBuilder = noteBuilder.paragraph();
-		paragraphBuilder.bold(headingText);
+		// Process inline tokens within the heading
+		if (token.tokens && token.tokens.length > 0) {
+			this.processInlineTokens(token.tokens, paragraphBuilder, true);
+		} else {
+			paragraphBuilder.bold(token.text || '');
+		}
 	}
 
 	/**
-	 * Process unordered list starting from current line
+	 * Process paragraph token
 	 */
-	private static processUnorderedList(lines: string[], startIndex: number, noteBuilder: any): number {
-		let i = startIndex;
+	private static processParagraph(token: any, noteBuilder: any): void {
+		const paragraphBuilder = noteBuilder.paragraph();
 		
-		while (i < lines.length && this.isUnorderedListItem(lines[i])) {
-			const listItemText = lines[i].replace(/^[\s]*[-*+]\s+/, '').trim();
+		// Process inline tokens within the paragraph
+		if (token.tokens && token.tokens.length > 0) {
+			this.processInlineTokens(token.tokens, paragraphBuilder);
+		} else {
+			paragraphBuilder.text(token.text || '');
+		}
+	}
+
+	/**
+	 * Process list token
+	 */
+	private static processList(token: any, noteBuilder: any): void {
+		if (!token.items) return;
+
+		token.items.forEach((item: any, index: number) => {
 			const paragraphBuilder = noteBuilder.paragraph();
 			
-			paragraphBuilder.text('• ');
-			this.processInlineText(listItemText, paragraphBuilder);
-			
-			i++;
-		}
-		
-		return i; // Return the next line to process
-	}
-
-	/**
-	 * Process ordered list starting from current line
-	 */
-	private static processOrderedList(lines: string[], startIndex: number, noteBuilder: any): number {
-		let i = startIndex;
-		let listNumber = 1;
-		
-		while (i < lines.length && this.isOrderedListItem(lines[i])) {
-			const listItemText = lines[i].replace(/^[\s]*\d+\.\s+/, '').trim();
-			const paragraphBuilder = noteBuilder.paragraph();
-			
-			paragraphBuilder.text(`${listNumber}. `);
-			this.processInlineText(listItemText, paragraphBuilder);
-			
-			i++;
-			listNumber++;
-		}
-		
-		return i; // Return the next line to process
-	}
-
-	/**
-	 * Process regular paragraph
-	 */
-	private static processParagraph(line: string, noteBuilder: any): void {
-		const paragraphBuilder = noteBuilder.paragraph();
-		this.processInlineText(line.trim(), paragraphBuilder);
-	}
-
-	/**
-	 * Process inline formatting (bold, italic, code, links)
-	 */
-	private static processInlineText(text: string, paragraphBuilder: any): void {
-		let currentIndex = 0;
-		
-		while (currentIndex < text.length) {
-			// Find the next formatting marker
-			const remainingText = text.slice(currentIndex);
-			
-			// Look for patterns - order matters for precedence
-			const linkMatch = remainingText.match(/\[([^\]]+)\]\(([^)]+)\)/);
-			const boldMatch = remainingText.match(/\*\*([^*]+)\*\*/);
-			const codeMatch = remainingText.match(/`([^`]+)`/);
-			const italicMatch = remainingText.match(/\*([^*]+)\*/);
-			
-			// Find which marker comes first
-			const markers = [];
-			
-			if (linkMatch) {
-				markers.push({ 
-					match: linkMatch, 
-					type: 'link', 
-					start: currentIndex + remainingText.indexOf(linkMatch[0]),
-					length: linkMatch[0].length,
-					content: linkMatch[1],
-					url: linkMatch[2]
-				});
+			// Add list marker
+			if (token.ordered) {
+				paragraphBuilder.text(`${index + 1}. `);
+			} else {
+				paragraphBuilder.text('• ');
 			}
 			
-			if (boldMatch) {
-				markers.push({ 
-					match: boldMatch, 
-					type: 'bold', 
-					start: currentIndex + remainingText.indexOf(boldMatch[0]),
-					length: boldMatch[0].length,
-					content: boldMatch[1]
-				});
-			}
-			
-			if (codeMatch) {
-				markers.push({ 
-					match: codeMatch, 
-					type: 'code', 
-					start: currentIndex + remainingText.indexOf(codeMatch[0]),
-					length: codeMatch[0].length,
-					content: codeMatch[1]
-				});
-			}
-			
-			if (italicMatch) {
-				// Only add italic if it's not part of a bold pattern
-				const italicStart = remainingText.indexOf(italicMatch[0]);
-				const isBoldConflict = boldMatch && Math.abs(remainingText.indexOf(boldMatch[0]) - italicStart) < 3;
-				
-				if (!isBoldConflict) {
-					markers.push({ 
-						match: italicMatch, 
-						type: 'italic', 
-						start: currentIndex + italicStart,
-						length: italicMatch[0].length,
-						content: italicMatch[1]
-					});
+			// Process list item content
+			if (item.tokens && item.tokens.length > 0) {
+				// Process the first paragraph token from the list item
+				const firstToken = item.tokens[0];
+				if (firstToken && firstToken.tokens) {
+					this.processInlineTokens(firstToken.tokens, paragraphBuilder);
+				} else if (firstToken && firstToken.text) {
+					paragraphBuilder.text(firstToken.text);
 				}
+			} else if (item.text) {
+				paragraphBuilder.text(item.text);
 			}
-			
-			if (markers.length === 0) {
-				// No more formatting, add remaining text
-				paragraphBuilder.text(text.slice(currentIndex));
-				break;
-			}
-			
-			// Sort by start position
-			markers.sort((a, b) => a.start - b.start);
-			const nextMarker = markers[0];
-			
-			// Add text before the marker
-			if (nextMarker.start > currentIndex) {
-				paragraphBuilder.text(text.slice(currentIndex, nextMarker.start));
-			}
-			
-			// Process the marker
-			switch (nextMarker.type) {
-				case 'bold':
-					paragraphBuilder.bold(nextMarker.content);
+		});
+	}
+
+	/**
+	 * Process inline tokens (bold, italic, code, links, text)
+	 */
+	private static processInlineTokens(tokens: any[], paragraphBuilder: any, isHeading: boolean = false): void {
+		for (const token of tokens) {
+			switch (token.type) {
+				case 'text':
+					if (isHeading) {
+						paragraphBuilder.bold(token.text);
+					} else {
+						paragraphBuilder.text(token.text);
+					}
 					break;
-				case 'italic':
-					paragraphBuilder.italic(nextMarker.content);
+				case 'strong':
+					paragraphBuilder.bold(token.text);
 					break;
-				case 'code':
-					paragraphBuilder.code(nextMarker.content);
+				case 'em':
+					paragraphBuilder.italic(token.text);
+					break;
+				case 'codespan':
+					paragraphBuilder.code(token.text);
 					break;
 				case 'link':
-					paragraphBuilder.text(`${nextMarker.content} (${nextMarker.url})`);
+					// Format links as "text (url)"
+					paragraphBuilder.text(`${token.text} (${token.href})`);
+					break;
+				default:
+					// Fallback for unknown inline tokens
+					if (token.text) {
+						if (isHeading) {
+							paragraphBuilder.bold(token.text);
+						} else {
+							paragraphBuilder.text(token.text);
+						}
+					}
 					break;
 			}
-			
-			currentIndex = nextMarker.start + nextMarker.length;
 		}
 	}
 }
