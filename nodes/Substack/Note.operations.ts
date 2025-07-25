@@ -324,7 +324,7 @@ async function create(
 
 		if (contentType === 'simple') {
 			// Use structured builder pattern for plain text
-			const noteBuilder = title ? ownProfile.newNote(title) : ownProfile.newNote();
+			const noteBuilder = ownProfile.newNote();
 			
 			// Validate that we have content before building
 			if (!body || !body.trim()) {
@@ -337,8 +337,10 @@ async function create(
 			
 			// Build note using structured approach
 			try {
-				// Create a paragraph with the content
-				noteBuilder.paragraph().text(body.trim());
+				// Create content - include title if provided
+				const content = title ? `${title.trim()}\n\n${body.trim()}` : body.trim();
+				// Create a paragraph with the content using new API structure
+				noteBuilder.newNode().paragraph().text(content);
 				response = await noteBuilder.publish();
 			} catch (buildError) {
 				return SubstackUtils.formatErrorResponse({
@@ -349,7 +351,7 @@ async function create(
 			}
 		} else {
 			// Use markdown parsing for advanced mode with structured builder
-			const noteBuilder = title ? ownProfile.newNote(title) : ownProfile.newNote();
+			const noteBuilder = ownProfile.newNote();
 			
 			// Validate that we have content before parsing
 			if (!body || !body.trim()) {
@@ -362,7 +364,9 @@ async function create(
 			
 			try {
 				// Parse markdown and apply to note builder using structured approach
-				MarkdownParser.parseMarkdownToNoteStructured(body.trim(), noteBuilder);
+				// Include title if provided
+				const content = title ? `${title.trim()}\n\n${body.trim()}` : body.trim();
+				MarkdownParser.parseMarkdownToNoteStructured(content, noteBuilder);
 				response = await noteBuilder.publish();
 			} catch (error) {
 				// Handle both markdown parsing and build errors

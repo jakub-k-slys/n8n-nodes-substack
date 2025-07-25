@@ -60,6 +60,6 @@
   },
   "dependencies": {
     "marked": "^4.3.0",
-    "substack-api": "^0.17.0"
+    "substack-api": "1.0.0"
   }
 }

@@ -5,6 +5,7 @@ import {
 	createMockSubstackClient,
 	createMockOwnProfile,
 	createMockNoteBuilder,
+	createMockNodeBuilder,
 	createMockParagraphBuilder,
 } from '../mocks/mockSubstackClient';
 
@@ -30,6 +31,7 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 	let mockClient: any;
 	let mockOwnProfile: any;
 	let mockNoteBuilder: any;
+	let mockNodeBuilder: any;
 	let mockParagraphBuilder: any;
 
 	beforeEach(() => {
@@ -40,12 +42,14 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 		mockClient = createMockSubstackClient();
 		mockOwnProfile = createMockOwnProfile();
 		mockNoteBuilder = createMockNoteBuilder();
+		mockNodeBuilder = createMockNodeBuilder();
 		mockParagraphBuilder = createMockParagraphBuilder();
 
 		// Setup method chain mocks
 		mockClient.ownProfile.mockResolvedValue(mockOwnProfile);
 		mockOwnProfile.newNote.mockReturnValue(mockNoteBuilder);
-		mockNoteBuilder.paragraph.mockReturnValue(mockParagraphBuilder);
+		mockNoteBuilder.newNode.mockReturnValue(mockNodeBuilder);
+		mockNodeBuilder.paragraph.mockReturnValue(mockParagraphBuilder);
 
 		// Mock SubstackUtils.initializeClient to return our mocked client
 		const { SubstackUtils } = require('../../nodes/Substack/SubstackUtils');
@@ -275,9 +279,10 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 
 			// Verify client methods were called
 			expect(mockClient.ownProfile).toHaveBeenCalledTimes(1);
-			expect(mockOwnProfile.newNote).toHaveBeenCalledWith('Test Note Title');
-			expect(mockNoteBuilder.paragraph).toHaveBeenCalledTimes(1);
-			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This is a test note body');
+			expect(mockOwnProfile.newNote).toHaveBeenCalledWith();
+			expect(mockNoteBuilder.newNode).toHaveBeenCalledTimes(1);
+			expect(mockNodeBuilder.paragraph).toHaveBeenCalledTimes(1);
+			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('Test Note Title\n\nThis is a test note body');
 			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
 		});
 
@@ -337,7 +342,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			expect(result[0][0].json).toHaveProperty('visibility', 'subscribers');
 
 			// Verify client methods were called
-			expect(mockOwnProfile.newNote).toHaveBeenCalledWith('Markdown Note');
+			expect(mockOwnProfile.newNote).toHaveBeenCalledWith();
 			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
 		});
 
@@ -438,8 +443,9 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
 			// Verify the structured approach was used
-			expect(mockNoteBuilder.paragraph).toHaveBeenCalledTimes(1);
-			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This is a valid note with actual content.');
+			expect(mockNoteBuilder.newNode).toHaveBeenCalledTimes(1);
+			expect(mockNodeBuilder.paragraph).toHaveBeenCalledTimes(1);
+			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('Valid Simple Note\n\nThis is a valid note with actual content.');
 			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
 			
 			// Verify success
@@ -474,7 +480,8 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
 			// Verify multiple paragraphs were created for different elements
-			expect(mockNoteBuilder.paragraph).toHaveBeenCalled();
+			expect(mockNoteBuilder.newNode).toHaveBeenCalled();
+			expect(mockNodeBuilder.paragraph).toHaveBeenCalled();
 			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
 			
 			// Verify success

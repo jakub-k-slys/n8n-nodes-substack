@@ -61,7 +61,7 @@ export class MarkdownParser {
 				default:
 					// Handle other token types as paragraphs
 					if (token.text) {
-						const paragraphBuilder = noteBuilder.paragraph();
+						const paragraphBuilder = noteBuilder.newNode().paragraph();
 						paragraphBuilder.text(token.text);
 					}
 					break;
@@ -73,7 +73,7 @@ export class MarkdownParser {
 	 * Process heading token using structured approach
 	 */
 	private static processHeadingStructured(token: any, noteBuilder: any): void {
-		const paragraphBuilder = noteBuilder.paragraph();
+		const paragraphBuilder = noteBuilder.newNode().paragraph();
 		// Process inline tokens within the heading
 		if (token.tokens && token.tokens.length > 0) {
 			this.processInlineTokensStructured(token.tokens, paragraphBuilder, true);
@@ -94,7 +94,7 @@ export class MarkdownParser {
 			return;
 		}
 		
-		const paragraphBuilder = noteBuilder.paragraph();
+		const paragraphBuilder = noteBuilder.newNode().paragraph();
 		
 		// Process inline tokens within the paragraph
 		if (token.tokens && token.tokens.length > 0) {
@@ -119,7 +119,7 @@ export class MarkdownParser {
 				return;
 			}
 			
-			const paragraphBuilder = noteBuilder.paragraph();
+			const paragraphBuilder = noteBuilder.newNode().paragraph();
 			
 			// Add list marker
 			if (token.ordered) {
