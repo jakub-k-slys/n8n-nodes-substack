@@ -211,4 +211,68 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('• ');
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('1. ');
 	});
+
+	// Additional tests for edge cases and validation improvements
+	describe('Edge Case Validation', () => {
+		it('should reject markdown with only empty headings', () => {
+			const emptyHeadings = '## \n### \n#### ';
+			
+			expect(() => {
+				MarkdownParser.parseMarkdownToNoteStructured(emptyHeadings, mockNoteBuilder);
+			}).toThrow('Note must contain at least one paragraph with actual content');
+		});
+
+		it('should reject malformed list markers parsed as paragraphs', () => {
+			// These will be parsed as paragraphs, not lists, and contain only formatting
+			const malformedLists = '- \n* \n1. ';
+			
+			expect(() => {
+				MarkdownParser.parseMarkdownToNoteStructured(malformedLists, mockNoteBuilder);
+			}).toThrow('Note must contain at least one paragraph with actual content');
+		});
+
+		it('should skip empty list items in valid lists', () => {
+			const listWithEmptyItems = '- First item\n- \n- Third item';
+			
+			// Should not throw, but should skip the empty item
+			expect(() => {
+				MarkdownParser.parseMarkdownToNoteStructured(listWithEmptyItems, mockNoteBuilder);
+			}).not.toThrow();
+			
+			// Should create 2 paragraphs (skipping the empty one)
+			expect(mockNoteBuilder.newNode).toHaveBeenCalledTimes(2);
+			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('First item');
+			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('Third item');
+		});
+
+		it('should skip empty headings but process valid ones', () => {
+			const mixedHeadings = '## \n### Valid Heading\n#### ';
+			
+			// Should not throw and should process the valid heading
+			expect(() => {
+				MarkdownParser.parseMarkdownToNoteStructured(mixedHeadings, mockNoteBuilder);
+			}).not.toThrow();
+			
+			// Should create 1 paragraph for the valid heading
+			expect(mockNoteBuilder.newNode).toHaveBeenCalledTimes(1);
+			expect(mockParagraphBuilder.bold).toHaveBeenCalledWith('Valid Heading');
+		});
+
+		it('should handle whitespace-only content in various elements', () => {
+			const whitespaceContent = '   \n\t  \r\n  ';
+			
+			expect(() => {
+				MarkdownParser.parseMarkdownToNoteStructured(whitespaceContent, mockNoteBuilder);
+			}).toThrow('Note body cannot be empty - at least one paragraph with content is required');
+		});
+
+		it('should validate that meaningful content is created after processing', () => {
+			// This markdown has structure but when processed, creates no meaningful content
+			const structureOnlyMarkdown = '## \n\n- \n\n* \n\n';
+			
+			expect(() => {
+				MarkdownParser.parseMarkdownToNoteStructured(structureOnlyMarkdown, mockNoteBuilder);
+			}).toThrow('Note must contain at least one paragraph with actual content');
+		});
+	});
 });

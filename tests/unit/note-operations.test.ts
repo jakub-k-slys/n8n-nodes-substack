@@ -363,7 +363,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			// Execute and expect error
 			await expect(
 				substackNode.execute.call(mockExecuteFunctions)
-			).rejects.toThrow('Note body cannot be empty - at least one paragraph with content is required');
+			).rejects.toThrow('Note must contain at least one paragraph with content - body cannot be empty');
 		});
 
 		it('should handle empty body validation in simple mode', async () => {
@@ -383,7 +383,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			// Execute and expect error
 			await expect(
 				substackNode.execute.call(mockExecuteFunctions)
-			).rejects.toThrow('Note body cannot be empty - at least one paragraph with content is required');
+			).rejects.toThrow('Note must contain at least one paragraph with content - body cannot be empty');
 		});
 
 		it('should handle whitespace-only body validation', async () => {
@@ -403,7 +403,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			// Execute and expect error
 			await expect(
 				substackNode.execute.call(mockExecuteFunctions)
-			).rejects.toThrow('Note body cannot be empty - at least one paragraph with content is required');
+			).rejects.toThrow('Note must contain at least one paragraph with content - body cannot be empty');
 		});
 
 		it('should handle missing body parameter', async () => {
@@ -422,7 +422,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			// Execute and expect error
 			await expect(
 				substackNode.execute.call(mockExecuteFunctions)
-			).rejects.toThrow('Note body cannot be empty - at least one paragraph with content is required');
+			).rejects.toThrow('Note must contain at least one paragraph with content - body cannot be empty');
 		});
 
 		it('should validate structured note construction in simple mode', async () => {
@@ -541,5 +541,8 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			// Reset the mock for other tests
 			mockParagraphBuilder.text.mockReturnThis();
 		});
+
+		// Note: Additional edge cases for MarkdownParser validation (empty formatting elements,
+		// malformed list markers, etc.) are tested in markdown-parser.test.ts
 	});
 });
