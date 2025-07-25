@@ -5,20 +5,6 @@ export const noteFields: INodeProperties[] = [
 	/*                              note:create                                  */
 	/* -------------------------------------------------------------------------- */
 	{
-		displayName: 'Title',
-		name: 'title',
-		type: 'string',
-		default: '',
-		description: 'The title of the note (optional)',
-		displayOptions: {
-			show: {
-				resource: ['note'],
-				operation: ['create'],
-			},
-		},
-		placeholder: 'My Note Title',
-	},
-	{
 		displayName: 'Body',
 		name: 'body',
 		type: 'string',

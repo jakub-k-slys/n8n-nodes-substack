@@ -312,7 +312,6 @@ async function create(
 	itemIndex: number,
 ): Promise<IStandardResponse> {
 	try {
-		const title = executeFunctions.getNodeParameter('title', itemIndex) as string;
 		const body = executeFunctions.getNodeParameter('body', itemIndex) as string;
 		const contentType = executeFunctions.getNodeParameter('contentType', itemIndex, 'simple') as string;
 		const visibility = executeFunctions.getNodeParameter('visibility', itemIndex, 'everyone') as string;
@@ -335,8 +334,8 @@ async function create(
 				});
 			}
 			
-			// Create content - include title if provided
-			const content = title ? `${title.trim()}\n\n${body.trim()}` : body.trim();
+			// Create content from body only
+			const content = body.trim();
 			
 			// Build note using structured approach
 			try {
@@ -363,8 +362,8 @@ async function create(
 				});
 			}
 			
-			// Create content - include title if provided
-			const content = title ? `${title.trim()}\n\n${body.trim()}` : body.trim();
+			// Create content from body only
+			const content = body.trim();
 			
 			try {
 				// Parse markdown and apply to note builder using structured approach
@@ -387,7 +386,6 @@ async function create(
 
 		const formattedResponse = {
 			success: true,
-			title: title || '',
 			noteId: response.id.toString(),
 			body: response.body || body,
 			url: SubstackUtils.formatUrl(publicationAddress, `/p/${response.id}`),
