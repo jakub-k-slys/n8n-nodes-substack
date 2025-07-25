@@ -246,7 +246,6 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					title: 'Test Note Title',
 					body: 'This is a test note body',
 					contentType: 'simple',
 					visibility: 'everyone',
@@ -270,7 +269,6 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 			// Verify response fields
 			const noteData = output.json;
 			expect(noteData).toHaveProperty('success', true);
-			expect(noteData).toHaveProperty('title', 'Test Note Title');
 			expect(noteData).toHaveProperty('noteId', '12345');
 			expect(noteData).toHaveProperty('body');
 			expect(noteData).toHaveProperty('url');
@@ -282,32 +280,8 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 			expect(mockOwnProfile.newNote).toHaveBeenCalledWith();
 			expect(mockNoteBuilder.newNode).toHaveBeenCalledTimes(1);
 			expect(mockNodeBuilder.paragraph).toHaveBeenCalledTimes(1);
-			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('Test Note Title\n\nThis is a test note body');
+			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This is a test note body');
 			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
-		});
-
-		it('should successfully create a note without title', async () => {
-			// Setup execution context
-			const mockExecuteFunctions = createMockExecuteFunctions({
-				nodeParameters: {
-					resource: 'note',
-					operation: 'create',
-					body: 'This is a test note without title',
-					contentType: 'simple',
-					visibility: 'everyone',
-				},
-				credentials: mockCredentials,
-			});
-
-			// Execute the node
-			const result = await substackNode.execute.call(mockExecuteFunctions);
-
-			// Verify the result
-			expect(result[0][0].json).toHaveProperty('success', true);
-			expect(result[0][0].json).toHaveProperty('title', '');
-
-			// Verify client methods were called correctly
-			expect(mockOwnProfile.newNote).toHaveBeenCalledWith(); // Called without title
 		});
 
 		it('should successfully create an advanced note with Markdown content', async () => {
@@ -326,7 +300,6 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					title: 'Markdown Note',
 					body: markdownContent,
 					contentType: 'advanced',
 					visibility: 'subscribers',
@@ -352,7 +325,6 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					title: 'Empty Note',
 					body: '   ', // Whitespace only
 					contentType: 'advanced',
 					visibility: 'everyone',
@@ -363,7 +335,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			// Execute and expect error
 			await expect(
 				substackNode.execute.call(mockExecuteFunctions)
-			).rejects.toThrow('Note body cannot be empty - at least one paragraph with content is required');
+			).rejects.toThrow('Note must contain at least one paragraph with content - body cannot be empty');
 		});
 
 		it('should handle empty body validation in simple mode', async () => {
@@ -372,7 +344,6 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					title: 'Empty Note',
 					body: '', // Empty string
 					contentType: 'simple',
 					visibility: 'everyone',
@@ -383,7 +354,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			// Execute and expect error
 			await expect(
 				substackNode.execute.call(mockExecuteFunctions)
-			).rejects.toThrow('Note body cannot be empty - at least one paragraph with content is required');
+			).rejects.toThrow('Note must contain at least one paragraph with content - body cannot be empty');
 		});
 
 		it('should handle whitespace-only body validation', async () => {
@@ -392,7 +363,6 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					title: 'Whitespace Note',
 					body: '\n\t   \n\r', // Various whitespace characters
 					contentType: 'simple',
 					visibility: 'everyone',
@@ -403,7 +373,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			// Execute and expect error
 			await expect(
 				substackNode.execute.call(mockExecuteFunctions)
-			).rejects.toThrow('Note body cannot be empty - at least one paragraph with content is required');
+			).rejects.toThrow('Note must contain at least one paragraph with content - body cannot be empty');
 		});
 
 		it('should handle missing body parameter', async () => {
@@ -412,7 +382,6 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					title: 'No Body Note',
 					contentType: 'simple',
 					visibility: 'everyone',
 				},
@@ -422,7 +391,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			// Execute and expect error
 			await expect(
 				substackNode.execute.call(mockExecuteFunctions)
-			).rejects.toThrow('Note body cannot be empty - at least one paragraph with content is required');
+			).rejects.toThrow('Note must contain at least one paragraph with content - body cannot be empty');
 		});
 
 		it('should validate structured note construction in simple mode', async () => {
@@ -431,7 +400,6 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					title: 'Valid Simple Note',
 					body: 'This is a valid note with actual content.',
 					contentType: 'simple',
 					visibility: 'everyone',
@@ -445,7 +413,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			// Verify the structured approach was used
 			expect(mockNoteBuilder.newNode).toHaveBeenCalledTimes(1);
 			expect(mockNodeBuilder.paragraph).toHaveBeenCalledTimes(1);
-			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('Valid Simple Note\n\nThis is a valid note with actual content.');
+			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This is a valid note with actual content.');
 			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
 			
 			// Verify success
@@ -468,7 +436,6 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					title: 'Mixed Format Note',
 					body: markdownContent,
 					contentType: 'advanced',
 					visibility: 'subscribers',
@@ -498,7 +465,6 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					title: 'Error Note',
 					body: 'This should fail',
 					contentType: 'simple',
 				},
@@ -526,7 +492,6 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					title: 'Builder Error Note',
 					body: 'This should trigger builder error',
 					contentType: 'simple',
 				},
@@ -541,5 +506,8 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			// Reset the mock for other tests
 			mockParagraphBuilder.text.mockReturnThis();
 		});
+
+		// Note: Additional edge cases for MarkdownParser validation (empty formatting elements,
+		// malformed list markers, etc.) are tested in markdown-parser.test.ts
 	});
 });

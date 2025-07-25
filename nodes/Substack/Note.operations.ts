@@ -312,7 +312,6 @@ async function create(
 	itemIndex: number,
 ): Promise<IStandardResponse> {
 	try {
-		const title = executeFunctions.getNodeParameter('title', itemIndex) as string;
 		const body = executeFunctions.getNodeParameter('body', itemIndex) as string;
 		const contentType = executeFunctions.getNodeParameter('contentType', itemIndex, 'simple') as string;
 		const visibility = executeFunctions.getNodeParameter('visibility', itemIndex, 'everyone') as string;
@@ -329,16 +328,17 @@ async function create(
 			// Validate that we have content before building
 			if (!body || !body.trim()) {
 				return SubstackUtils.formatErrorResponse({
-					message: 'Note body cannot be empty - at least one paragraph with content is required',
+					message: 'Note must contain at least one paragraph with content - body cannot be empty',
 					node: executeFunctions.getNode(),
 					itemIndex,
 				});
 			}
 			
+			// Create content from body only
+			const content = body.trim();
+			
 			// Build note using structured approach
 			try {
-				// Create content - include title if provided
-				const content = title ? `${title.trim()}\n\n${body.trim()}` : body.trim();
 				// Create a paragraph with the content using new API structure
 				noteBuilder.newNode().paragraph().text(content);
 				response = await noteBuilder.publish();
@@ -356,25 +356,28 @@ async function create(
 			// Validate that we have content before parsing
 			if (!body || !body.trim()) {
 				return SubstackUtils.formatErrorResponse({
-					message: 'Note body cannot be empty - at least one paragraph with content is required',
+					message: 'Note must contain at least one paragraph with content - body cannot be empty',
 					node: executeFunctions.getNode(),
 					itemIndex,
 				});
 			}
 			
+			// Create content from body only
+			const content = body.trim();
+			
 			try {
 				// Parse markdown and apply to note builder using structured approach
-				// Include title if provided
-				const content = title ? `${title.trim()}\n\n${body.trim()}` : body.trim();
 				MarkdownParser.parseMarkdownToNoteStructured(content, noteBuilder);
 				response = await noteBuilder.publish();
 			} catch (error) {
-				// Handle both markdown parsing and build errors
-				const isMarkdownError = error.message && error.message.includes('markdown') || error.message.includes('token');
-				const errorPrefix = isMarkdownError ? 'Markdown parsing failed' : 'Note construction failed';
+				// Provide more user-friendly error messages
+				let userMessage = error.message;
+				if (error.message.includes('Note must contain at least one paragraph with actual content')) {
+					userMessage = 'Note must contain at least one paragraph with meaningful content - empty formatting elements are not sufficient';
+				}
 				
 				return SubstackUtils.formatErrorResponse({
-					message: `${errorPrefix}: ${error.message}`,
+					message: userMessage,
 					node: executeFunctions.getNode(),
 					itemIndex,
 				});
@@ -383,7 +386,6 @@ async function create(
 
 		const formattedResponse = {
 			success: true,
-			title: title || '',
 			noteId: response.id.toString(),
 			body: response.body || body,
 			url: SubstackUtils.formatUrl(publicationAddress, `/p/${response.id}`),

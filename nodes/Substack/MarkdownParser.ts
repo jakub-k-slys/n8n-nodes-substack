@@ -28,7 +28,13 @@ export class MarkdownParser {
 		}
 		
 		// Process each token and convert to structured NoteBuilder calls
-		this.processTokensStructured(tokens, noteBuilder);
+		const contentTracker = { meaningfulNodesCreated: 0 };
+		this.processTokensStructured(tokens, noteBuilder, contentTracker);
+		
+		// Validate that we actually created some meaningful content
+		if (contentTracker.meaningfulNodesCreated === 0) {
+			throw new Error('Note must contain at least one paragraph with actual content');
+		}
 
 		return noteBuilder;
 	}
@@ -43,17 +49,17 @@ export class MarkdownParser {
 	/**
 	 * Process marked tokens and convert to structured NoteBuilder calls
 	 */
-	private static processTokensStructured(tokens: any[], noteBuilder: any): void {
+	private static processTokensStructured(tokens: any[], noteBuilder: any, contentTracker: any): void {
 		for (const token of tokens) {
 			switch (token.type) {
 				case 'heading':
-					this.processHeadingStructured(token, noteBuilder);
+					this.processHeadingStructured(token, noteBuilder, contentTracker);
 					break;
 				case 'paragraph':
-					this.processParagraphStructured(token, noteBuilder);
+					this.processParagraphStructured(token, noteBuilder, contentTracker);
 					break;
 				case 'list':
-					this.processListStructured(token, noteBuilder);
+					this.processListStructured(token, noteBuilder, contentTracker);
 					break;
 				case 'space':
 					// Skip empty space tokens
@@ -63,6 +69,7 @@ export class MarkdownParser {
 					if (token.text) {
 						const paragraphBuilder = noteBuilder.newNode().paragraph();
 						paragraphBuilder.text(token.text);
+						contentTracker.meaningfulNodesCreated++;
 					}
 					break;
 			}
@@ -72,7 +79,15 @@ export class MarkdownParser {
 	/**
 	 * Process heading token using structured approach
 	 */
-	private static processHeadingStructured(token: any, noteBuilder: any): void {
+	private static processHeadingStructured(token: any, noteBuilder: any, contentTracker: any): void {
+		// Skip completely empty headings
+		const hasContent = (token.tokens && token.tokens.some((t: any) => t.text && t.text.trim())) ||
+						   (token.text && token.text.trim());
+		
+		if (!hasContent) {
+			return;
+		}
+		
 		const paragraphBuilder = noteBuilder.newNode().paragraph();
 		// Process inline tokens within the heading
 		if (token.tokens && token.tokens.length > 0) {
@@ -80,17 +95,26 @@ export class MarkdownParser {
 		} else if (token.text) {
 			paragraphBuilder.bold(token.text);
 		}
+		contentTracker.meaningfulNodesCreated++;
 	}
 
 	/**
 	 * Process paragraph token using structured approach
 	 */
-	private static processParagraphStructured(token: any, noteBuilder: any): void {
+	private static processParagraphStructured(token: any, noteBuilder: any, contentTracker: any): void {
 		// Skip completely empty paragraphs
-		const hasContent = (token.tokens && token.tokens.some((t: any) => t.text)) ||
-						   (token.text);
+		const hasContent = (token.tokens && token.tokens.some((t: any) => t.text && t.text.trim())) ||
+						   (token.text && token.text.trim());
 		
 		if (!hasContent) {
+			return;
+		}
+		
+		// Skip paragraphs that only contain list markers or similar formatting-only content
+		const text = token.text ? token.text.trim() : '';
+		const isOnlyListMarker = /^([-*+]|\d+\.)\s*$/.test(text);
+		
+		if (isOnlyListMarker) {
 			return;
 		}
 		
@@ -102,21 +126,46 @@ export class MarkdownParser {
 		} else if (token.text) {
 			paragraphBuilder.text(token.text);
 		}
+		contentTracker.meaningfulNodesCreated++;
 	}
 
 	/**
 	 * Process list token using structured approach (convert to separate paragraphs)
 	 */
-	private static processListStructured(token: any, noteBuilder: any): void {
+	private static processListStructured(token: any, noteBuilder: any, contentTracker: any): void {
 		if (!token.items) return;
 
 		token.items.forEach((item: any, index: number) => {
 			// Skip completely empty list items
-			const hasContent = (item.tokens && item.tokens.some((t: any) => t.text)) ||
-							   (item.text);
+			const hasContent = (item.tokens && item.tokens.some((t: any) => t.text && t.text.trim())) ||
+							   (item.text && item.text.trim());
 			
 			if (!hasContent) {
 				return;
+			}
+			
+			// Check if we have meaningful content before creating a paragraph
+			let actualContent = '';
+			
+			// Determine what content we would add
+			if (item.tokens && item.tokens.length > 0) {
+				const firstToken = item.tokens[0];
+				if (firstToken && firstToken.tokens) {
+					// Check if any inline tokens have non-empty text
+					const meaningfulInlineTokens = firstToken.tokens.filter((t: any) => t.text && t.text.trim());
+					if (meaningfulInlineTokens.length > 0) {
+						actualContent = meaningfulInlineTokens.map((t: any) => t.text.trim()).join('');
+					}
+				} else if (firstToken && firstToken.text && firstToken.text.trim()) {
+					actualContent = firstToken.text.trim();
+				}
+			} else if (item.text && item.text.trim()) {
+				actualContent = item.text.trim();
+			}
+			
+			// Only create paragraph if we have actual content
+			if (!actualContent) {
+				return; // Skip this list item entirely
 			}
 			
 			const paragraphBuilder = noteBuilder.newNode().paragraph();
@@ -140,6 +189,7 @@ export class MarkdownParser {
 			} else if (item.text) {
 				paragraphBuilder.text(item.text);
 			}
+			contentTracker.meaningfulNodesCreated++;
 		});
 	}
 
@@ -149,7 +199,7 @@ export class MarkdownParser {
 	private static processInlineTokensStructured(tokens: any[], paragraphBuilder: any, isHeading: boolean = false): void {
 		for (const token of tokens) {
 			// Skip completely empty tokens
-			if (!token.text) {
+			if (!token.text || !token.text.trim()) {
 				continue;
 			}
 			
