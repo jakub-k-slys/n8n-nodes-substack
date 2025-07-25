@@ -74,7 +74,12 @@ export const createMockParagraphBuilder = () => ({
 	publish: jest.fn().mockResolvedValue(mockClientNoteResponse),
 });
 
+export const createMockNodeBuilder = () => ({
+	paragraph: jest.fn().mockReturnValue(createMockParagraphBuilder()),
+});
+
 export const createMockNoteBuilder = () => ({
+	newNode: jest.fn().mockReturnValue(createMockNodeBuilder()),
 	paragraph: jest.fn().mockReturnValue(createMockParagraphBuilder()),
 	publish: jest.fn().mockResolvedValue(mockClientNoteResponse),
 });

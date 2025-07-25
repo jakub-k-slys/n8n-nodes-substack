@@ -3,6 +3,7 @@ import { MarkdownParser } from '../../nodes/Substack/MarkdownParser';
 describe('MarkdownParser', () => {
 	let mockNoteBuilder: any;
 	let mockParagraphBuilder: any;
+	let mockNodeBuilder: any;
 
 	beforeEach(() => {
 		// Create mock paragraph builder
@@ -14,8 +15,14 @@ describe('MarkdownParser', () => {
 			paragraph: jest.fn().mockReturnThis(),
 		};
 
+		// Create mock node builder
+		mockNodeBuilder = {
+			paragraph: jest.fn().mockReturnValue(mockParagraphBuilder),
+		};
+
 		// Create mock note builder
 		mockNoteBuilder = {
+			newNode: jest.fn().mockReturnValue(mockNodeBuilder),
 			paragraph: jest.fn().mockReturnValue(mockParagraphBuilder),
 			publish: jest.fn().mockResolvedValue({ id: '12345' }),
 		};
@@ -24,11 +31,38 @@ describe('MarkdownParser', () => {
 	it('should throw error for empty markdown', () => {
 		expect(() => {
 			MarkdownParser.parseMarkdownToNote('', mockNoteBuilder);
-		}).toThrow('Note body cannot be empty');
+		}).toThrow('Note body cannot be empty - at least one paragraph with content is required');
 
 		expect(() => {
 			MarkdownParser.parseMarkdownToNote('   ', mockNoteBuilder);
-		}).toThrow('Note body cannot be empty');
+		}).toThrow('Note body cannot be empty - at least one paragraph with content is required');
+	});
+
+	it('should throw error for markdown with no meaningful content', () => {
+		// Test with markdown that has structure but no actual text content
+		// This creates tokens but they don't have meaningful content
+		const emptyMarkdown = `---
+
+---
+
+<!-- comment -->`;
+		
+		expect(() => {
+			MarkdownParser.parseMarkdownToNoteStructured(emptyMarkdown, mockNoteBuilder);
+		}).toThrow('Note must contain at least one paragraph with actual content');
+	});
+
+	it('should validate structured parsing requirement', () => {
+		const validMarkdown = 'This is a valid paragraph.';
+		
+		// Should not throw for valid content
+		expect(() => {
+			MarkdownParser.parseMarkdownToNoteStructured(validMarkdown, mockNoteBuilder);
+		}).not.toThrow();
+		
+		// Should have processed at least one paragraph
+		expect(mockNoteBuilder.newNode).toHaveBeenCalled();
+		expect(mockNodeBuilder.paragraph).toHaveBeenCalled();
 	});
 
 	it('should parse simple text paragraph', () => {
@@ -36,7 +70,8 @@ describe('MarkdownParser', () => {
 		
 		MarkdownParser.parseMarkdownToNote(markdown, mockNoteBuilder);
 
-		expect(mockNoteBuilder.paragraph).toHaveBeenCalled();
+		expect(mockNoteBuilder.newNode).toHaveBeenCalled();
+		expect(mockNodeBuilder.paragraph).toHaveBeenCalled();
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This is a simple paragraph.');
 	});
 
@@ -45,7 +80,8 @@ describe('MarkdownParser', () => {
 		
 		MarkdownParser.parseMarkdownToNote(markdown, mockNoteBuilder);
 
-		expect(mockNoteBuilder.paragraph).toHaveBeenCalled();
+		expect(mockNoteBuilder.newNode).toHaveBeenCalled();
+		expect(mockNodeBuilder.paragraph).toHaveBeenCalled();
 		expect(mockParagraphBuilder.bold).toHaveBeenCalledWith('Hello World');
 	});
 
@@ -54,7 +90,8 @@ describe('MarkdownParser', () => {
 		
 		MarkdownParser.parseMarkdownToNote(markdown, mockNoteBuilder);
 
-		expect(mockNoteBuilder.paragraph).toHaveBeenCalled();
+		expect(mockNoteBuilder.newNode).toHaveBeenCalled();
+		expect(mockNodeBuilder.paragraph).toHaveBeenCalled();
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This is ');
 		expect(mockParagraphBuilder.bold).toHaveBeenCalledWith('bold text');
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('.');
@@ -65,7 +102,8 @@ describe('MarkdownParser', () => {
 		
 		MarkdownParser.parseMarkdownToNote(markdown, mockNoteBuilder);
 
-		expect(mockNoteBuilder.paragraph).toHaveBeenCalled();
+		expect(mockNoteBuilder.newNode).toHaveBeenCalled();
+		expect(mockNodeBuilder.paragraph).toHaveBeenCalled();
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This is ');
 		expect(mockParagraphBuilder.italic).toHaveBeenCalledWith('italic text');
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('.');
@@ -76,7 +114,8 @@ describe('MarkdownParser', () => {
 		
 		MarkdownParser.parseMarkdownToNote(markdown, mockNoteBuilder);
 
-		expect(mockNoteBuilder.paragraph).toHaveBeenCalled();
+		expect(mockNoteBuilder.newNode).toHaveBeenCalled();
+		expect(mockNodeBuilder.paragraph).toHaveBeenCalled();
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This is ');
 		expect(mockParagraphBuilder.code).toHaveBeenCalledWith('code text');
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('.');
@@ -87,7 +126,8 @@ describe('MarkdownParser', () => {
 		
 		MarkdownParser.parseMarkdownToNote(markdown, mockNoteBuilder);
 
-		expect(mockNoteBuilder.paragraph).toHaveBeenCalled();
+		expect(mockNoteBuilder.newNode).toHaveBeenCalled();
+		expect(mockNodeBuilder.paragraph).toHaveBeenCalled();
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('Check out ');
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('n8n (https://n8n.io)');
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith(' for automation.');
@@ -101,7 +141,8 @@ describe('MarkdownParser', () => {
 		MarkdownParser.parseMarkdownToNote(markdown, mockNoteBuilder);
 
 		// Should create 3 paragraphs for the list items
-		expect(mockNoteBuilder.paragraph).toHaveBeenCalledTimes(3);
+		expect(mockNoteBuilder.newNode).toHaveBeenCalledTimes(3);
+		expect(mockNodeBuilder.paragraph).toHaveBeenCalledTimes(3);
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('• ');
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('First item');
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('Second item');
@@ -116,7 +157,8 @@ describe('MarkdownParser', () => {
 		MarkdownParser.parseMarkdownToNote(markdown, mockNoteBuilder);
 
 		// Should create 3 paragraphs for the list items
-		expect(mockNoteBuilder.paragraph).toHaveBeenCalledTimes(3);
+		expect(mockNoteBuilder.newNode).toHaveBeenCalledTimes(3);
+		expect(mockNodeBuilder.paragraph).toHaveBeenCalledTimes(3);
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('1. ');
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('2. ');
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('3. ');
@@ -127,7 +169,8 @@ describe('MarkdownParser', () => {
 		
 		MarkdownParser.parseMarkdownToNote(markdown, mockNoteBuilder);
 
-		expect(mockNoteBuilder.paragraph).toHaveBeenCalled();
+		expect(mockNoteBuilder.newNode).toHaveBeenCalled();
+		expect(mockNodeBuilder.paragraph).toHaveBeenCalled();
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This is a note with ');
 		expect(mockParagraphBuilder.bold).toHaveBeenCalledWith('bold');
 		expect(mockParagraphBuilder.text).toHaveBeenCalledWith(', ');
@@ -151,7 +194,8 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 		MarkdownParser.parseMarkdownToNote(markdown, mockNoteBuilder);
 
 		// Should handle all the different elements
-		expect(mockNoteBuilder.paragraph).toHaveBeenCalled();
+		expect(mockNoteBuilder.newNode).toHaveBeenCalled();
+		expect(mockNodeBuilder.paragraph).toHaveBeenCalled();
 		expect(mockParagraphBuilder.bold).toHaveBeenCalledWith('Hello from n8n');
 		expect(mockParagraphBuilder.bold).toHaveBeenCalledWith('bold');
 		expect(mockParagraphBuilder.italic).toHaveBeenCalledWith('italic');
