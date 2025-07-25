@@ -6,36 +6,54 @@ import { marked } from 'marked';
  */
 export class MarkdownParser {
 	/**
-	 * Parse markdown text and apply it to a NoteBuilder
+	 * Parse markdown text and apply it to a NoteBuilder using structured approach
 	 */
-	static parseMarkdownToNote(markdown: string, noteBuilder: any): any {
+	static parseMarkdownToNoteStructured(markdown: string, noteBuilder: any): any {
 		if (!markdown.trim()) {
-			throw new Error('Note body cannot be empty');
+			throw new Error('Note body cannot be empty - at least one paragraph with content is required');
 		}
 
 		// Parse markdown into tokens using marked
 		const tokens = marked.lexer(markdown);
 		
-		// Process each token and convert to NoteBuilder calls
-		this.processTokens(tokens, noteBuilder);
+		// Validate that we have at least one meaningful token
+		const meaningfulTokens = tokens.filter(token => 
+			token.type === 'paragraph' || 
+			token.type === 'heading' || 
+			token.type === 'list'
+		);
+		
+		if (meaningfulTokens.length === 0) {
+			throw new Error('Note must contain at least one paragraph with actual content');
+		}
+		
+		// Process each token and convert to structured NoteBuilder calls
+		this.processTokensStructured(tokens, noteBuilder);
 
 		return noteBuilder;
 	}
 
 	/**
-	 * Process marked tokens and convert to NoteBuilder calls
+	 * Legacy method for backward compatibility
 	 */
-	private static processTokens(tokens: any[], noteBuilder: any): void {
+	static parseMarkdownToNote(markdown: string, noteBuilder: any): any {
+		return this.parseMarkdownToNoteStructured(markdown, noteBuilder);
+	}
+
+	/**
+	 * Process marked tokens and convert to structured NoteBuilder calls
+	 */
+	private static processTokensStructured(tokens: any[], noteBuilder: any): void {
 		for (const token of tokens) {
 			switch (token.type) {
 				case 'heading':
-					this.processHeading(token, noteBuilder);
+					this.processHeadingStructured(token, noteBuilder);
 					break;
 				case 'paragraph':
-					this.processParagraph(token, noteBuilder);
+					this.processParagraphStructured(token, noteBuilder);
 					break;
 				case 'list':
-					this.processList(token, noteBuilder);
+					this.processListStructured(token, noteBuilder);
 					break;
 				case 'space':
 					// Skip empty space tokens
@@ -52,39 +70,55 @@ export class MarkdownParser {
 	}
 
 	/**
-	 * Process heading token
+	 * Process heading token using structured approach
 	 */
-	private static processHeading(token: any, noteBuilder: any): void {
+	private static processHeadingStructured(token: any, noteBuilder: any): void {
 		const paragraphBuilder = noteBuilder.paragraph();
 		// Process inline tokens within the heading
 		if (token.tokens && token.tokens.length > 0) {
-			this.processInlineTokens(token.tokens, paragraphBuilder, true);
-		} else {
-			paragraphBuilder.bold(token.text || '');
+			this.processInlineTokensStructured(token.tokens, paragraphBuilder, true);
+		} else if (token.text) {
+			paragraphBuilder.bold(token.text);
 		}
 	}
 
 	/**
-	 * Process paragraph token
+	 * Process paragraph token using structured approach
 	 */
-	private static processParagraph(token: any, noteBuilder: any): void {
+	private static processParagraphStructured(token: any, noteBuilder: any): void {
+		// Skip completely empty paragraphs
+		const hasContent = (token.tokens && token.tokens.some((t: any) => t.text)) ||
+						   (token.text);
+		
+		if (!hasContent) {
+			return;
+		}
+		
 		const paragraphBuilder = noteBuilder.paragraph();
 		
 		// Process inline tokens within the paragraph
 		if (token.tokens && token.tokens.length > 0) {
-			this.processInlineTokens(token.tokens, paragraphBuilder);
-		} else {
-			paragraphBuilder.text(token.text || '');
+			this.processInlineTokensStructured(token.tokens, paragraphBuilder);
+		} else if (token.text) {
+			paragraphBuilder.text(token.text);
 		}
 	}
 
 	/**
-	 * Process list token
+	 * Process list token using structured approach (convert to separate paragraphs)
 	 */
-	private static processList(token: any, noteBuilder: any): void {
+	private static processListStructured(token: any, noteBuilder: any): void {
 		if (!token.items) return;
 
 		token.items.forEach((item: any, index: number) => {
+			// Skip completely empty list items
+			const hasContent = (item.tokens && item.tokens.some((t: any) => t.text)) ||
+							   (item.text);
+			
+			if (!hasContent) {
+				return;
+			}
+			
 			const paragraphBuilder = noteBuilder.paragraph();
 			
 			// Add list marker
@@ -99,7 +133,7 @@ export class MarkdownParser {
 				// Process the first paragraph token from the list item
 				const firstToken = item.tokens[0];
 				if (firstToken && firstToken.tokens) {
-					this.processInlineTokens(firstToken.tokens, paragraphBuilder);
+					this.processInlineTokensStructured(firstToken.tokens, paragraphBuilder);
 				} else if (firstToken && firstToken.text) {
 					paragraphBuilder.text(firstToken.text);
 				}
@@ -110,10 +144,15 @@ export class MarkdownParser {
 	}
 
 	/**
-	 * Process inline tokens (bold, italic, code, links, text)
+	 * Process inline tokens (bold, italic, code, links, text) using structured approach
 	 */
-	private static processInlineTokens(tokens: any[], paragraphBuilder: any, isHeading: boolean = false): void {
+	private static processInlineTokensStructured(tokens: any[], paragraphBuilder: any, isHeading: boolean = false): void {
 		for (const token of tokens) {
+			// Skip completely empty tokens
+			if (!token.text) {
+				continue;
+			}
+			
 			switch (token.type) {
 				case 'text':
 					if (isHeading) {
@@ -132,8 +171,12 @@ export class MarkdownParser {
 					paragraphBuilder.code(token.text);
 					break;
 				case 'link':
-					// Format links as "text (url)"
-					paragraphBuilder.text(`${token.text} (${token.href})`);
+					// Format links properly - add link text first, then URL in parentheses
+					if (token.text) {
+						paragraphBuilder.text(`${token.text} (${token.href})`);
+					} else {
+						paragraphBuilder.text(token.href);
+					}
 					break;
 				default:
 					// Fallback for unknown inline tokens

@@ -317,39 +317,60 @@ async function create(
 		const contentType = executeFunctions.getNodeParameter('contentType', itemIndex, 'simple') as string;
 		const visibility = executeFunctions.getNodeParameter('visibility', itemIndex, 'everyone') as string;
 
-		// Input validation for empty body
-		if (!body || !body.trim()) {
-			return SubstackUtils.formatErrorResponse({
-				message: 'Note body cannot be empty',
-				node: executeFunctions.getNode(),
-				itemIndex,
-			});
-		}
-
 		// Get own profile to create notes
 		const ownProfile = await client.ownProfile();
 		
 		let response;
 
 		if (contentType === 'simple') {
-			// Use simple builder pattern for plain text
-			const noteBuilder = title ? ownProfile.newNote(title) : ownProfile.newNote();
-			if (body) {
-				noteBuilder.paragraph(body);
-			}
-			response = await noteBuilder.publish();
-		} else {
-			// Use markdown parsing for advanced mode
+			// Use structured builder pattern for plain text
 			const noteBuilder = title ? ownProfile.newNote(title) : ownProfile.newNote();
 			
-			try {
-				// Parse markdown and apply to note builder
-				MarkdownParser.parseMarkdownToNote(body, noteBuilder);
-				response = await noteBuilder.publish();
-			} catch (markdownError) {
-				// If markdown parsing fails, return error
+			// Validate that we have content before building
+			if (!body || !body.trim()) {
 				return SubstackUtils.formatErrorResponse({
-					message: `Markdown parsing failed: ${markdownError.message}`,
+					message: 'Note body cannot be empty - at least one paragraph with content is required',
+					node: executeFunctions.getNode(),
+					itemIndex,
+				});
+			}
+			
+			// Build note using structured approach
+			try {
+				// Create a paragraph with the content
+				noteBuilder.paragraph().text(body.trim());
+				response = await noteBuilder.publish();
+			} catch (buildError) {
+				return SubstackUtils.formatErrorResponse({
+					message: `Note construction failed: ${buildError.message}`,
+					node: executeFunctions.getNode(),
+					itemIndex,
+				});
+			}
+		} else {
+			// Use markdown parsing for advanced mode with structured builder
+			const noteBuilder = title ? ownProfile.newNote(title) : ownProfile.newNote();
+			
+			// Validate that we have content before parsing
+			if (!body || !body.trim()) {
+				return SubstackUtils.formatErrorResponse({
+					message: 'Note body cannot be empty - at least one paragraph with content is required',
+					node: executeFunctions.getNode(),
+					itemIndex,
+				});
+			}
+			
+			try {
+				// Parse markdown and apply to note builder using structured approach
+				MarkdownParser.parseMarkdownToNoteStructured(body.trim(), noteBuilder);
+				response = await noteBuilder.publish();
+			} catch (error) {
+				// Handle both markdown parsing and build errors
+				const isMarkdownError = error.message && error.message.includes('markdown') || error.message.includes('token');
+				const errorPrefix = isMarkdownError ? 'Markdown parsing failed' : 'Note construction failed';
+				
+				return SubstackUtils.formatErrorResponse({
+					message: `${errorPrefix}: ${error.message}`,
 					node: executeFunctions.getNode(),
 					itemIndex,
 				});

@@ -24,11 +24,37 @@ describe('MarkdownParser', () => {
 	it('should throw error for empty markdown', () => {
 		expect(() => {
 			MarkdownParser.parseMarkdownToNote('', mockNoteBuilder);
-		}).toThrow('Note body cannot be empty');
+		}).toThrow('Note body cannot be empty - at least one paragraph with content is required');
 
 		expect(() => {
 			MarkdownParser.parseMarkdownToNote('   ', mockNoteBuilder);
-		}).toThrow('Note body cannot be empty');
+		}).toThrow('Note body cannot be empty - at least one paragraph with content is required');
+	});
+
+	it('should throw error for markdown with no meaningful content', () => {
+		// Test with markdown that has structure but no actual text content
+		// This creates tokens but they don't have meaningful content
+		const emptyMarkdown = `---
+
+---
+
+<!-- comment -->`;
+		
+		expect(() => {
+			MarkdownParser.parseMarkdownToNoteStructured(emptyMarkdown, mockNoteBuilder);
+		}).toThrow('Note must contain at least one paragraph with actual content');
+	});
+
+	it('should validate structured parsing requirement', () => {
+		const validMarkdown = 'This is a valid paragraph.';
+		
+		// Should not throw for valid content
+		expect(() => {
+			MarkdownParser.parseMarkdownToNoteStructured(validMarkdown, mockNoteBuilder);
+		}).not.toThrow();
+		
+		// Should have processed at least one paragraph
+		expect(mockNoteBuilder.paragraph).toHaveBeenCalled();
 	});
 
 	it('should parse simple text paragraph', () => {
