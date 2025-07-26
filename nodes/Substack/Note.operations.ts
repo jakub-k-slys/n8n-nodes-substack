@@ -339,8 +339,8 @@ async function create(
 			
 			// Build note using structured approach
 			try {
-				// Create a paragraph with the content using new API structure
-				noteBuilder.newNode().paragraph().text(content);
+				// Create a paragraph with the content using correct API pattern
+				noteBuilder.paragraph().text(content);
 				response = await noteBuilder.publish();
 			} catch (buildError) {
 				return SubstackUtils.formatErrorResponse({

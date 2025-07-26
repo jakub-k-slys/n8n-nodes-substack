@@ -67,7 +67,7 @@ export class MarkdownParser {
 				default:
 					// Handle other token types as paragraphs
 					if (token.text) {
-						const paragraphBuilder = noteBuilder.newNode().paragraph();
+						const paragraphBuilder = noteBuilder.paragraph();
 						paragraphBuilder.text(token.text);
 						contentTracker.meaningfulNodesCreated++;
 					}
@@ -88,7 +88,7 @@ export class MarkdownParser {
 			return;
 		}
 		
-		const paragraphBuilder = noteBuilder.newNode().paragraph();
+		const paragraphBuilder = noteBuilder.paragraph();
 		// Process inline tokens within the heading
 		if (token.tokens && token.tokens.length > 0) {
 			this.processInlineTokensStructured(token.tokens, paragraphBuilder, true);
@@ -118,7 +118,7 @@ export class MarkdownParser {
 			return;
 		}
 		
-		const paragraphBuilder = noteBuilder.newNode().paragraph();
+		const paragraphBuilder = noteBuilder.paragraph();
 		
 		// Process inline tokens within the paragraph
 		if (token.tokens && token.tokens.length > 0) {
@@ -168,7 +168,7 @@ export class MarkdownParser {
 				return; // Skip this list item entirely
 			}
 			
-			const paragraphBuilder = noteBuilder.newNode().paragraph();
+			const paragraphBuilder = noteBuilder.paragraph();
 			
 			// Add list marker
 			if (token.ordered) {
