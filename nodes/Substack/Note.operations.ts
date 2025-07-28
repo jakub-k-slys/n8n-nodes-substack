@@ -342,9 +342,6 @@ async function createAdvancedNote(
 	executeFunctions: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<any> {
-	// Use markdown parsing for advanced mode with structured builder
-	const noteBuilder = ownProfile.newNote();
-	
 	// Validate that we have content before parsing
 	if (!body || !body.trim()) {
 		return SubstackUtils.formatErrorResponse({
@@ -359,8 +356,7 @@ async function createAdvancedNote(
 	
 	try {
 		// Parse markdown and apply to note builder using structured approach
-		MarkdownParser.parseMarkdownToNoteStructured(content, noteBuilder);
-		return await noteBuilder.publish();
+		return await MarkdownParser.parseMarkdownToNoteStructured(content, ownProfile.newNote()).publish();
 	} catch (error) {
 		// Provide more user-friendly error messages
 		let userMessage = error.message;
