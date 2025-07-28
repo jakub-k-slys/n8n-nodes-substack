@@ -305,6 +305,81 @@ async function getNoteById(
 	}
 }
 
+async function createSimpleNote(
+	ownProfile: any,
+	body: string,
+	executeFunctions: IExecuteFunctions,
+	itemIndex: number,
+): Promise<any> {
+	// Use structured builder pattern for plain text
+	const noteBuilder = ownProfile.newNote();
+	
+	// Validate that we have content before building
+	if (!body || !body.trim()) {
+		return SubstackUtils.formatErrorResponse({
+			message: 'Note must contain at least one paragraph with content - body cannot be empty',
+			node: executeFunctions.getNode(),
+			itemIndex,
+		});
+	}
+	
+	// Create content from body only
+	const content = body.trim();
+	
+	// Build note using structured approach
+	try {
+		// Create a paragraph with the content using correct API pattern
+		noteBuilder.paragraph().text(content);
+		return await noteBuilder.publish();
+	} catch (buildError) {
+		return SubstackUtils.formatErrorResponse({
+			message: `Note construction failed: ${buildError.message}`,
+			node: executeFunctions.getNode(),
+			itemIndex,
+		});
+	}
+}
+
+async function createAdvancedNote(
+	ownProfile: any,
+	body: string,
+	executeFunctions: IExecuteFunctions,
+	itemIndex: number,
+): Promise<any> {
+	// Use markdown parsing for advanced mode with structured builder
+	const noteBuilder = ownProfile.newNote();
+	
+	// Validate that we have content before parsing
+	if (!body || !body.trim()) {
+		return SubstackUtils.formatErrorResponse({
+			message: 'Note must contain at least one paragraph with content - body cannot be empty',
+			node: executeFunctions.getNode(),
+			itemIndex,
+		});
+	}
+	
+	// Create content from body only
+	const content = body.trim();
+	
+	try {
+		// Parse markdown and apply to note builder using structured approach
+		MarkdownParser.parseMarkdownToNoteStructured(content, noteBuilder);
+		return await noteBuilder.publish();
+	} catch (error) {
+		// Provide more user-friendly error messages
+		let userMessage = error.message;
+		if (error.message.includes('Note must contain at least one paragraph with actual content')) {
+			userMessage = 'Note must contain at least one paragraph with meaningful content - empty formatting elements are not sufficient';
+		}
+		
+		return SubstackUtils.formatErrorResponse({
+			message: userMessage,
+			node: executeFunctions.getNode(),
+			itemIndex,
+		});
+	}
+}
+
 async function create(
 	executeFunctions: IExecuteFunctions,
 	client: SubstackClient,
@@ -322,66 +397,14 @@ async function create(
 		let response;
 
 		if (contentType === 'simple') {
-			// Use structured builder pattern for plain text
-			const noteBuilder = ownProfile.newNote();
-			
-			// Validate that we have content before building
-			if (!body || !body.trim()) {
-				return SubstackUtils.formatErrorResponse({
-					message: 'Note must contain at least one paragraph with content - body cannot be empty',
-					node: executeFunctions.getNode(),
-					itemIndex,
-				});
-			}
-			
-			// Create content from body only
-			const content = body.trim();
-			
-			// Build note using structured approach
-			try {
-				// Create a paragraph with the content using correct API pattern
-				noteBuilder.paragraph().text(content);
-				response = await noteBuilder.publish();
-			} catch (buildError) {
-				return SubstackUtils.formatErrorResponse({
-					message: `Note construction failed: ${buildError.message}`,
-					node: executeFunctions.getNode(),
-					itemIndex,
-				});
-			}
+			response = await createSimpleNote(ownProfile, body, executeFunctions, itemIndex);
 		} else {
-			// Use markdown parsing for advanced mode with structured builder
-			const noteBuilder = ownProfile.newNote();
-			
-			// Validate that we have content before parsing
-			if (!body || !body.trim()) {
-				return SubstackUtils.formatErrorResponse({
-					message: 'Note must contain at least one paragraph with content - body cannot be empty',
-					node: executeFunctions.getNode(),
-					itemIndex,
-				});
-			}
-			
-			// Create content from body only
-			const content = body.trim();
-			
-			try {
-				// Parse markdown and apply to note builder using structured approach
-				MarkdownParser.parseMarkdownToNoteStructured(content, noteBuilder);
-				response = await noteBuilder.publish();
-			} catch (error) {
-				// Provide more user-friendly error messages
-				let userMessage = error.message;
-				if (error.message.includes('Note must contain at least one paragraph with actual content')) {
-					userMessage = 'Note must contain at least one paragraph with meaningful content - empty formatting elements are not sufficient';
-				}
-				
-				return SubstackUtils.formatErrorResponse({
-					message: userMessage,
-					node: executeFunctions.getNode(),
-					itemIndex,
-				});
-			}
+			response = await createAdvancedNote(ownProfile, body, executeFunctions, itemIndex);
+		}
+
+		// If the response is an error response, return it directly
+		if (response && !response.success && response.error) {
+			return response;
 		}
 
 		const formattedResponse = {
