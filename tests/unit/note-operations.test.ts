@@ -276,7 +276,7 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 			expect(mockOwnProfile.newNote).toHaveBeenCalledWith();
 			expect(mockNoteBuilder.paragraph).toHaveBeenCalledTimes(1);
 			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This is a test note body');
-			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
+			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
 		});
 
 		it('should successfully create an advanced note with Markdown content', async () => {
@@ -408,7 +408,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			// Verify the structured approach was used
 			expect(mockNoteBuilder.paragraph).toHaveBeenCalledTimes(1);
 			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This is a valid note with actual content.');
-			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
+			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
 			
 			// Verify success
 			expect(result[0][0].json).toHaveProperty('success', true);
@@ -451,7 +451,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 
 		it('should handle creation errors appropriately', async () => {
 			// Setup client to throw error
-			mockNoteBuilder.publish.mockRejectedValue(new Error('API Error: Failed to publish note'));
+			mockParagraphBuilder.publish.mockRejectedValue(new Error('API Error: Failed to publish note'));
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -471,7 +471,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 
 			// Verify client methods were called
 			expect(mockClient.ownProfile).toHaveBeenCalledTimes(1);
-			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
+			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
 		});
 
 		it('should handle builder validation errors', async () => {

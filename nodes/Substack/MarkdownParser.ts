@@ -1,4 +1,5 @@
 import { marked } from 'marked';
+import type { OwnProfile } from 'substack-api';
 
 /**
  * Markdown parser for Substack notes using the marked library
@@ -8,7 +9,7 @@ export class MarkdownParser {
 	/**
 	 * Parse markdown text and apply it to a NoteBuilder using structured approach
 	 */
-	static parseMarkdownToNoteStructured(markdown: string, noteBuilder: any): any {
+	static parseMarkdownToNoteStructured(markdown: string, noteBuilder: ReturnType<OwnProfile['newNote']>): ReturnType<OwnProfile['newNote']> {
 		if (!markdown.trim()) {
 			throw new Error('Note body cannot be empty - at least one paragraph with content is required');
 		}
@@ -42,14 +43,14 @@ export class MarkdownParser {
 	/**
 	 * Legacy method for backward compatibility
 	 */
-	static parseMarkdownToNote(markdown: string, noteBuilder: any): any {
+	static parseMarkdownToNote(markdown: string, noteBuilder: ReturnType<OwnProfile['newNote']>): ReturnType<OwnProfile['newNote']> {
 		return this.parseMarkdownToNoteStructured(markdown, noteBuilder);
 	}
 
 	/**
 	 * Process marked tokens and convert to structured NoteBuilder calls
 	 */
-	private static processTokensStructured(tokens: any[], noteBuilder: any, contentTracker: any): void {
+	private static processTokensStructured(tokens: any[], noteBuilder: ReturnType<OwnProfile['newNote']>, contentTracker: any): void {
 		for (const token of tokens) {
 			switch (token.type) {
 				case 'heading':
@@ -79,7 +80,7 @@ export class MarkdownParser {
 	/**
 	 * Process heading token using structured approach
 	 */
-	private static processHeadingStructured(token: any, noteBuilder: any, contentTracker: any): void {
+	private static processHeadingStructured(token: any, noteBuilder: ReturnType<OwnProfile['newNote']>, contentTracker: any): void {
 		// Skip completely empty headings
 		const hasContent = (token.tokens && token.tokens.some((t: any) => t.text && t.text.trim())) ||
 						   (token.text && token.text.trim());
@@ -101,7 +102,7 @@ export class MarkdownParser {
 	/**
 	 * Process paragraph token using structured approach
 	 */
-	private static processParagraphStructured(token: any, noteBuilder: any, contentTracker: any): void {
+	private static processParagraphStructured(token: any, noteBuilder: ReturnType<OwnProfile['newNote']>, contentTracker: any): void {
 		// Skip completely empty paragraphs
 		const hasContent = (token.tokens && token.tokens.some((t: any) => t.text && t.text.trim())) ||
 						   (token.text && token.text.trim());
@@ -132,7 +133,7 @@ export class MarkdownParser {
 	/**
 	 * Process list token using structured approach (convert to separate paragraphs)
 	 */
-	private static processListStructured(token: any, noteBuilder: any, contentTracker: any): void {
+	private static processListStructured(token: any, noteBuilder: ReturnType<OwnProfile['newNote']>, contentTracker: any): void {
 		if (!token.items) return;
 
 		token.items.forEach((item: any, index: number) => {
@@ -196,7 +197,7 @@ export class MarkdownParser {
 	/**
 	 * Process inline tokens (bold, italic, code, links, text) using structured approach
 	 */
-	private static processInlineTokensStructured(tokens: any[], paragraphBuilder: any, isHeading: boolean = false): void {
+	private static processInlineTokensStructured(tokens: any[], paragraphBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']>, isHeading: boolean = false): void {
 		for (const token of tokens) {
 			// Skip completely empty tokens
 			if (!token.text || !token.text.trim()) {

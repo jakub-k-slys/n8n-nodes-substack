@@ -87,8 +87,8 @@ describe('Builder Pattern Validation Tests', () => {
 			// 4. text() should be called on paragraphBuilder
 			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('Hello world');
 			
-			// 5. publish() should be called on noteBuilder
-			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
+			// 5. publish() should be called on paragraphBuilder
+			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
 			
 			// Verify success
 			expect(result[0][0].json).toHaveProperty('success', true);
@@ -113,7 +113,7 @@ describe('Builder Pattern Validation Tests', () => {
 			// The key validation: paragraph() must be called before publish()
 			// We verify this by checking that both were called
 			expect(mockNoteBuilder.paragraph).toHaveBeenCalledTimes(1);
-			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
+			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
 			
 			// And text() must be called on the paragraph builder
 			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This note should work correctly');
@@ -197,7 +197,7 @@ This is a test note with **bold text**.
 
 			// Verify the exact call chain
 			const calls = mockNoteBuilder.paragraph.mock.calls;
-			const publishCalls = mockNoteBuilder.publish.mock.calls;
+			const publishCalls = mockParagraphBuilder.publish.mock.calls;
 			const textCalls = mockParagraphBuilder.text.mock.calls;
 
 			// Should have called paragraph() once
