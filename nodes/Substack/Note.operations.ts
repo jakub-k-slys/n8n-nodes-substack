@@ -377,16 +377,10 @@ async function create(
 		const contentType = executeFunctions.getNodeParameter('contentType', itemIndex, 'simple') as string;
 		const visibility = executeFunctions.getNodeParameter('visibility', itemIndex, 'everyone') as string;
 
-		// Get own profile to create notes
-		const ownProfile = await client.ownProfile();
-		
-		let response;
-
-		if (contentType === 'simple') {
-			response = await createSimpleNote(ownProfile, body, executeFunctions, itemIndex);
-		} else {
-			response = await createAdvancedNote(ownProfile, body, executeFunctions, itemIndex);
-		}
+		const ownProfile = await client.ownProfile();		
+		const response = contentType === 'simple' 
+			? await createSimpleNote(ownProfile, body, executeFunctions, itemIndex)
+			: await createAdvancedNote(ownProfile, body, executeFunctions, itemIndex);
 
 		// If the response is an error response, return it directly
 		if (response && !response.success && response.error) {
