@@ -320,10 +320,21 @@ async function createSimpleNote(
 		});
 	}
 	
+	// Additional validation to ensure the content is meaningful
+	const trimmedBody = body.trim();
+	if (trimmedBody.length === 0) {
+		return SubstackUtils.formatErrorResponse({
+			message: 'Note must contain at least one paragraph with actual content - whitespace-only content is not allowed',
+			node: executeFunctions.getNode(),
+			itemIndex,
+		});
+	}
+	
 	// Build note using structured approach
 	try {
 		// Create a paragraph with the content using correct API pattern
-		return await ownProfile.newNote().paragraph().text(body.trim()).publish();
+		// This ensures .paragraph() is always followed by .text() with actual content
+		return await ownProfile.newNote().paragraph().text(trimmedBody).publish();
 	} catch (buildError) {
 		return SubstackUtils.formatErrorResponse({
 			message: `Note construction failed: ${buildError.message}`,
@@ -355,7 +366,9 @@ async function createAdvancedNote(
 		// Provide more user-friendly error messages
 		let userMessage = error.message;
 		if (error.message.includes('Note must contain at least one paragraph with actual content')) {
-			userMessage = 'Note must contain at least one paragraph with meaningful content - empty formatting elements are not sufficient';
+			userMessage = 'Note must contain at least one paragraph with meaningful content. Empty formatting elements like empty bold (**), italic (*), or empty lists are not sufficient. Please add actual text content.';
+		} else if (error.message.includes('Note body cannot be empty')) {
+			userMessage = 'Note body cannot be empty - please provide content for your note.';
 		}
 		
 		return SubstackUtils.formatErrorResponse({

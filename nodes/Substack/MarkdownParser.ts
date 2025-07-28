@@ -67,7 +67,7 @@ export class MarkdownParser {
 					break;
 				default:
 					// Handle other token types as paragraphs
-					if (token.text) {
+					if (token.text && token.text.trim()) {
 						let paragraphBuilder = noteBuilder.paragraph();
 						paragraphBuilder = paragraphBuilder.text(token.text);
 						contentTracker.meaningfulNodesCreated++;
@@ -90,13 +90,22 @@ export class MarkdownParser {
 		}
 		
 		let paragraphBuilder = noteBuilder.paragraph();
+		let actuallyHasContent = false;
+		
 		// Process inline tokens within the heading
 		if (token.tokens && token.tokens.length > 0) {
-			paragraphBuilder = this.processInlineTokensStructured(token.tokens, paragraphBuilder, true);
+			const result = this.processInlineTokensStructured(token.tokens, paragraphBuilder, true);
+			paragraphBuilder = result.builder;
+			actuallyHasContent = result.hasContent;
 		} else if (token.text) {
 			paragraphBuilder = paragraphBuilder.bold(token.text);
+			actuallyHasContent = true;
 		}
-		contentTracker.meaningfulNodesCreated++;
+		
+		// Only count as meaningful if we actually added content
+		if (actuallyHasContent) {
+			contentTracker.meaningfulNodesCreated++;
+		}
 	}
 
 	/**
@@ -120,14 +129,22 @@ export class MarkdownParser {
 		}
 		
 		let paragraphBuilder = noteBuilder.paragraph();
+		let actuallyHasContent = false;
 		
 		// Process inline tokens within the paragraph
 		if (token.tokens && token.tokens.length > 0) {
-			paragraphBuilder = this.processInlineTokensStructured(token.tokens, paragraphBuilder);
+			const result = this.processInlineTokensStructured(token.tokens, paragraphBuilder);
+			paragraphBuilder = result.builder;
+			actuallyHasContent = result.hasContent;
 		} else if (token.text) {
 			paragraphBuilder = paragraphBuilder.text(token.text);
+			actuallyHasContent = true;
 		}
-		contentTracker.meaningfulNodesCreated++;
+		
+		// Only count as meaningful if we actually added content
+		if (actuallyHasContent) {
+			contentTracker.meaningfulNodesCreated++;
+		}
 	}
 
 	/**
@@ -183,7 +200,9 @@ export class MarkdownParser {
 				// Process the first paragraph token from the list item
 				const firstToken = item.tokens[0];
 				if (firstToken && firstToken.tokens) {
-					paragraphBuilder = this.processInlineTokensStructured(firstToken.tokens, paragraphBuilder);
+					const result = this.processInlineTokensStructured(firstToken.tokens, paragraphBuilder);
+					paragraphBuilder = result.builder;
+					// We already added the list marker, so we have content
 				} else if (firstToken && firstToken.text) {
 					paragraphBuilder = paragraphBuilder.text(firstToken.text);
 				}
@@ -196,16 +215,20 @@ export class MarkdownParser {
 
 	/**
 	 * Process inline tokens (bold, italic, code, links, text) using structured approach
-	 * Returns the final paragraph builder after chaining all method calls
+	 * Returns the final paragraph builder after chaining all method calls and tracks if content was added
 	 */
-	private static processInlineTokensStructured(tokens: any[], paragraphBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']>, isHeading: boolean = false): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
+	private static processInlineTokensStructured(tokens: any[], paragraphBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']>, isHeading: boolean = false): { builder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']>, hasContent: boolean } {
 		let currentBuilder = paragraphBuilder;
+		let hasContent = false;
 		
 		for (const token of tokens) {
 			// Skip completely empty tokens
 			if (!token.text || !token.text.trim()) {
 				continue;
 			}
+			
+			// Mark that we found content
+			hasContent = true;
 			
 			switch (token.type) {
 				case 'text':
@@ -245,6 +268,6 @@ export class MarkdownParser {
 			}
 		}
 		
-		return currentBuilder;
+		return { builder: currentBuilder, hasContent };
 	}
 }
