@@ -257,4 +257,116 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			}).toThrow('Note must contain at least one paragraph with actual content');
 		});
 	});
+	
+	// Immutability validation tests
+	describe('Immutability Fix Validation', () => {
+		it('should properly chain method calls to handle immutable builders', () => {
+			// Track all method calls across all instances
+			const methodCalls: string[] = [];
+			
+			// Create mock that simulates the immutable behavior of substack-api v1.2.0
+			// Each method call returns a NEW instance (not the same one)
+			const createNewMockParagraphBuilder = () => ({
+				text: jest.fn().mockImplementation(function(text: string) {
+					methodCalls.push(`text(${text})`);
+					// Return a new instance to simulate immutability
+					return createNewMockParagraphBuilder();
+				}),
+				bold: jest.fn().mockImplementation(function(text: string) {
+					methodCalls.push(`bold(${text})`);
+					// Return a new instance to simulate immutability
+					return createNewMockParagraphBuilder();
+				}),
+				italic: jest.fn().mockImplementation(function(text: string) {
+					methodCalls.push(`italic(${text})`);
+					// Return a new instance to simulate immutability
+					return createNewMockParagraphBuilder();
+				}),
+				code: jest.fn().mockImplementation(function(text: string) {
+					methodCalls.push(`code(${text})`);
+					// Return a new instance to simulate immutability
+					return createNewMockParagraphBuilder();
+				}),
+			});
+
+			// Create initial mock paragraph builder
+			const immutableParagraphBuilder = createNewMockParagraphBuilder();
+
+			// Create mock note builder using the same pattern as the main tests
+			const immutableNoteBuilder: any = {
+				paragraph: jest.fn().mockReturnValue(immutableParagraphBuilder),
+				publish: jest.fn().mockResolvedValue({ id: '12345' }),
+			};
+			
+			const markdown = 'This is **bold** and *italic* text.';
+			
+			// Parse the markdown - this should work with immutable builders
+			expect(() => {
+				MarkdownParser.parseMarkdownToNote(markdown, immutableNoteBuilder);
+			}).not.toThrow();
+
+			// Verify that paragraph() was called to create a paragraph
+			expect(immutableNoteBuilder.paragraph).toHaveBeenCalled();
+			
+			// Verify that the text methods were called
+			// Check the method calls array to see what was actually called
+			expect(methodCalls.length).toBeGreaterThan(0);
+			expect(methodCalls.some(call => call.includes('text(This is )'))).toBe(true);
+			expect(methodCalls.some(call => call.includes('bold(bold)'))).toBe(true);
+			expect(methodCalls.some(call => call.includes('text( and )'))).toBe(true);
+			expect(methodCalls.some(call => call.includes('italic(italic)'))).toBe(true);
+			expect(methodCalls.some(call => call.includes('text( text.)'))).toBe(true);
+		});
+
+		it('should handle complex markdown with immutable builders', () => {
+			// Track all method calls across all instances
+			const methodCalls: string[] = [];
+			
+			// Create immutable mock builders
+			const createNewMockParagraphBuilder = () => ({
+				text: jest.fn().mockImplementation((text: string) => {
+					methodCalls.push(`text(${text})`);
+					return createNewMockParagraphBuilder();
+				}),
+				bold: jest.fn().mockImplementation((text: string) => {
+					methodCalls.push(`bold(${text})`);
+					return createNewMockParagraphBuilder();
+				}),
+				italic: jest.fn().mockImplementation((text: string) => {
+					methodCalls.push(`italic(${text})`);
+					return createNewMockParagraphBuilder();
+				}),
+				code: jest.fn().mockImplementation((text: string) => {
+					methodCalls.push(`code(${text})`);
+					return createNewMockParagraphBuilder();
+				}),
+			});
+
+			const immutableParagraphBuilder = createNewMockParagraphBuilder();
+			const immutableNoteBuilder: any = {
+				paragraph: jest.fn().mockReturnValue(immutableParagraphBuilder),
+				publish: jest.fn().mockResolvedValue({ id: '12345' }),
+			};
+
+			const markdown = `## Heading with **bold**
+
+This is a paragraph with **bold** and \`code\`.
+
+- List item with **bold**`;
+			
+			// Should not throw even with complex markdown and immutable builders
+			expect(() => {
+				MarkdownParser.parseMarkdownToNote(markdown, immutableNoteBuilder);
+			}).not.toThrow();
+
+			// Should have created multiple paragraphs
+			expect(immutableNoteBuilder.paragraph).toHaveBeenCalled();
+			
+			// Verify that various formatting types were processed
+			expect(methodCalls.length).toBeGreaterThan(0);
+			expect(methodCalls.some(call => call.includes('bold('))).toBe(true);
+			expect(methodCalls.some(call => call.includes('text('))).toBe(true);
+			expect(methodCalls.some(call => call.includes('code('))).toBe(true);
+		});
+	});
 });

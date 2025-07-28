@@ -68,8 +68,8 @@ export class MarkdownParser {
 				default:
 					// Handle other token types as paragraphs
 					if (token.text) {
-						const paragraphBuilder = noteBuilder.paragraph();
-						paragraphBuilder.text(token.text);
+						let paragraphBuilder = noteBuilder.paragraph();
+						paragraphBuilder = paragraphBuilder.text(token.text);
 						contentTracker.meaningfulNodesCreated++;
 					}
 					break;
@@ -89,12 +89,12 @@ export class MarkdownParser {
 			return;
 		}
 		
-		const paragraphBuilder = noteBuilder.paragraph();
+		let paragraphBuilder = noteBuilder.paragraph();
 		// Process inline tokens within the heading
 		if (token.tokens && token.tokens.length > 0) {
-			this.processInlineTokensStructured(token.tokens, paragraphBuilder, true);
+			paragraphBuilder = this.processInlineTokensStructured(token.tokens, paragraphBuilder, true);
 		} else if (token.text) {
-			paragraphBuilder.bold(token.text);
+			paragraphBuilder = paragraphBuilder.bold(token.text);
 		}
 		contentTracker.meaningfulNodesCreated++;
 	}
@@ -119,13 +119,13 @@ export class MarkdownParser {
 			return;
 		}
 		
-		const paragraphBuilder = noteBuilder.paragraph();
+		let paragraphBuilder = noteBuilder.paragraph();
 		
 		// Process inline tokens within the paragraph
 		if (token.tokens && token.tokens.length > 0) {
-			this.processInlineTokensStructured(token.tokens, paragraphBuilder);
+			paragraphBuilder = this.processInlineTokensStructured(token.tokens, paragraphBuilder);
 		} else if (token.text) {
-			paragraphBuilder.text(token.text);
+			paragraphBuilder = paragraphBuilder.text(token.text);
 		}
 		contentTracker.meaningfulNodesCreated++;
 	}
@@ -169,13 +169,13 @@ export class MarkdownParser {
 				return; // Skip this list item entirely
 			}
 			
-			const paragraphBuilder = noteBuilder.paragraph();
+			let paragraphBuilder = noteBuilder.paragraph();
 			
 			// Add list marker
 			if (token.ordered) {
-				paragraphBuilder.text(`${index + 1}. `);
+				paragraphBuilder = paragraphBuilder.text(`${index + 1}. `);
 			} else {
-				paragraphBuilder.text('• ');
+				paragraphBuilder = paragraphBuilder.text('• ');
 			}
 			
 			// Process list item content
@@ -183,12 +183,12 @@ export class MarkdownParser {
 				// Process the first paragraph token from the list item
 				const firstToken = item.tokens[0];
 				if (firstToken && firstToken.tokens) {
-					this.processInlineTokensStructured(firstToken.tokens, paragraphBuilder);
+					paragraphBuilder = this.processInlineTokensStructured(firstToken.tokens, paragraphBuilder);
 				} else if (firstToken && firstToken.text) {
-					paragraphBuilder.text(firstToken.text);
+					paragraphBuilder = paragraphBuilder.text(firstToken.text);
 				}
 			} else if (item.text) {
-				paragraphBuilder.text(item.text);
+				paragraphBuilder = paragraphBuilder.text(item.text);
 			}
 			contentTracker.meaningfulNodesCreated++;
 		});
@@ -196,8 +196,11 @@ export class MarkdownParser {
 
 	/**
 	 * Process inline tokens (bold, italic, code, links, text) using structured approach
+	 * Returns the final paragraph builder after chaining all method calls
 	 */
-	private static processInlineTokensStructured(tokens: any[], paragraphBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']>, isHeading: boolean = false): void {
+	private static processInlineTokensStructured(tokens: any[], paragraphBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']>, isHeading: boolean = false): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
+		let currentBuilder = paragraphBuilder;
+		
 		for (const token of tokens) {
 			// Skip completely empty tokens
 			if (!token.text || !token.text.trim()) {
@@ -207,39 +210,41 @@ export class MarkdownParser {
 			switch (token.type) {
 				case 'text':
 					if (isHeading) {
-						paragraphBuilder.bold(token.text);
+						currentBuilder = currentBuilder.bold(token.text);
 					} else {
-						paragraphBuilder.text(token.text);
+						currentBuilder = currentBuilder.text(token.text);
 					}
 					break;
 				case 'strong':
-					paragraphBuilder.bold(token.text);
+					currentBuilder = currentBuilder.bold(token.text);
 					break;
 				case 'em':
-					paragraphBuilder.italic(token.text);
+					currentBuilder = currentBuilder.italic(token.text);
 					break;
 				case 'codespan':
-					paragraphBuilder.code(token.text);
+					currentBuilder = currentBuilder.code(token.text);
 					break;
 				case 'link':
 					// Format links properly - add link text first, then URL in parentheses
 					if (token.text) {
-						paragraphBuilder.text(`${token.text} (${token.href})`);
+						currentBuilder = currentBuilder.text(`${token.text} (${token.href})`);
 					} else {
-						paragraphBuilder.text(token.href);
+						currentBuilder = currentBuilder.text(token.href);
 					}
 					break;
 				default:
 					// Fallback for unknown inline tokens
 					if (token.text) {
 						if (isHeading) {
-							paragraphBuilder.bold(token.text);
+							currentBuilder = currentBuilder.bold(token.text);
 						} else {
-							paragraphBuilder.text(token.text);
+							currentBuilder = currentBuilder.text(token.text);
 						}
 					}
 					break;
 			}
 		}
+		
+		return currentBuilder;
 	}
 }
