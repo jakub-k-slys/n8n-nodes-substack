@@ -351,12 +351,9 @@ async function createAdvancedNote(
 		});
 	}
 	
-	// Create content from body only
-	const content = body.trim();
-	
 	try {
 		// Parse markdown and apply to note builder using structured approach
-		return await MarkdownParser.parseMarkdownToNoteStructured(content, ownProfile.newNote()).publish();
+		return await MarkdownParser.parseMarkdownToNoteStructured(body.trim(), ownProfile.newNote()).publish();
 	} catch (error) {
 		// Provide more user-friendly error messages
 		let userMessage = error.message;
