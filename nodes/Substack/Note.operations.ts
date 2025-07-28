@@ -311,9 +311,6 @@ async function createSimpleNote(
 	executeFunctions: IExecuteFunctions,
 	itemIndex: number,
 ): Promise<any> {
-	// Use structured builder pattern for plain text
-	const noteBuilder = ownProfile.newNote();
-	
 	// Validate that we have content before building
 	if (!body || !body.trim()) {
 		return SubstackUtils.formatErrorResponse({
@@ -329,8 +326,7 @@ async function createSimpleNote(
 	// Build note using structured approach
 	try {
 		// Create a paragraph with the content using correct API pattern
-		noteBuilder.paragraph().text(content);
-		return await noteBuilder.publish();
+		return await ownProfile.newNote().paragraph().text(content).publish();
 	} catch (buildError) {
 		return SubstackUtils.formatErrorResponse({
 			message: `Note construction failed: ${buildError.message}`,
