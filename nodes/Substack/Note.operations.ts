@@ -320,13 +320,10 @@ async function createSimpleNote(
 		});
 	}
 	
-	// Create content from body only
-	const content = body.trim();
-	
 	// Build note using structured approach
 	try {
 		// Create a paragraph with the content using correct API pattern
-		return await ownProfile.newNote().paragraph().text(content).publish();
+		return await ownProfile.newNote().paragraph().text(body.trim()).publish();
 	} catch (buildError) {
 		return SubstackUtils.formatErrorResponse({
 			message: `Note construction failed: ${buildError.message}`,
