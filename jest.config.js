@@ -12,4 +12,13 @@ module.exports = {
 	moduleNameMapper: {
 		'^@/(.*)$': '<rootDir>/$1',
 	},
+	transformIgnorePatterns: [
+		'node_modules/(?!(marked)/)',
+	],
+	extensionsToTreatAsEsm: ['.ts'],
+	globals: {
+		'ts-jest': {
+			useESM: true,
+		},
+	},
 };
