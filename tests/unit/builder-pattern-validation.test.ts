@@ -148,7 +148,7 @@ This is a test note with **bold text**.
 			// Verify that the MarkdownParser also uses the correct pattern
 			// Multiple paragraphs should be created for different markdown elements
 			expect(mockNoteBuilder.paragraph).toHaveBeenCalled();
-			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
+			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
 			
 			// Should succeed
 			expect(result[0][0].json).toHaveProperty('success', true);
@@ -174,7 +174,7 @@ This is a test note with **bold text**.
 
 			// Verify that no builder methods were called since validation failed early
 			expect(mockNoteBuilder.paragraph).not.toHaveBeenCalled();
-			expect(mockNoteBuilder.publish).not.toHaveBeenCalled();
+			expect(mockParagraphBuilder.publish).not.toHaveBeenCalled();
 		});
 	});
 

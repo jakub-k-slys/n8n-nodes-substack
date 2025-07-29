@@ -287,6 +287,11 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 					// Return a new instance to simulate immutability
 					return createNewMockParagraphBuilder();
 				}),
+				paragraph: jest.fn().mockImplementation(function() {
+					methodCalls.push(`paragraph()`);
+					// Return a new instance to simulate immutability
+					return createNewMockParagraphBuilder();
+				}),
 			});
 
 			// Create initial mock paragraph builder
@@ -338,6 +343,10 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 				}),
 				code: jest.fn().mockImplementation((text: string) => {
 					methodCalls.push(`code(${text})`);
+					return createNewMockParagraphBuilder();
+				}),
+				paragraph: jest.fn().mockImplementation(() => {
+					methodCalls.push(`paragraph()`);
 					return createNewMockParagraphBuilder();
 				}),
 			});

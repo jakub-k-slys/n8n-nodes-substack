@@ -323,7 +323,9 @@ async function createSimpleNote(
 	// Build note using structured approach
 	try {
 		// Create a paragraph with the content using correct API pattern
-		return await ownProfile.newNote().paragraph().text(body.trim()).publish();
+		// CRITICAL: Use the returned builder chain properly for immutable builders
+		const finalBuilder = ownProfile.newNote().paragraph().text(body.trim());
+		return await finalBuilder.publish();
 	} catch (buildError) {
 		return SubstackUtils.formatErrorResponse({
 			message: `Note construction failed: ${buildError.message}`,
@@ -350,7 +352,9 @@ async function createAdvancedNote(
 	
 	try {
 		// Parse markdown and apply to note builder using structured approach
-		return await MarkdownParser.parseMarkdownToNoteStructured(body.trim(), ownProfile.newNote()).publish();
+		// CRITICAL: Use the returned builder (which has the content) instead of the original empty one
+		const finalBuilder = MarkdownParser.parseMarkdownToNoteStructured(body.trim(), ownProfile.newNote());
+		return await finalBuilder.publish();
 	} catch (error) {
 		// Provide more user-friendly error messages
 		let userMessage = error.message;

@@ -311,7 +311,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 
 			// Verify client methods were called
 			expect(mockOwnProfile.newNote).toHaveBeenCalledWith();
-			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
+			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
 		});
 
 		it('should handle empty body validation in advanced mode', async () => {
@@ -442,7 +442,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 
 			// Verify multiple paragraphs were created for different elements
 			expect(mockNoteBuilder.paragraph).toHaveBeenCalled();
-			expect(mockNoteBuilder.publish).toHaveBeenCalledTimes(1);
+			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
 			
 			// Verify success
 			expect(result[0][0].json).toHaveProperty('success', true);

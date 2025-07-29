@@ -13,14 +13,21 @@ module.exports = {
 			for (const paragraph of paragraphs) {
 				const trimmed = paragraph.trim();
 				
+				// Skip HR, comments, and other non-content elements
+				if (trimmed.startsWith('---') || trimmed.startsWith('<!--') || trimmed === '') {
+					continue;
+				}
+				
 				if (trimmed.startsWith('#')) {
 					// Heading
 					const text = trimmed.replace(/^#+\s*/, '');
-					tokens.push({
-						type: 'heading',
-						text: text,
-						tokens: [{ type: 'text', text: text }]
-					});
+					if (text.trim()) { // Only add if there's actual text content
+						tokens.push({
+							type: 'heading',
+							text: text,
+							tokens: [{ type: 'text', text: text }]
+						});
+					}
 				} else if (trimmed.startsWith('-') || trimmed.startsWith('*') || /^\d+\./.test(trimmed)) {
 					// List
 					const items = trimmed.split('\n').map(line => {
@@ -31,12 +38,15 @@ module.exports = {
 								tokens: [{ type: 'text', text: text }]
 							}] : []
 						};
-					});
-					tokens.push({
-						type: 'list',
-						items: items,
-						ordered: /^\d+\./.test(trimmed)
-					});
+					}).filter(item => item.text); // Only include items with actual text
+					
+					if (items.length > 0) { // Only add list if it has valid items
+						tokens.push({
+							type: 'list',
+							items: items,
+							ordered: /^\d+\./.test(trimmed)
+						});
+					}
 				} else {
 					// Regular paragraph
 					const inlineTokens = [];
@@ -143,11 +153,13 @@ module.exports = {
 						}
 					}
 					
-					tokens.push({
-						type: 'paragraph',
-						text: trimmed,
-						tokens: inlineTokens
-					});
+					if (inlineTokens.length > 0) { // Only add paragraph if it has content
+						tokens.push({
+							type: 'paragraph',
+							text: trimmed,
+							tokens: inlineTokens
+						});
+					}
 				}
 			}
 			
