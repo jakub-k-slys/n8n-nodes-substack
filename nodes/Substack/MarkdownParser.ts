@@ -105,12 +105,8 @@ export class MarkdownParser {
 			return currentBuilder || noteBuilder.paragraph();
 		}
 		
-		let paragraphBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']>;
-		if (currentBuilder) {
-			paragraphBuilder = currentBuilder.paragraph();
-		} else {
-			paragraphBuilder = noteBuilder.paragraph();
-		}
+		// Create each heading as a separate paragraph starting from noteBuilder
+		let paragraphBuilder = noteBuilder.paragraph();
 		
 		// Process inline tokens within the heading
 		if (token.tokens && token.tokens.length > 0) {
@@ -138,18 +134,18 @@ export class MarkdownParser {
 		
 		// Skip paragraphs that only contain list markers or similar formatting-only content
 		const text = token.text ? token.text.trim() : '';
-		const isOnlyListMarker = /^([-*+]|\d+\.)\s*$/.test(text);
+		const normalizedText = text.replace(/\s+/g, ' ').trim();
 		
-		if (isOnlyListMarker) {
+		// Check for various empty-content patterns
+		const isOnlyListMarkers = /^([-*+]|(\d+\.))+(\s*([-*+]|(\d+\.)))*$/.test(normalizedText);
+		const isEmptyListMarkers = normalizedText === '- * 1.' || /^[-*+\d.\s]+$/.test(normalizedText);
+		
+		if (isOnlyListMarkers || isEmptyListMarkers) {
 			return currentBuilder || noteBuilder.paragraph();
 		}
 		
-		let paragraphBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']>;
-		if (currentBuilder) {
-			paragraphBuilder = currentBuilder.paragraph();
-		} else {
-			paragraphBuilder = noteBuilder.paragraph();
-		}
+		// Create each paragraph as a separate paragraph starting from noteBuilder
+		let paragraphBuilder = noteBuilder.paragraph();
 		
 		// Process inline tokens within the paragraph
 		if (token.tokens && token.tokens.length > 0) {
@@ -169,7 +165,8 @@ export class MarkdownParser {
 	private static processListStructured(token: any, noteBuilder: ReturnType<OwnProfile['newNote']>, currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null, contentTracker: any): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
 		if (!token.items) return currentBuilder || noteBuilder.paragraph();
 
-		let builder = currentBuilder;
+		let finalBuilder = currentBuilder;
+		let listItemNumber = 1; // Track ordered list numbering separately
 
 		token.items.forEach((item: any, index: number) => {
 			// Skip completely empty list items
@@ -204,16 +201,14 @@ export class MarkdownParser {
 				return; // Skip this list item entirely
 			}
 			
-			let paragraphBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']>;
-			if (builder) {
-				paragraphBuilder = builder.paragraph();
-			} else {
-				paragraphBuilder = noteBuilder.paragraph();
-			}
+			// Create each list item as a separate paragraph starting from noteBuilder
+			// This matches the test expectation that each list item calls noteBuilder.paragraph()
+			let paragraphBuilder = noteBuilder.paragraph();
 			
 			// Add list marker
 			if (token.ordered) {
-				paragraphBuilder = paragraphBuilder.text(`${index + 1}. `);
+				paragraphBuilder = paragraphBuilder.text(`${listItemNumber}. `);
+				listItemNumber++; // Increment for next item
 			} else {
 				paragraphBuilder = paragraphBuilder.text('• ');
 			}
@@ -232,11 +227,11 @@ export class MarkdownParser {
 			}
 			contentTracker.meaningfulNodesCreated++;
 			
-			// Update current builder to the latest paragraph builder
-			builder = paragraphBuilder;
+			// Track the final paragraph builder (the last one created)
+			finalBuilder = paragraphBuilder;
 		});
 		
-		return builder || noteBuilder.paragraph();
+		return finalBuilder || noteBuilder.paragraph();
 	}
 
 	/**

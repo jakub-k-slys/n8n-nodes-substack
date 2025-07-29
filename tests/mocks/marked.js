@@ -18,7 +18,48 @@ module.exports = {
 					continue;
 				}
 				
-				if (trimmed.startsWith('#')) {
+				// If this paragraph contains multiple lines with headings or list items, process each line separately
+				if (trimmed.includes('\n') && (trimmed.match(/^#+/gm) || trimmed.match(/^[-*\d]/gm))) {
+					const lines = trimmed.split('\n');
+					for (const line of lines) {
+						const lineText = line.trim();
+						if (!lineText) continue;
+						
+						if (lineText.startsWith('#')) {
+							// Heading
+							const text = lineText.replace(/^#+\s*/, '');
+							if (text.trim()) { // Only add if there's actual text content
+								tokens.push({
+									type: 'heading',
+									text: text,
+									tokens: [{ type: 'text', text: text }]
+								});
+							}
+						} else if (lineText.startsWith('-') || lineText.startsWith('*') || /^\d+\./.test(lineText)) {
+							// Single list item
+							const text = lineText.replace(/^[-*\d+.]\s*/, '').trim();
+							if (text) { // Only add if there's actual text content
+								tokens.push({
+									type: 'list',
+									items: [{
+										text: text,
+										tokens: [{
+											tokens: [{ type: 'text', text: text }]
+										}]
+									}],
+									ordered: /^\d+\./.test(lineText)
+								});
+							} else {
+								// Empty list marker - treat as paragraph (like real marked would)
+								tokens.push({
+									type: 'paragraph',
+									text: lineText,
+									tokens: [{ type: 'text', text: lineText }]
+								});
+							}
+						}
+					}
+				} else if (trimmed.startsWith('#')) {
 					// Heading
 					const text = trimmed.replace(/^#+\s*/, '');
 					if (text.trim()) { // Only add if there's actual text content
@@ -45,6 +86,13 @@ module.exports = {
 							type: 'list',
 							items: items,
 							ordered: /^\d+\./.test(trimmed)
+						});
+					} else {
+						// All list items were empty - treat as paragraph (like real marked would)
+						tokens.push({
+							type: 'paragraph',
+							text: trimmed,
+							tokens: [{ type: 'text', text: trimmed }]
 						});
 					}
 				} else {
