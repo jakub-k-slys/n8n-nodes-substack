@@ -64,39 +64,15 @@ export function createMockAsyncIterable<T>(data: T[]): AsyncIterable<T> {
 	};
 }
 
-// Mock method chains with payload capture
-export const createMockParagraphBuilder = () => {
-	// Store the captured payload
-	let capturedPayload: any = null;
-	
-	const mockBuilder = {
-		text: jest.fn().mockReturnThis(),
-		bold: jest.fn().mockReturnThis(),
-		italic: jest.fn().mockReturnThis(),
-		code: jest.fn().mockReturnThis(),
-		paragraph: jest.fn().mockReturnThis(),
-		publish: jest.fn().mockImplementation(async () => {
-			// Capture the payload that would be sent (simulate the build() method)
-			// This is a simplified version - in reality the builder would construct the full bodyJson
-			capturedPayload = {
-				bodyJson: {
-					type: 'doc',
-					attrs: { schemaVersion: 'v1' },
-					content: [] // This would be populated by the actual builder logic
-				},
-				tabId: 'mockTabId',
-				surface: 'feed',
-				replyMinimumRole: 'everyone'
-			};
-			return mockClientNoteResponse;
-		}),
-		// Method to access captured payload for testing
-		_getCapturedPayload: () => capturedPayload,
-		_resetCapturedPayload: () => { capturedPayload = null; }
-	};
-	
-	return mockBuilder;
-};
+// Mock method chains
+export const createMockParagraphBuilder = () => ({
+	text: jest.fn().mockReturnThis(),
+	bold: jest.fn().mockReturnThis(),
+	italic: jest.fn().mockReturnThis(),
+	code: jest.fn().mockReturnThis(),
+	paragraph: jest.fn().mockReturnThis(),
+	publish: jest.fn().mockResolvedValue(mockClientNoteResponse),
+});
 
 export const createMockNodeBuilder = () => ({
 	paragraph: jest.fn().mockReturnValue(createMockParagraphBuilder()),
