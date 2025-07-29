@@ -62,15 +62,17 @@ export class MarkdownParser {
 		let currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null = null;
 		
 		for (const token of tokens) {
+			let newBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null = null;
+			
 			switch (token.type) {
 				case 'heading':
-					currentBuilder = this.processHeadingStructured(token, noteBuilder, currentBuilder, contentTracker);
+					newBuilder = this.processHeadingStructured(token, noteBuilder, currentBuilder, contentTracker);
 					break;
 				case 'paragraph':
-					currentBuilder = this.processParagraphStructured(token, noteBuilder, currentBuilder, contentTracker);
+					newBuilder = this.processParagraphStructured(token, noteBuilder, currentBuilder, contentTracker);
 					break;
 				case 'list':
-					currentBuilder = this.processListStructured(token, noteBuilder, currentBuilder, contentTracker);
+					newBuilder = this.processListStructured(token, noteBuilder, currentBuilder, contentTracker);
 					break;
 				case 'space':
 					// Skip empty space tokens
@@ -79,13 +81,18 @@ export class MarkdownParser {
 					// Handle other token types as paragraphs
 					if (token.text) {
 						if (currentBuilder) {
-							currentBuilder = currentBuilder.paragraph().text(token.text);
+							newBuilder = currentBuilder.paragraph().text(token.text);
 						} else {
-							currentBuilder = noteBuilder.paragraph().text(token.text);
+							newBuilder = noteBuilder.paragraph().text(token.text);
 						}
 						contentTracker.meaningfulNodesCreated++;
 					}
 					break;
+			}
+			
+			// Only update currentBuilder if we got a valid new builder
+			if (newBuilder) {
+				currentBuilder = newBuilder;
 			}
 		}
 		
@@ -96,13 +103,14 @@ export class MarkdownParser {
 	 * Process heading token using structured approach
 	 * Returns the final ParagraphBuilder with content applied (handles immutable builders)
 	 */
-	private static processHeadingStructured(token: any, noteBuilder: ReturnType<OwnProfile['newNote']>, currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null, contentTracker: any): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
+	private static processHeadingStructured(token: any, noteBuilder: ReturnType<OwnProfile['newNote']>, currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null, contentTracker: any): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null {
 		// Skip completely empty headings
 		const hasContent = (token.tokens && token.tokens.some((t: any) => t.text && t.text.trim())) ||
 						   (token.text && token.text.trim());
 		
 		if (!hasContent) {
-			return currentBuilder || noteBuilder.paragraph();
+			// Return current builder without creating new paragraphs for empty headings
+			return currentBuilder;
 		}
 		
 		// Create each heading as a separate paragraph starting from noteBuilder
@@ -123,13 +131,14 @@ export class MarkdownParser {
 	 * Process paragraph token using structured approach
 	 * Returns the final ParagraphBuilder with content applied (handles immutable builders)
 	 */
-	private static processParagraphStructured(token: any, noteBuilder: ReturnType<OwnProfile['newNote']>, currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null, contentTracker: any): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
+	private static processParagraphStructured(token: any, noteBuilder: ReturnType<OwnProfile['newNote']>, currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null, contentTracker: any): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null {
 		// Skip completely empty paragraphs
 		const hasContent = (token.tokens && token.tokens.some((t: any) => t.text && t.text.trim())) ||
 						   (token.text && token.text.trim());
 		
 		if (!hasContent) {
-			return currentBuilder || noteBuilder.paragraph();
+			// Return current builder without creating new paragraphs for empty content
+			return currentBuilder;
 		}
 		
 		// Skip paragraphs that only contain list markers or similar formatting-only content
@@ -141,7 +150,7 @@ export class MarkdownParser {
 		const isEmptyListMarkers = normalizedText === '- * 1.' || /^[-*+\d.\s]+$/.test(normalizedText);
 		
 		if (isOnlyListMarkers || isEmptyListMarkers) {
-			return currentBuilder || noteBuilder.paragraph();
+			return currentBuilder;
 		}
 		
 		// Create each paragraph as a separate paragraph starting from noteBuilder
@@ -162,8 +171,8 @@ export class MarkdownParser {
 	 * Process list token using structured approach (convert to separate paragraphs)
 	 * Returns the final ParagraphBuilder with content applied (handles immutable builders)
 	 */
-	private static processListStructured(token: any, noteBuilder: ReturnType<OwnProfile['newNote']>, currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null, contentTracker: any): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
-		if (!token.items) return currentBuilder || noteBuilder.paragraph();
+	private static processListStructured(token: any, noteBuilder: ReturnType<OwnProfile['newNote']>, currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null, contentTracker: any): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null {
+		if (!token.items) return currentBuilder;
 
 		let finalBuilder = currentBuilder;
 		let listItemNumber = 1; // Track ordered list numbering separately
@@ -231,7 +240,7 @@ export class MarkdownParser {
 			finalBuilder = paragraphBuilder;
 		});
 		
-		return finalBuilder || noteBuilder.paragraph();
+		return finalBuilder;
 	}
 
 	/**
