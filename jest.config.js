@@ -11,6 +11,6 @@ module.exports = {
 	],
 	moduleNameMapper: {
 		'^@/(.*)$': '<rootDir>/$1',
-		'^marked$': '<rootDir>/tests/mocks/marked.js',
+		'^marked$': '<rootDir>/node_modules/marked/lib/marked.umd.js',
 	},
 };
