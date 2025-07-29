@@ -113,8 +113,8 @@ export class MarkdownParser {
 			return currentBuilder;
 		}
 		
-		// Create each heading as a separate paragraph starting from noteBuilder
-		let paragraphBuilder = noteBuilder.paragraph();
+		// Create new paragraph properly: if we have currentBuilder, call paragraph() on it, otherwise start from noteBuilder
+		let paragraphBuilder = currentBuilder ? currentBuilder.paragraph() : noteBuilder.paragraph();
 		
 		// Process inline tokens within the heading
 		if (token.tokens && token.tokens.length > 0) {
@@ -153,8 +153,8 @@ export class MarkdownParser {
 			return currentBuilder;
 		}
 		
-		// Create each paragraph as a separate paragraph starting from noteBuilder
-		let paragraphBuilder = noteBuilder.paragraph();
+		// Create new paragraph properly: if we have currentBuilder, call paragraph() on it, otherwise start from noteBuilder
+		let paragraphBuilder = currentBuilder ? currentBuilder.paragraph() : noteBuilder.paragraph();
 		
 		// Process inline tokens within the paragraph
 		if (token.tokens && token.tokens.length > 0) {
@@ -210,9 +210,9 @@ export class MarkdownParser {
 				return; // Skip this list item entirely
 			}
 			
-			// Create each list item as a separate paragraph starting from noteBuilder
-			// This matches the test expectation that each list item calls noteBuilder.paragraph()
-			let paragraphBuilder = noteBuilder.paragraph();
+			// Create each list item as a separate paragraph properly
+			// For the first item, use finalBuilder, otherwise create new paragraph from the previous one
+			let paragraphBuilder = finalBuilder ? finalBuilder.paragraph() : noteBuilder.paragraph();
 			
 			// Add list marker
 			if (token.ordered) {
