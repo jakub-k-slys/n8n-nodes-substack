@@ -1,6 +1,8 @@
 import { IExecuteFunctions, INodeProperties } from 'n8n-workflow';
 import { SubstackClient } from 'substack-api';
-import { ISubstackComment, IStandardResponse } from './types';
+import { IStandardResponse } from './types';
+import { DataFormatters } from './shared/DataFormatters';
+import { OperationUtils } from './shared/OperationUtils';
 import { SubstackUtils } from './SubstackUtils';
 
 export enum CommentOperation {
@@ -44,51 +46,26 @@ async function getAll(
 	itemIndex: number,
 ): Promise<IStandardResponse> {
 	try {
-		const postIdParam = executeFunctions.getNodeParameter('postId', itemIndex) as number | string;
-		const postId = typeof postIdParam === 'string' ? parseInt(postIdParam, 10) : postIdParam;
-		
-		// Validate postId
-		if (!postId || isNaN(postId)) {
-			throw new Error('Invalid postId: must be a valid number');
-		}
-		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
+		const postId = OperationUtils.parseNumericParam(
+			executeFunctions.getNodeParameter('postId', itemIndex), 
+			'postId'
+		);
+		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '');
+		const limit = OperationUtils.parseLimit(limitParam);
 
-		// Apply default limit of 100 if not specified
-		let limit = 100;
-		if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
-			limit = Number(limitParam);
-		}
-
-		// Get the post first, then get its comments
 		const post = await client.postForId(postId);
 		const commentsIterable = await post.comments();
-		const formattedComments: ISubstackComment[] = [];
-
-		// Iterate through async iterable comments with limit
-		let count = 0;
-		for await (const comment of commentsIterable) {
-			if (count >= limit) break;
-
-			formattedComments.push({
-				id: comment.id,
-				body: comment.body,
-				createdAt: (comment as any).rawData?.created_at || comment.createdAt.toISOString(),
-				parentPostId: postId, // Use the provided postId since it's not in the comment object
-				author: {
-					id: comment.author.id,
-					name: comment.author.name,
-					isAdmin: comment.author.isAdmin || false,
-				},
-			});
-			count++;
-		}
+		const results = await OperationUtils.executeAsyncIterable(
+			commentsIterable,
+			limit,
+			(comment: any, publicationAddress: string) => DataFormatters.formatComment(comment, postId),
+			publicationAddress
+		);
 
 		return {
 			success: true,
-			data: formattedComments,
-			metadata: {
-				status: 'success',
-			},
+			data: results,
+			metadata: { status: 'success' }
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({
@@ -106,29 +83,18 @@ async function getCommentById(
 	itemIndex: number,
 ): Promise<IStandardResponse> {
 	try {
-		const commentId = executeFunctions.getNodeParameter('commentId', itemIndex) as string;
+		const commentId = OperationUtils.parseNumericParam(
+			executeFunctions.getNodeParameter('commentId', itemIndex), 
+			'commentId'
+		);
 
-		// Get comment by ID using client.commentForId(id) - convert string to number
-		const comment = await client.commentForId(parseInt(commentId, 10));
-
-		const formattedComment: ISubstackComment = {
-			id: comment.id,
-			body: comment.body,
-			createdAt: (comment as any).rawData?.created_at || comment.createdAt.toISOString(),
-			parentPostId: (comment as any).rawData?.parent_post_id || 0, // May not be available
-			author: {
-				id: comment.author.id,
-				name: comment.author.name,
-				isAdmin: comment.author.isAdmin || false,
-			},
-		};
+		const comment = await client.commentForId(commentId);
+		const result = DataFormatters.formatComment(comment);
 
 		return {
 			success: true,
-			data: formattedComment,
-			metadata: {
-				status: 'success',
-			},
+			data: result,
+			metadata: { status: 'success' }
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({
