@@ -11,5 +11,6 @@ module.exports = {
 	],
 	moduleNameMapper: {
 		'^@/(.*)$': '<rootDir>/$1',
+		'^marked$': '<rootDir>/tests/mocks/marked.js',
 	},
 };
