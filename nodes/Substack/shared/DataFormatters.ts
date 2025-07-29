@@ -1,4 +1,4 @@
-import { ISubstackNote, ISubstackPost, ISubstackComment } from '../types';
+import { ISubstackNote, ISubstackPost, ISubstackComment, ISubstackFollowing } from '../types';
 import { SubstackUtils } from '../SubstackUtils';
 
 export class DataFormatters {
@@ -62,6 +62,39 @@ export class DataFormatters {
 				name: comment.author.name,
 				isAdmin: comment.author.isAdmin || false,
 			},
+		};
+	}
+
+	/**
+	 * Format a profile object from the Substack API
+	 */
+	static formatProfile(profile: any): any {
+		return {
+			id: profile.id,
+			name: profile.name,
+			handle: profile.slug,
+			bio: profile.bio,
+		};
+	}
+
+	/**
+	 * Format a followee object for the following list
+	 */
+	static formatFollowing(followee: any, returnType: string): ISubstackFollowing {
+		if (returnType === 'ids') {
+			return {
+				id: followee.id,
+			};
+		}
+
+		return {
+			id: followee.id,
+			name: followee.name,
+			handle: followee.slug,
+			bio: followee.bio,
+			subscriberCount: 0, // Not available in new API structure
+			subscriberCountString: '', // Not available in new API structure
+			primaryPublication: undefined, // Not available in new API structure
 		};
 	}
 
