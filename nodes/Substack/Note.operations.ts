@@ -235,7 +235,7 @@ async function createAdvancedNote(
 	}
 	
 	try {
-		const finalBuilder = await MarkdownParser.parseMarkdownToNoteStructured(body.trim(), ownProfile.newNote());
+		const finalBuilder = MarkdownParser.parseMarkdownToNoteStructured(body.trim(), ownProfile.newNote());
 		return await finalBuilder.publish();
 	} catch (error) {
 		let userMessage = error.message;
