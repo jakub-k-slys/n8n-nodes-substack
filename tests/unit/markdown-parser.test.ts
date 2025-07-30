@@ -677,7 +677,7 @@ Final paragraph.`;
 				{
 					type: 'paragraph',
 					content: [
-						{ type: 'text', text: 'Here&#39;s an unordered list:' }
+						{ type: 'text', text: 'Here\'s an unordered list:' }
 					]
 				},
 				{

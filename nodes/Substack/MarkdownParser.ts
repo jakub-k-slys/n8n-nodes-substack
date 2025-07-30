@@ -1,6 +1,26 @@
 import { marked } from 'marked';
 import type { OwnProfile } from 'substack-api';
 
+// Configure marked library
+marked.setOptions({
+	gfm: true,
+	breaks: false
+});
+
+// Helper function to decode HTML entities
+function decodeHtmlEntities(text: string): string {
+	const entityMap: Record<string, string> = {
+		'&#39;': "'",
+		'&quot;': '"',
+		'&amp;': '&',
+		'&lt;': '<',
+		'&gt;': '>',
+		'&nbsp;': ' '
+	};
+	
+	return text.replace(/&#?\w+;/g, (entity) => entityMap[entity] || entity);
+}
+
 /**
  * Markdown parser for Substack notes using the marked library
  * Supports: headings, bold, italic, code, links, lists
@@ -80,10 +100,11 @@ export class MarkdownParser {
 				default:
 					// Handle other token types as paragraphs
 					if (token.text) {
+						const decodedText = decodeHtmlEntities(token.text);
 						if (currentBuilder) {
-							newBuilder = currentBuilder.paragraph().text(token.text);
+							newBuilder = currentBuilder.paragraph().text(decodedText);
 						} else {
-							newBuilder = noteBuilder.paragraph().text(token.text);
+							newBuilder = noteBuilder.paragraph().text(decodedText);
 						}
 						contentTracker.meaningfulNodesCreated++;
 					}
@@ -120,7 +141,7 @@ export class MarkdownParser {
 		if (token.tokens && token.tokens.length > 0) {
 			paragraphBuilder = this.processInlineTokensStructured(token.tokens, paragraphBuilder, true);
 		} else if (token.text) {
-			paragraphBuilder = paragraphBuilder.bold(token.text);
+			paragraphBuilder = paragraphBuilder.bold(decodeHtmlEntities(token.text));
 		}
 		contentTracker.meaningfulNodesCreated++;
 		
@@ -160,7 +181,7 @@ export class MarkdownParser {
 		if (token.tokens && token.tokens.length > 0) {
 			paragraphBuilder = this.processInlineTokensStructured(token.tokens, paragraphBuilder);
 		} else if (token.text) {
-			paragraphBuilder = paragraphBuilder.text(token.text);
+			paragraphBuilder = paragraphBuilder.text(decodeHtmlEntities(token.text));
 		}
 		contentTracker.meaningfulNodesCreated++;
 		
@@ -229,10 +250,10 @@ export class MarkdownParser {
 				if (firstToken && firstToken.tokens) {
 					paragraphBuilder = this.processInlineTokensStructured(firstToken.tokens, paragraphBuilder);
 				} else if (firstToken && firstToken.text) {
-					paragraphBuilder = paragraphBuilder.text(firstToken.text);
+					paragraphBuilder = paragraphBuilder.text(decodeHtmlEntities(firstToken.text));
 				}
 			} else if (item.text) {
-				paragraphBuilder = paragraphBuilder.text(item.text);
+				paragraphBuilder = paragraphBuilder.text(decodeHtmlEntities(item.text));
 			}
 			contentTracker.meaningfulNodesCreated++;
 			
@@ -258,25 +279,27 @@ export class MarkdownParser {
 			
 			switch (token.type) {
 				case 'text':
+					const decodedText = decodeHtmlEntities(token.text);
 					if (isHeading) {
-						currentBuilder = currentBuilder.bold(token.text);
+						currentBuilder = currentBuilder.bold(decodedText);
 					} else {
-						currentBuilder = currentBuilder.text(token.text);
+						currentBuilder = currentBuilder.text(decodedText);
 					}
 					break;
 				case 'strong':
-					currentBuilder = currentBuilder.bold(token.text);
+					currentBuilder = currentBuilder.bold(decodeHtmlEntities(token.text));
 					break;
 				case 'em':
-					currentBuilder = currentBuilder.italic(token.text);
+					currentBuilder = currentBuilder.italic(decodeHtmlEntities(token.text));
 					break;
 				case 'codespan':
-					currentBuilder = currentBuilder.code(token.text);
+					currentBuilder = currentBuilder.code(decodeHtmlEntities(token.text));
 					break;
 				case 'link':
 					// Format links properly - add link text first, then URL in parentheses
 					if (token.text) {
-						currentBuilder = currentBuilder.text(`${token.text} (${token.href})`);
+						const decodedLinkText = decodeHtmlEntities(token.text);
+						currentBuilder = currentBuilder.text(`${decodedLinkText} (${token.href})`);
 					} else {
 						currentBuilder = currentBuilder.text(token.href);
 					}
@@ -284,10 +307,11 @@ export class MarkdownParser {
 				default:
 					// Fallback for unknown inline tokens
 					if (token.text) {
+						const decodedFallbackText = decodeHtmlEntities(token.text);
 						if (isHeading) {
-							currentBuilder = currentBuilder.bold(token.text);
+							currentBuilder = currentBuilder.bold(decodedFallbackText);
 						} else {
-							currentBuilder = currentBuilder.text(token.text);
+							currentBuilder = currentBuilder.text(decodedFallbackText);
 						}
 					}
 					break;
