@@ -1,6 +1,8 @@
 import { IExecuteFunctions, INodeProperties } from 'n8n-workflow';
 import { SubstackClient } from 'substack-api';
-import { ISubstackPost, IStandardResponse } from './types';
+import { IStandardResponse } from './types';
+import { DataFormatters } from './shared/DataFormatters';
+import { OperationUtils } from './shared/OperationUtils';
 import { SubstackUtils } from './SubstackUtils';
 
 export enum PostOperation {
@@ -58,52 +60,22 @@ async function getAll(
 	itemIndex: number,
 ): Promise<IStandardResponse> {
 	try {
-		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
+		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '');
+		const limit = OperationUtils.parseLimit(limitParam);
 
-		// Apply default limit of 100 if not specified
-		let limit = 100;
-		if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
-			limit = Number(limitParam);
-		}
-
-		// Get own profile first, then get posts
 		const ownProfile = await client.ownProfile();
 		const postsIterable = await ownProfile.posts();
-		const formattedPosts: ISubstackPost[] = [];
-
-		// Iterate through async iterable posts with limit
-		let count = 0;
-		for await (const post of postsIterable) {
-			if (count >= limit) break;
-
-			try {
-				formattedPosts.push({
-					id: post.id,
-					title: post.title || '',
-					subtitle: (post as any).rawData?.subtitle || '',
-					url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
-					postDate:
-						(post as any).rawData?.post_date ||
-						(post.publishedAt && !isNaN(post.publishedAt.getTime())
-							? post.publishedAt.toISOString()
-							: new Date().toISOString()),
-					type: (post as any).rawData?.type || 'newsletter',
-					published: (post as any).rawData?.published ?? true,
-					paywalled: (post as any).rawData?.paywalled ?? false,
-					description: (post as any).rawData?.description || post.body || '',
-				});
-			} catch (error) {
-				// Skip malformed posts but continue processing
-			}
-			count++;
-		}
+		const results = await OperationUtils.executeAsyncIterable(
+			postsIterable,
+			limit,
+			DataFormatters.formatPost,
+			publicationAddress
+		);
 
 		return {
 			success: true,
-			data: formattedPosts,
-			metadata: {
-				status: 'success',
-			},
+			data: results,
+			metadata: { status: 'success' }
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({
@@ -122,52 +94,22 @@ async function getPostsBySlug(
 ): Promise<IStandardResponse> {
 	try {
 		const slug = executeFunctions.getNodeParameter('slug', itemIndex) as string;
-		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
+		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '');
+		const limit = OperationUtils.parseLimit(limitParam);
 
-		// Apply default limit of 100 if not specified
-		let limit = 100;
-		if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
-			limit = Number(limitParam);
-		}
-
-		// Get posts from profile by slug using client.profileForSlug(slug).posts()
 		const profile = await client.profileForSlug(slug);
 		const postsIterable = await profile.posts();
-		const formattedPosts: ISubstackPost[] = [];
-
-		// Iterate through async iterable posts with limit
-		let count = 0;
-		for await (const post of postsIterable) {
-			if (count >= limit) break;
-
-			try {
-				formattedPosts.push({
-					id: post.id,
-					title: post.title || '',
-					subtitle: (post as any).rawData?.subtitle || '',
-					url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
-					postDate:
-						(post as any).rawData?.post_date ||
-						(post.publishedAt && !isNaN(post.publishedAt.getTime())
-							? post.publishedAt.toISOString()
-							: new Date().toISOString()),
-					type: (post as any).rawData?.type || 'newsletter',
-					published: (post as any).rawData?.published ?? true,
-					paywalled: (post as any).rawData?.paywalled ?? false,
-					description: (post as any).rawData?.description || post.body || '',
-				});
-			} catch (error) {
-				// Skip malformed posts but continue processing
-			}
-			count++;
-		}
+		const results = await OperationUtils.executeAsyncIterable(
+			postsIterable,
+			limit,
+			DataFormatters.formatPost,
+			publicationAddress
+		);
 
 		return {
 			success: true,
-			data: formattedPosts,
-			metadata: {
-				status: 'success',
-			},
+			data: results,
+			metadata: { status: 'success' }
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({
@@ -185,53 +127,26 @@ async function getPostsById(
 	itemIndex: number,
 ): Promise<IStandardResponse> {
 	try {
-		const userId = executeFunctions.getNodeParameter('userId', itemIndex) as number;
-		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '') as number | string;
+		const userId = OperationUtils.parseNumericParam(
+			executeFunctions.getNodeParameter('userId', itemIndex), 
+			'userId'
+		);
+		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '');
+		const limit = OperationUtils.parseLimit(limitParam);
 
-		// Apply default limit of 100 if not specified
-		let limit = 100;
-		if (limitParam !== '' && limitParam !== null && limitParam !== undefined) {
-			limit = Number(limitParam);
-		}
-
-		// Get posts from profile by ID using client.profileForId(id).posts()
 		const profile = await client.profileForId(userId);
 		const postsIterable = await profile.posts();
-		const formattedPosts: ISubstackPost[] = [];
-
-		// Iterate through async iterable posts with limit
-		let count = 0;
-		for await (const post of postsIterable) {
-			if (count >= limit) break;
-
-			try {
-				formattedPosts.push({
-					id: post.id,
-					title: post.title || '',
-					subtitle: (post as any).rawData?.subtitle || '',
-					url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
-					postDate:
-						(post as any).rawData?.post_date ||
-						(post.publishedAt && !isNaN(post.publishedAt.getTime())
-							? post.publishedAt.toISOString()
-							: new Date().toISOString()),
-					type: (post as any).rawData?.type || 'newsletter',
-					published: (post as any).rawData?.published ?? true,
-					paywalled: (post as any).rawData?.paywalled ?? false,
-					description: (post as any).rawData?.description || post.body || '',
-				});
-			} catch (error) {
-				// Skip malformed posts but continue processing
-			}
-			count++;
-		}
+		const results = await OperationUtils.executeAsyncIterable(
+			postsIterable,
+			limit,
+			DataFormatters.formatPost,
+			publicationAddress
+		);
 
 		return {
 			success: true,
-			data: formattedPosts,
-			metadata: {
-				status: 'success',
-			},
+			data: results,
+			metadata: { status: 'success' }
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({
@@ -249,33 +164,18 @@ async function getPostById(
 	itemIndex: number,
 ): Promise<IStandardResponse> {
 	try {
-		const postId = executeFunctions.getNodeParameter('postId', itemIndex) as string;
+		const postId = OperationUtils.parseNumericParam(
+			executeFunctions.getNodeParameter('postId', itemIndex), 
+			'postId'
+		);
 
-		// Get post by ID using client.postForId(postId) - convert string to number
-		const post = await client.postForId(parseInt(postId, 10));
-
-		const formattedPost: ISubstackPost = {
-			id: post.id,
-			title: post.title || '',
-			subtitle: (post as any).rawData?.subtitle || '',
-			url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
-			postDate:
-				(post as any).rawData?.post_date ||
-				(post.publishedAt && !isNaN(post.publishedAt.getTime())
-					? post.publishedAt.toISOString()
-					: new Date().toISOString()),
-			type: (post as any).rawData?.type || 'newsletter',
-			published: (post as any).rawData?.published ?? true,
-			paywalled: (post as any).rawData?.paywalled ?? false,
-			description: (post as any).rawData?.description || post.body || '',
-		};
+		const post = await client.postForId(postId);
+		const result = DataFormatters.formatPost(post, publicationAddress);
 
 		return {
 			success: true,
-			data: formattedPost,
-			metadata: {
-				status: 'success',
-			},
+			data: result,
+			metadata: { status: 'success' }
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({
