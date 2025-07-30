@@ -1,11 +1,4 @@
-import { marked } from 'marked';
 import type { OwnProfile } from 'substack-api';
-
-// Configure marked library
-marked.setOptions({
-	gfm: true,
-	breaks: false
-});
 
 // Helper function to decode HTML entities
 function decodeHtmlEntities(text: string): string {
@@ -30,10 +23,19 @@ export class MarkdownParser {
 	 * Parse markdown text and apply it to a NoteBuilder using structured approach
 	 * Returns the final ParagraphBuilder with all content applied (handles immutable builders)
 	 */
-	static parseMarkdownToNoteStructured(markdown: string, noteBuilder: ReturnType<OwnProfile['newNote']>): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
+	static async parseMarkdownToNoteStructured(markdown: string, noteBuilder: ReturnType<OwnProfile['newNote']>): Promise<ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']>> {
 		if (!markdown.trim()) {
 			throw new Error('Note body cannot be empty - at least one paragraph with content is required');
 		}
+
+		// Dynamically import marked library
+		const { marked } = await import('marked');
+		
+		// Configure marked library
+		marked.setOptions({
+			gfm: true,
+			breaks: false
+		});
 
 		// Parse markdown into tokens using marked
 		const tokens = marked.lexer(markdown);
@@ -70,8 +72,8 @@ export class MarkdownParser {
 	/**
 	 * Legacy method for backward compatibility
 	 */
-	static parseMarkdownToNote(markdown: string, noteBuilder: ReturnType<OwnProfile['newNote']>): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
-		return this.parseMarkdownToNoteStructured(markdown, noteBuilder);
+	static async parseMarkdownToNote(markdown: string, noteBuilder: ReturnType<OwnProfile['newNote']>): Promise<ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']>> {
+		return await this.parseMarkdownToNoteStructured(markdown, noteBuilder);
 	}
 
 	/**
