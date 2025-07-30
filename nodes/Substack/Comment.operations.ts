@@ -47,8 +47,8 @@ async function getAll(
 ): Promise<IStandardResponse> {
 	try {
 		const postId = OperationUtils.parseNumericParam(
-			executeFunctions.getNodeParameter('postId', itemIndex), 
-			'postId'
+			executeFunctions.getNodeParameter('postId', itemIndex),
+			'postId',
 		);
 		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '');
 		const limit = OperationUtils.parseLimit(limitParam);
@@ -59,13 +59,13 @@ async function getAll(
 			commentsIterable,
 			limit,
 			(comment: any, publicationAddress: string) => DataFormatters.formatComment(comment, postId),
-			publicationAddress
+			publicationAddress,
 		);
 
 		return {
 			success: true,
 			data: results,
-			metadata: { status: 'success' }
+			metadata: { status: 'success' },
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({
@@ -84,8 +84,8 @@ async function getCommentById(
 ): Promise<IStandardResponse> {
 	try {
 		const commentId = OperationUtils.parseNumericParam(
-			executeFunctions.getNodeParameter('commentId', itemIndex), 
-			'commentId'
+			executeFunctions.getNodeParameter('commentId', itemIndex),
+			'commentId',
 		);
 
 		const comment = await client.commentForId(commentId);
@@ -94,7 +94,7 @@ async function getCommentById(
 		return {
 			success: true,
 			data: result,
-			metadata: { status: 'success' }
+			metadata: { status: 'success' },
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({

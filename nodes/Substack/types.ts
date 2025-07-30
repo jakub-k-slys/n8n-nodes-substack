@@ -35,6 +35,7 @@ export interface ISubstackPost {
 	paywalled?: boolean;
 	description?: string;
 	htmlBody?: string;
+	markdown?: string;
 }
 
 export interface ISubstackComment {

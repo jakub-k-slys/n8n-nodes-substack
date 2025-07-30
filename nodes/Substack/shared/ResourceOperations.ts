@@ -21,12 +21,16 @@ export class ResourceOperations {
 		try {
 			const limitParam = config.executeFunctions.getNodeParameter('limit', config.itemIndex, '');
 			const limit = OperationUtils.parseLimit(limitParam);
-			
+
 			// Extract additional parameters
 			const params: any = {};
 			if (config.additionalParams) {
 				for (const [key, defaultValue] of Object.entries(config.additionalParams)) {
-					params[key] = config.executeFunctions.getNodeParameter(key, config.itemIndex, defaultValue);
+					params[key] = config.executeFunctions.getNodeParameter(
+						key,
+						config.itemIndex,
+						defaultValue,
+					);
 				}
 			}
 
@@ -36,13 +40,13 @@ export class ResourceOperations {
 				limit,
 				config.formatter,
 				config.publicationAddress,
-				...(config.formatterArgs || [])
+				...(config.formatterArgs || []),
 			);
 
 			return {
 				success: true,
 				data: results,
-				metadata: { status: 'success' }
+				metadata: { status: 'success' },
 			};
 		} catch (error) {
 			return SubstackUtils.formatErrorResponse({
@@ -71,21 +75,25 @@ export class ResourceOperations {
 			const params: any = {};
 			if (config.additionalParams) {
 				for (const [key, defaultValue] of Object.entries(config.additionalParams)) {
-					params[key] = config.executeFunctions.getNodeParameter(key, config.itemIndex, defaultValue);
+					params[key] = config.executeFunctions.getNodeParameter(
+						key,
+						config.itemIndex,
+						defaultValue,
+					);
 				}
 			}
 
 			const resource = await config.getResource(config.client, params);
 			const result = config.formatter(
-				resource, 
+				resource,
 				config.publicationAddress,
-				...(config.formatterArgs || [])
+				...(config.formatterArgs || []),
 			);
 
 			return {
 				success: true,
 				data: result,
-				metadata: { status: 'success' }
+				metadata: { status: 'success' },
 			};
 		} catch (error) {
 			return SubstackUtils.formatErrorResponse({

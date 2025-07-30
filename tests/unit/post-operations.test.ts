@@ -35,7 +35,7 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 	// Use the standardized test suite for post retrieval
 	describe('Post Retrieval', () => {
 		const testSuite = createRetrievalTestSuite('post', 'getAll', {
-			expectedFields: ['id', 'title', 'subtitle', 'url', 'postDate', 'type', 'published', 'paywalled', 'description'],
+			expectedFields: ['id', 'title', 'subtitle', 'url', 'postDate', 'type', 'published', 'paywalled', 'description', 'htmlBody', 'markdown'],
 			clientMethod: 'ownProfile',
 			profileMethod: 'posts',
 			mockDataCount: 2,
@@ -187,6 +187,8 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 				published: expect.any(Boolean),
 				paywalled: expect.any(Boolean),
 				description: expect.any(String),
+				htmlBody: expect.any(String),
+				markdown: expect.any(String),
 			});
 		});
 	});
@@ -221,7 +223,7 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 				
 				// Verify required fields for post list items
 				const postData = output.json;
-				const expectedFields = ['id', 'title', 'subtitle', 'url', 'postDate', 'type', 'published', 'paywalled', 'description'];
+				const expectedFields = ['id', 'title', 'subtitle', 'url', 'postDate', 'type', 'published', 'paywalled', 'description', 'htmlBody', 'markdown'];
 				expectedFields.forEach(field => {
 					expect(postData).toHaveProperty(field);
 				});

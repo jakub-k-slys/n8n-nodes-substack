@@ -10,10 +10,10 @@ export class OperationUtils {
 	): Promise<R[]> {
 		const results: R[] = [];
 		let count = 0;
-		
+
 		for await (const item of iterable) {
 			if (count >= limit) break;
-			
+
 			try {
 				results.push(formatter(item, ...formatterArgs));
 			} catch (error) {
@@ -21,7 +21,7 @@ export class OperationUtils {
 			}
 			count++;
 		}
-		
+
 		return results;
 	}
 
@@ -40,11 +40,11 @@ export class OperationUtils {
 	 */
 	static parseNumericParam(param: any, paramName: string): number {
 		const numericValue = typeof param === 'string' ? parseInt(param, 10) : param;
-		
+
 		if (!numericValue || isNaN(numericValue)) {
 			throw new Error(`Invalid ${paramName}: must be a valid number`);
 		}
-		
+
 		return numericValue;
 	}
 }
