@@ -100,7 +100,7 @@ describe('MarkdownParser - Real NoteBuilder', () => {
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -132,7 +132,7 @@ describe('MarkdownParser - Real NoteBuilder', () => {
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -164,7 +164,7 @@ describe('MarkdownParser - Real NoteBuilder', () => {
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -196,7 +196,7 @@ describe('MarkdownParser - Real NoteBuilder', () => {
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -246,7 +246,7 @@ describe('MarkdownParser - Real NoteBuilder', () => {
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -272,7 +272,7 @@ describe('MarkdownParser - Real NoteBuilder', () => {
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -330,7 +330,7 @@ describe('MarkdownParser - Real NoteBuilder', () => {
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -397,7 +397,7 @@ Second paragraph with *italic* text.`;
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -430,7 +430,7 @@ Second paragraph with *italic* text.`;
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -469,7 +469,7 @@ Second paragraph with *italic* text.`;
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -509,7 +509,7 @@ Second paragraph with *italic* text.`;
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -547,7 +547,7 @@ Second paragraph with *italic* text.`;
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -591,7 +591,7 @@ Second paragraph with *italic* text.`;
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -622,7 +622,7 @@ Second paragraph with *italic* text.`;
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -728,7 +728,7 @@ Final paragraph.`;
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			const result = await MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
 			await result.publish();
 
 			expect(capturedPayload).toMatchObject(expectedJson);
@@ -740,36 +740,28 @@ Final paragraph.`;
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			expect(() => {
-				MarkdownParser.parseMarkdownToNoteStructured('', noteBuilder);
-			}).toThrow('Note body cannot be empty - at least one paragraph with content is required');
+			await expect(MarkdownParser.parseMarkdownToNoteStructured('', noteBuilder)).rejects.toThrow('Note body cannot be empty - at least one paragraph with content is required');
 		});
 
 		it('should throw error for whitespace-only markdown', async () => {
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			expect(() => {
-				MarkdownParser.parseMarkdownToNoteStructured('   \n\t  ', noteBuilder);
-			}).toThrow('Note body cannot be empty - at least one paragraph with content is required');
+			await expect(MarkdownParser.parseMarkdownToNoteStructured('   \n\t  ', noteBuilder)).rejects.toThrow('Note body cannot be empty - at least one paragraph with content is required');
 		});
 
 		it('should throw error for empty headings', async () => {
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			expect(() => {
-				MarkdownParser.parseMarkdownToNoteStructured('## \n### \n#### ', noteBuilder);
-			}).toThrow('Note must contain at least one paragraph with actual content');
+			await expect(MarkdownParser.parseMarkdownToNoteStructured('## \n### \n#### ', noteBuilder)).rejects.toThrow('Note must contain at least one paragraph with actual content');
 		});
 
 		it('should throw error for empty list items only', async () => {
 			const profile = await mockSubstackClient.ownProfile();
 			const noteBuilder = profile.newNote();
 			
-			expect(() => {
-				MarkdownParser.parseMarkdownToNoteStructured('- \n* \n1. ', noteBuilder);
-			}).toThrow('Note must contain at least one paragraph with actual content');
+			await expect(MarkdownParser.parseMarkdownToNoteStructured('- \n* \n1. ', noteBuilder)).rejects.toThrow('Note must contain at least one paragraph with actual content');
 		});
 	});
 });
