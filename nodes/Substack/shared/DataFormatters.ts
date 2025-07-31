@@ -45,6 +45,7 @@ export class DataFormatters {
 			published: (post as any).rawData?.published ?? true,
 			paywalled: (post as any).rawData?.paywalled ?? false,
 			description: (post as any).rawData?.description || post.body || '',
+			htmlBody: post.htmlBody || '',
 		};
 	}
 
