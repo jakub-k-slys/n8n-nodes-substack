@@ -77,13 +77,13 @@ async function get(
 			notesIterable,
 			limit,
 			DataFormatters.formatNote,
-			publicationAddress
+			publicationAddress,
 		);
 
 		return {
 			success: true,
 			data: results,
-			metadata: { status: 'success' }
+			metadata: { status: 'success' },
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({
@@ -111,13 +111,13 @@ async function getNotesBySlug(
 			notesIterable,
 			limit,
 			DataFormatters.formatNote,
-			publicationAddress
+			publicationAddress,
 		);
 
 		return {
 			success: true,
 			data: results,
-			metadata: { status: 'success' }
+			metadata: { status: 'success' },
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({
@@ -136,8 +136,8 @@ async function getNotesById(
 ): Promise<IStandardResponse> {
 	try {
 		const userId = OperationUtils.parseNumericParam(
-			executeFunctions.getNodeParameter('userId', itemIndex), 
-			'userId'
+			executeFunctions.getNodeParameter('userId', itemIndex),
+			'userId',
 		);
 		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '');
 		const limit = OperationUtils.parseLimit(limitParam);
@@ -148,13 +148,13 @@ async function getNotesById(
 			notesIterable,
 			limit,
 			DataFormatters.formatNote,
-			publicationAddress
+			publicationAddress,
 		);
 
 		return {
 			success: true,
 			data: results,
-			metadata: { status: 'success' }
+			metadata: { status: 'success' },
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({
@@ -173,8 +173,8 @@ async function getNoteById(
 ): Promise<IStandardResponse> {
 	try {
 		const noteId = OperationUtils.parseNumericParam(
-			executeFunctions.getNodeParameter('noteId', itemIndex), 
-			'noteId'
+			executeFunctions.getNodeParameter('noteId', itemIndex),
+			'noteId',
 		);
 
 		const note = await client.noteForId(noteId);
@@ -183,7 +183,7 @@ async function getNoteById(
 		return {
 			success: true,
 			data: result,
-			metadata: { status: 'success' }
+			metadata: { status: 'success' },
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({
@@ -207,7 +207,7 @@ async function createSimpleNote(
 			itemIndex,
 		});
 	}
-	
+
 	try {
 		const finalBuilder = ownProfile.newNote().paragraph().text(body.trim());
 		return await finalBuilder.publish();
@@ -233,16 +233,20 @@ async function createAdvancedNote(
 			itemIndex,
 		});
 	}
-	
+
 	try {
-		const finalBuilder = MarkdownParser.parseMarkdownToNoteStructured(body.trim(), ownProfile.newNote());
+		const finalBuilder = MarkdownParser.parseMarkdownToNoteStructured(
+			body.trim(),
+			ownProfile.newNote(),
+		);
 		return await finalBuilder.publish();
 	} catch (error) {
 		let userMessage = error.message;
 		if (error.message.includes('Note must contain at least one paragraph with actual content')) {
-			userMessage = 'Note must contain at least one paragraph with meaningful content - empty formatting elements are not sufficient';
+			userMessage =
+				'Note must contain at least one paragraph with meaningful content - empty formatting elements are not sufficient';
 		}
-		
+
 		return SubstackUtils.formatErrorResponse({
 			message: userMessage,
 			node: executeFunctions.getNode(),
@@ -259,11 +263,19 @@ async function create(
 ): Promise<IStandardResponse> {
 	try {
 		const body = executeFunctions.getNodeParameter('body', itemIndex) as string;
-		const contentType = executeFunctions.getNodeParameter('contentType', itemIndex, 'simple') as string;
-		const visibility = executeFunctions.getNodeParameter('visibility', itemIndex, 'everyone') as string;
+		const contentType = executeFunctions.getNodeParameter(
+			'contentType',
+			itemIndex,
+			'simple',
+		) as string;
+		const visibility = executeFunctions.getNodeParameter(
+			'visibility',
+			itemIndex,
+			'everyone',
+		) as string;
 
 		const ownProfile = await client.ownProfile();
-		
+
 		let response;
 
 		if (contentType === 'simple') {

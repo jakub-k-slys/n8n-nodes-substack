@@ -21,13 +21,13 @@ export class SubstackUtils {
 
 		const hostname = this.extractHostname(publicationAddress as string, executeFunctions);
 		const cacheKey = `${hostname}:${apiKey}`;
-		
+
 		// Check cache with TTL
 		const cached = this.clientCache.get(cacheKey);
 		if (cached && this.isCacheValid(cached.timestamp)) {
-			return { 
-				client: cached.client, 
-				publicationAddress: publicationAddress as string 
+			return {
+				client: cached.client,
+				publicationAddress: publicationAddress as string,
 			};
 		}
 
@@ -36,27 +36,28 @@ export class SubstackUtils {
 			hostname,
 			apiKey: apiKey as string,
 		});
-		
-		this.clientCache.set(cacheKey, { 
-			client, 
-			timestamp: Date.now() 
+
+		this.clientCache.set(cacheKey, {
+			client,
+			timestamp: Date.now(),
 		});
 
-		return { 
-			client, 
-			publicationAddress: publicationAddress as string 
+		return {
+			client,
+			publicationAddress: publicationAddress as string,
 		};
 	}
 
 	static formatUrl(publicationAddress: string, path: string): string {
 		const cleanPath = path.startsWith('/') ? path : `/${path}`;
 		const cleanAddress = publicationAddress.replace(/\/+$/, '');
-		
+
 		// Properly encode the path to handle special characters
-		const encodedPath = cleanPath.split('/').map(segment => 
-			segment ? encodeURIComponent(segment) : ''
-		).join('/');
-		
+		const encodedPath = cleanPath
+			.split('/')
+			.map((segment) => (segment ? encodeURIComponent(segment) : ''))
+			.join('/');
+
 		return `${cleanAddress}${encodedPath}`;
 	}
 
@@ -80,16 +81,16 @@ export class SubstackUtils {
 			const cleanUrl = url.startsWith('http') ? url : `https://${url}`;
 			const urlObj = new URL(cleanUrl);
 			const hostname = urlObj.hostname;
-			
+
 			if (!hostname.includes('.')) {
 				throw new Error('Invalid hostname format');
 			}
-			
+
 			return hostname;
 		} catch (error) {
 			throw new NodeOperationError(
-				executeFunctions.getNode(), 
-				`Invalid publication URL provided: ${url}`
+				executeFunctions.getNode(),
+				`Invalid publication URL provided: ${url}`,
 			);
 		}
 	}
@@ -98,7 +99,7 @@ export class SubstackUtils {
 	 * Check if cached client is still valid based on TTL
 	 */
 	private static isCacheValid(timestamp: number): boolean {
-		return (Date.now() - timestamp) < this.DEFAULT_CACHE_TTL;
+		return Date.now() - timestamp < this.DEFAULT_CACHE_TTL;
 	}
 
 	/**
@@ -118,7 +119,7 @@ export class SubstackUtils {
 	static getCacheStats(): { size: number; entries: string[] } {
 		return {
 			size: this.clientCache.size,
-			entries: Array.from(this.clientCache.keys())
+			entries: Array.from(this.clientCache.keys()),
 		};
 	}
 }

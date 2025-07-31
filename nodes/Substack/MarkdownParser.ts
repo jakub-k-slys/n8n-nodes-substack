@@ -4,7 +4,7 @@ import type { OwnProfile } from 'substack-api';
 // Configure marked library
 marked.setOptions({
 	gfm: true,
-	breaks: false
+	breaks: false,
 });
 
 // Helper function to decode HTML entities
@@ -15,9 +15,9 @@ function decodeHtmlEntities(text: string): string {
 		'&amp;': '&',
 		'&lt;': '<',
 		'&gt;': '>',
-		'&nbsp;': ' '
+		'&nbsp;': ' ',
 	};
-	
+
 	return text.replace(/&#?\w+;/g, (entity) => entityMap[entity] || entity);
 }
 
@@ -30,31 +30,34 @@ export class MarkdownParser {
 	 * Parse markdown text and apply it to a NoteBuilder using structured approach
 	 * Returns the final ParagraphBuilder with all content applied (handles immutable builders)
 	 */
-	static parseMarkdownToNoteStructured(markdown: string, noteBuilder: ReturnType<OwnProfile['newNote']>): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
+	static parseMarkdownToNoteStructured(
+		markdown: string,
+		noteBuilder: ReturnType<OwnProfile['newNote']>,
+	): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
 		if (!markdown.trim()) {
-			throw new Error('Note body cannot be empty - at least one paragraph with content is required');
+			throw new Error(
+				'Note body cannot be empty - at least one paragraph with content is required',
+			);
 		}
 
 		// Parse markdown into tokens using marked
 		const tokens = marked.lexer(markdown);
-		
+
 		// Validate that we have at least one meaningful token
-		const meaningfulTokens = tokens.filter(token => 
-			token.type === 'paragraph' || 
-			token.type === 'heading' || 
-			token.type === 'list'
+		const meaningfulTokens = tokens.filter(
+			(token) => token.type === 'paragraph' || token.type === 'heading' || token.type === 'list',
 		);
-		
+
 		if (meaningfulTokens.length === 0) {
 			throw new Error('Note must contain at least one paragraph with actual content');
 		}
-		
+
 		// Process each token and convert to structured ParagraphBuilder calls
 		// Track the current builder as it gets updated with each immutable operation
 		const contentTracker = { meaningfulNodesCreated: 0 };
 		let currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null = null;
 		currentBuilder = this.processTokensStructured(tokens, noteBuilder, contentTracker);
-		
+
 		// Validate that we actually created some meaningful content
 		if (contentTracker.meaningfulNodesCreated === 0) {
 			throw new Error('Note must contain at least one paragraph with actual content');
@@ -70,7 +73,10 @@ export class MarkdownParser {
 	/**
 	 * Legacy method for backward compatibility
 	 */
-	static parseMarkdownToNote(markdown: string, noteBuilder: ReturnType<OwnProfile['newNote']>): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
+	static parseMarkdownToNote(
+		markdown: string,
+		noteBuilder: ReturnType<OwnProfile['newNote']>,
+	): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
 		return this.parseMarkdownToNoteStructured(markdown, noteBuilder);
 	}
 
@@ -78,21 +84,40 @@ export class MarkdownParser {
 	 * Process marked tokens and convert to structured ParagraphBuilder calls
 	 * Returns the final ParagraphBuilder with all content applied (handles immutable builders)
 	 */
-	private static processTokensStructured(tokens: any[], noteBuilder: ReturnType<OwnProfile['newNote']>, contentTracker: any): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null {
+	private static processTokensStructured(
+		tokens: any[],
+		noteBuilder: ReturnType<OwnProfile['newNote']>,
+		contentTracker: any,
+	): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null {
 		let currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null = null;
-		
+
 		for (const token of tokens) {
 			let newBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null = null;
-			
+
 			switch (token.type) {
 				case 'heading':
-					newBuilder = this.processHeadingStructured(token, noteBuilder, currentBuilder, contentTracker);
+					newBuilder = this.processHeadingStructured(
+						token,
+						noteBuilder,
+						currentBuilder,
+						contentTracker,
+					);
 					break;
 				case 'paragraph':
-					newBuilder = this.processParagraphStructured(token, noteBuilder, currentBuilder, contentTracker);
+					newBuilder = this.processParagraphStructured(
+						token,
+						noteBuilder,
+						currentBuilder,
+						contentTracker,
+					);
 					break;
 				case 'list':
-					newBuilder = this.processListStructured(token, noteBuilder, currentBuilder, contentTracker);
+					newBuilder = this.processListStructured(
+						token,
+						noteBuilder,
+						currentBuilder,
+						contentTracker,
+					);
 					break;
 				case 'space':
 					// Skip empty space tokens
@@ -110,13 +135,13 @@ export class MarkdownParser {
 					}
 					break;
 			}
-			
+
 			// Only update currentBuilder if we got a valid new builder
 			if (newBuilder) {
 				currentBuilder = newBuilder;
 			}
 		}
-		
+
 		return currentBuilder;
 	}
 
@@ -124,19 +149,25 @@ export class MarkdownParser {
 	 * Process heading token using structured approach
 	 * Returns the final ParagraphBuilder with content applied (handles immutable builders)
 	 */
-	private static processHeadingStructured(token: any, noteBuilder: ReturnType<OwnProfile['newNote']>, currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null, contentTracker: any): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null {
+	private static processHeadingStructured(
+		token: any,
+		noteBuilder: ReturnType<OwnProfile['newNote']>,
+		currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null,
+		contentTracker: any,
+	): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null {
 		// Skip completely empty headings
-		const hasContent = (token.tokens && token.tokens.some((t: any) => t.text && t.text.trim())) ||
-						   (token.text && token.text.trim());
-		
+		const hasContent =
+			(token.tokens && token.tokens.some((t: any) => t.text && t.text.trim())) ||
+			(token.text && token.text.trim());
+
 		if (!hasContent) {
 			// Return current builder without creating new paragraphs for empty headings
 			return currentBuilder;
 		}
-		
+
 		// Create new paragraph properly: if we have currentBuilder, call paragraph() on it, otherwise start from noteBuilder
 		let paragraphBuilder = currentBuilder ? currentBuilder.paragraph() : noteBuilder.paragraph();
-		
+
 		// Process inline tokens within the heading
 		if (token.tokens && token.tokens.length > 0) {
 			paragraphBuilder = this.processInlineTokensStructured(token.tokens, paragraphBuilder, true);
@@ -144,7 +175,7 @@ export class MarkdownParser {
 			paragraphBuilder = paragraphBuilder.bold(decodeHtmlEntities(token.text));
 		}
 		contentTracker.meaningfulNodesCreated++;
-		
+
 		return paragraphBuilder;
 	}
 
@@ -152,31 +183,37 @@ export class MarkdownParser {
 	 * Process paragraph token using structured approach
 	 * Returns the final ParagraphBuilder with content applied (handles immutable builders)
 	 */
-	private static processParagraphStructured(token: any, noteBuilder: ReturnType<OwnProfile['newNote']>, currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null, contentTracker: any): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null {
+	private static processParagraphStructured(
+		token: any,
+		noteBuilder: ReturnType<OwnProfile['newNote']>,
+		currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null,
+		contentTracker: any,
+	): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null {
 		// Skip completely empty paragraphs
-		const hasContent = (token.tokens && token.tokens.some((t: any) => t.text && t.text.trim())) ||
-						   (token.text && token.text.trim());
-		
+		const hasContent =
+			(token.tokens && token.tokens.some((t: any) => t.text && t.text.trim())) ||
+			(token.text && token.text.trim());
+
 		if (!hasContent) {
 			// Return current builder without creating new paragraphs for empty content
 			return currentBuilder;
 		}
-		
+
 		// Skip paragraphs that only contain list markers or similar formatting-only content
 		const text = token.text ? token.text.trim() : '';
 		const normalizedText = text.replace(/\s+/g, ' ').trim();
-		
+
 		// Check for various empty-content patterns
 		const isOnlyListMarkers = /^([-*+]|(\d+\.))+(\s*([-*+]|(\d+\.)))*$/.test(normalizedText);
 		const isEmptyListMarkers = normalizedText === '- * 1.' || /^[-*+\d.\s]+$/.test(normalizedText);
-		
+
 		if (isOnlyListMarkers || isEmptyListMarkers) {
 			return currentBuilder;
 		}
-		
+
 		// Create new paragraph properly: if we have currentBuilder, call paragraph() on it, otherwise start from noteBuilder
 		let paragraphBuilder = currentBuilder ? currentBuilder.paragraph() : noteBuilder.paragraph();
-		
+
 		// Process inline tokens within the paragraph
 		if (token.tokens && token.tokens.length > 0) {
 			paragraphBuilder = this.processInlineTokensStructured(token.tokens, paragraphBuilder);
@@ -184,7 +221,7 @@ export class MarkdownParser {
 			paragraphBuilder = paragraphBuilder.text(decodeHtmlEntities(token.text));
 		}
 		contentTracker.meaningfulNodesCreated++;
-		
+
 		return paragraphBuilder;
 	}
 
@@ -192,7 +229,12 @@ export class MarkdownParser {
 	 * Process list token using structured approach (convert to separate paragraphs)
 	 * Returns the final ParagraphBuilder with content applied (handles immutable builders)
 	 */
-	private static processListStructured(token: any, noteBuilder: ReturnType<OwnProfile['newNote']>, currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null, contentTracker: any): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null {
+	private static processListStructured(
+		token: any,
+		noteBuilder: ReturnType<OwnProfile['newNote']>,
+		currentBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null,
+		contentTracker: any,
+	): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> | null {
 		if (!token.items) return currentBuilder;
 
 		let finalBuilder = currentBuilder;
@@ -200,22 +242,25 @@ export class MarkdownParser {
 
 		token.items.forEach((item: any, index: number) => {
 			// Skip completely empty list items
-			const hasContent = (item.tokens && item.tokens.some((t: any) => t.text && t.text.trim())) ||
-							   (item.text && item.text.trim());
-			
+			const hasContent =
+				(item.tokens && item.tokens.some((t: any) => t.text && t.text.trim())) ||
+				(item.text && item.text.trim());
+
 			if (!hasContent) {
 				return;
 			}
-			
+
 			// Check if we have meaningful content before creating a paragraph
 			let actualContent = '';
-			
+
 			// Determine what content we would add
 			if (item.tokens && item.tokens.length > 0) {
 				const firstToken = item.tokens[0];
 				if (firstToken && firstToken.tokens) {
 					// Check if any inline tokens have non-empty text
-					const meaningfulInlineTokens = firstToken.tokens.filter((t: any) => t.text && t.text.trim());
+					const meaningfulInlineTokens = firstToken.tokens.filter(
+						(t: any) => t.text && t.text.trim(),
+					);
 					if (meaningfulInlineTokens.length > 0) {
 						actualContent = meaningfulInlineTokens.map((t: any) => t.text.trim()).join('');
 					}
@@ -225,16 +270,16 @@ export class MarkdownParser {
 			} else if (item.text && item.text.trim()) {
 				actualContent = item.text.trim();
 			}
-			
+
 			// Only create paragraph if we have actual content
 			if (!actualContent) {
 				return; // Skip this list item entirely
 			}
-			
+
 			// Create each list item as a separate paragraph properly
 			// For the first item, use finalBuilder, otherwise create new paragraph from the previous one
 			let paragraphBuilder = finalBuilder ? finalBuilder.paragraph() : noteBuilder.paragraph();
-			
+
 			// Add list marker
 			if (token.ordered) {
 				paragraphBuilder = paragraphBuilder.text(`${listItemNumber}. `);
@@ -242,13 +287,16 @@ export class MarkdownParser {
 			} else {
 				paragraphBuilder = paragraphBuilder.text('• ');
 			}
-			
+
 			// Process list item content
 			if (item.tokens && item.tokens.length > 0) {
 				// Process the first paragraph token from the list item
 				const firstToken = item.tokens[0];
 				if (firstToken && firstToken.tokens) {
-					paragraphBuilder = this.processInlineTokensStructured(firstToken.tokens, paragraphBuilder);
+					paragraphBuilder = this.processInlineTokensStructured(
+						firstToken.tokens,
+						paragraphBuilder,
+					);
 				} else if (firstToken && firstToken.text) {
 					paragraphBuilder = paragraphBuilder.text(decodeHtmlEntities(firstToken.text));
 				}
@@ -256,11 +304,11 @@ export class MarkdownParser {
 				paragraphBuilder = paragraphBuilder.text(decodeHtmlEntities(item.text));
 			}
 			contentTracker.meaningfulNodesCreated++;
-			
+
 			// Track the final paragraph builder (the last one created)
 			finalBuilder = paragraphBuilder;
 		});
-		
+
 		return finalBuilder;
 	}
 
@@ -268,15 +316,19 @@ export class MarkdownParser {
 	 * Process inline tokens (bold, italic, code, links, text) using structured approach
 	 * Returns the final paragraph builder after chaining all method calls
 	 */
-	private static processInlineTokensStructured(tokens: any[], paragraphBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']>, isHeading: boolean = false): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
+	private static processInlineTokensStructured(
+		tokens: any[],
+		paragraphBuilder: ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']>,
+		isHeading: boolean = false,
+	): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
 		let currentBuilder = paragraphBuilder;
-		
+
 		for (const token of tokens) {
 			// Skip completely empty tokens
 			if (!token.text || !token.text.trim()) {
 				continue;
 			}
-			
+
 			switch (token.type) {
 				case 'text':
 					const decodedText = decodeHtmlEntities(token.text);
@@ -317,7 +369,7 @@ export class MarkdownParser {
 					break;
 			}
 		}
-		
+
 		return currentBuilder;
 	}
 }

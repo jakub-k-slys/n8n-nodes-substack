@@ -114,8 +114,8 @@ async function getProfileById(
 ): Promise<IStandardResponse> {
 	try {
 		const userId = OperationUtils.parseNumericParam(
-			executeFunctions.getNodeParameter('userId', itemIndex), 
-			'userId'
+			executeFunctions.getNodeParameter('userId', itemIndex),
+			'userId',
 		);
 		const profile = await client.profileForId(userId);
 		const profileData = DataFormatters.formatProfile(profile);
@@ -143,7 +143,11 @@ async function getFollowees(
 	itemIndex: number,
 ): Promise<IStandardResponse> {
 	try {
-		const returnType = executeFunctions.getNodeParameter('returnType', itemIndex, 'profiles') as string;
+		const returnType = executeFunctions.getNodeParameter(
+			'returnType',
+			itemIndex,
+			'profiles',
+		) as string;
 		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '');
 		const limit = OperationUtils.parseLimit(limitParam);
 
@@ -152,7 +156,7 @@ async function getFollowees(
 		const results = await OperationUtils.executeAsyncIterable(
 			followeesIterable,
 			limit,
-			(followee: any) => DataFormatters.formatFollowing(followee, returnType)
+			(followee: any) => DataFormatters.formatFollowing(followee, returnType),
 		);
 
 		return {

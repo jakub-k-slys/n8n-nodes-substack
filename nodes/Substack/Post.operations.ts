@@ -69,13 +69,13 @@ async function getAll(
 			postsIterable,
 			limit,
 			DataFormatters.formatPost,
-			publicationAddress
+			publicationAddress,
 		);
 
 		return {
 			success: true,
 			data: results,
-			metadata: { status: 'success' }
+			metadata: { status: 'success' },
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({
@@ -103,13 +103,13 @@ async function getPostsBySlug(
 			postsIterable,
 			limit,
 			DataFormatters.formatPost,
-			publicationAddress
+			publicationAddress,
 		);
 
 		return {
 			success: true,
 			data: results,
-			metadata: { status: 'success' }
+			metadata: { status: 'success' },
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({
@@ -128,8 +128,8 @@ async function getPostsById(
 ): Promise<IStandardResponse> {
 	try {
 		const userId = OperationUtils.parseNumericParam(
-			executeFunctions.getNodeParameter('userId', itemIndex), 
-			'userId'
+			executeFunctions.getNodeParameter('userId', itemIndex),
+			'userId',
 		);
 		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '');
 		const limit = OperationUtils.parseLimit(limitParam);
@@ -140,13 +140,13 @@ async function getPostsById(
 			postsIterable,
 			limit,
 			DataFormatters.formatPost,
-			publicationAddress
+			publicationAddress,
 		);
 
 		return {
 			success: true,
 			data: results,
-			metadata: { status: 'success' }
+			metadata: { status: 'success' },
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({
@@ -165,8 +165,8 @@ async function getPostById(
 ): Promise<IStandardResponse> {
 	try {
 		const postId = OperationUtils.parseNumericParam(
-			executeFunctions.getNodeParameter('postId', itemIndex), 
-			'postId'
+			executeFunctions.getNodeParameter('postId', itemIndex),
+			'postId',
 		);
 
 		const post = await client.postForId(postId);
@@ -175,7 +175,7 @@ async function getPostById(
 		return {
 			success: true,
 			data: result,
-			metadata: { status: 'success' }
+			metadata: { status: 'success' },
 		};
 	} catch (error) {
 		return SubstackUtils.formatErrorResponse({

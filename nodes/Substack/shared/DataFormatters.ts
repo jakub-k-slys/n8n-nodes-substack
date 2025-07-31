@@ -1,5 +1,6 @@
 import { ISubstackNote, ISubstackPost, ISubstackComment, ISubstackFollowing } from '../types';
 import { SubstackUtils } from '../SubstackUtils';
+import TurndownService from 'turndown';
 
 export class DataFormatters {
 	/**
@@ -14,9 +15,7 @@ export class DataFormatters {
 				`/p/${(note as any).rawData?.comment?.id || note.id || 'unknown'}`,
 			),
 			date: DataFormatters.formatDate(
-				(note as any).rawData?.context?.timestamp || 
-				note.publishedAt || 
-				new Date()
+				(note as any).rawData?.context?.timestamp || note.publishedAt || new Date(),
 			),
 			status: 'published',
 			userId: note.author?.id?.toString() || 'unknown',
@@ -31,21 +30,24 @@ export class DataFormatters {
 	 * Format a post object from the Substack API
 	 */
 	static formatPost(post: any, publicationAddress: string): ISubstackPost {
+		const htmlBody = post.htmlBody || '';
+		const turndownService = new TurndownService();
+		const markdown = htmlBody ? turndownService.turndown(htmlBody) : '';
+
 		return {
 			id: post.id,
 			title: post.title || '',
 			subtitle: (post as any).rawData?.subtitle || '',
 			url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
 			postDate: DataFormatters.formatDate(
-				(post as any).rawData?.post_date || 
-				post.publishedAt || 
-				new Date()
+				(post as any).rawData?.post_date || post.publishedAt || new Date(),
 			),
 			type: (post as any).rawData?.type || 'newsletter',
 			published: (post as any).rawData?.published ?? true,
 			paywalled: (post as any).rawData?.paywalled ?? false,
 			description: (post as any).rawData?.description || post.body || '',
-			htmlBody: post.htmlBody || '',
+			htmlBody: htmlBody,
+			markdown: markdown,
 		};
 	}
 
