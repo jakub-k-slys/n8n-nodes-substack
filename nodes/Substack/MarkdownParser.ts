@@ -40,8 +40,11 @@ export class MarkdownParser {
 			);
 		}
 
+		// Preprocess markdown to handle explicit newline characters
+		const processedMarkdown = this.preprocessMarkdown(markdown);
+
 		// Parse markdown into tokens using marked
-		const tokens = marked.lexer(markdown);
+		const tokens = marked.lexer(processedMarkdown);
 
 		// Validate that we have at least one meaningful token
 		const meaningfulTokens = tokens.filter(
@@ -78,6 +81,15 @@ export class MarkdownParser {
 		noteBuilder: ReturnType<OwnProfile['newNote']>,
 	): ReturnType<ReturnType<OwnProfile['newNote']>['paragraph']> {
 		return this.parseMarkdownToNoteStructured(markdown, noteBuilder);
+	}
+
+	/**
+	 * Preprocess markdown to normalize newline characters
+	 * Converts literal \n escape sequences to actual newline characters
+	 */
+	private static preprocessMarkdown(markdown: string): string {
+		// Convert literal \n sequences to actual newlines
+		return markdown.replace(/\\n/g, '\n');
 	}
 
 	/**
