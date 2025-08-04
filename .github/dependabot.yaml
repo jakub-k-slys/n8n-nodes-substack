@@ -12,3 +12,7 @@ updates:
       commit-message:
           prefix: 'chore'
           include: 'scope'
+      ignore:
+          - dependency-name: 'marked'
+            # Keep marked at v4.x.x for CommonJS compatibility with n8n
+            # v16+ uses ES modules which cause deployment issues
