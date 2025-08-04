@@ -7,6 +7,9 @@ npm-debug.log*
 yarn.lock
 .vscode/launch.json
 
+# IDE files
+.idea/
+
 # n8n development files
 .n8n/
 n8n-data/

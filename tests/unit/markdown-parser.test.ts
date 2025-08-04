@@ -630,6 +630,98 @@ Second paragraph with *italic* text.`;
 	});
 
 	describe('Complex Documents', () => {
+		it('should parse motivational tech text with bold formatting and multiple paragraphs', async () => {
+			const markdown = `**Every late-night bug and Google search is a deposit in your confidence fund.** 
+
+Tech isn't just code. It's about building resilience, curiosity, and grit. 
+Feeling lost is part of the journey. 
+
+What have you learned by getting a little lost?`;
+
+			const expectedJson = createExpectedJson([
+				{
+					type: 'paragraph',
+					content: [
+						{
+							type: 'text',
+							text: 'Every late-night bug and Google search is a deposit in your confidence fund.',
+							marks: [{ type: 'bold' }]
+						}
+					]
+				},
+				{
+					type: 'paragraph',
+					content: [
+						{
+							type: 'text',
+							text: 'Tech isn\'t just code. It\'s about building resilience, curiosity, and grit. \nFeeling lost is part of the journey. '
+						}
+					]
+				},
+				{
+					type: 'paragraph',
+					content: [
+						{
+							type: 'text',
+							text: 'What have you learned by getting a little lost?'
+						}
+					]
+				}
+			]);
+
+			const profile = await mockSubstackClient.ownProfile();
+			const noteBuilder = profile.newNote();
+			
+			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			await result.publish();
+
+			expect(capturedPayload).toMatchObject(expectedJson);
+		});
+
+		it('should parse modified motivational text with explicit newlines to same output', async () => {
+			const markdown = '**Every late-night bug and Google search is a deposit in your confidence fund.** \\n\\nTech isn\'t just code. It\'s about building resilience, curiosity, and grit. \\nFeeling lost is part of the journey. \\n\\nWhat have you learned by getting a little lost?';
+
+			// Should produce the exact same output as the previous test (after parser is fixed)
+			const expectedJson = createExpectedJson([
+				{
+					type: 'paragraph',
+					content: [
+						{
+							type: 'text',
+							text: 'Every late-night bug and Google search is a deposit in your confidence fund.',
+							marks: [{ type: 'bold' }]
+						}
+					]
+				},
+				{
+					type: 'paragraph',
+					content: [
+						{
+							type: 'text',
+							text: 'Tech isn\'t just code. It\'s about building resilience, curiosity, and grit. \nFeeling lost is part of the journey. '
+						}
+					]
+				},
+				{
+					type: 'paragraph',
+					content: [
+						{
+							type: 'text',
+							text: 'What have you learned by getting a little lost?'
+						}
+					]
+				}
+			]);
+
+			const profile = await mockSubstackClient.ownProfile();
+			const noteBuilder = profile.newNote();
+			
+			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			await result.publish();
+
+			expect(capturedPayload).toMatchObject(expectedJson);
+		});
+
 		it('should parse complex document with all supported elements', async () => {
 			const markdown = `# Main Title
 
@@ -721,6 +813,40 @@ Final paragraph.`;
 					type: 'paragraph',
 					content: [
 						{ type: 'text', text: 'Final paragraph.' }
+					]
+				}
+			]);
+
+			const profile = await mockSubstackClient.ownProfile();
+			const noteBuilder = profile.newNote();
+			
+			const result = MarkdownParser.parseMarkdownToNoteStructured(markdown, noteBuilder);
+			await result.publish();
+
+			expect(capturedPayload).toMatchObject(expectedJson);
+		});
+	});
+
+	describe('Preprocessing', () => {
+		it('should convert literal backslash-n to actual newlines', async () => {
+			const markdown = 'First line\\nSecond line\\n\\nThird paragraph';
+			const expectedJson = createExpectedJson([
+				{
+					type: 'paragraph',
+					content: [
+						{
+							type: 'text',
+							text: 'First line\nSecond line'
+						}
+					]
+				},
+				{
+					type: 'paragraph',
+					content: [
+						{
+							type: 'text',
+							text: 'Third paragraph'
+						}
 					]
 				}
 			]);
