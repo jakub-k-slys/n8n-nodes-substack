@@ -38,7 +38,8 @@ export class DataFormatters {
 			id: post.id,
 			title: post.title || '',
 			subtitle: (post as any).rawData?.subtitle || '',
-			url: SubstackUtils.formatUrl(publicationAddress, `/p/${post.id}`),
+			slug: (post as any).rawData?.slug || post.slug,
+			url: SubstackUtils.formatUrl(publicationAddress, `/p/${(post as any).rawData?.slug || post.slug || post.id}`),
 			postDate: DataFormatters.formatDate(
 				(post as any).rawData?.post_date || post.publishedAt || new Date(),
 			),

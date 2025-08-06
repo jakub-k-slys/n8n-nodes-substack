@@ -30,6 +30,7 @@ export const mockClientPostsData = mockPostsListResponse.map(post => ({
 	id: post.id,
 	title: post.title,
 	body: post.description,
+	slug: post.slug,
 	publishedAt: new Date(post.post_date),
 	rawData: post, // Include original raw data for compatibility
 }));
