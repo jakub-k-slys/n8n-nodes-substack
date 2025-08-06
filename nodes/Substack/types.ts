@@ -28,6 +28,7 @@ export interface ISubstackPost {
 	id: number;
 	title: string;
 	subtitle?: string;
+	slug?: string;
 	url: string;
 	postDate: string;
 	type: 'newsletter' | 'podcast' | 'thread';
