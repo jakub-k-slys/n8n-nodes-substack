@@ -75,6 +75,47 @@ export const noteFields: INodeProperties[] = [
 			},
 		],
 	},
+	{
+		displayName: 'Attachment',
+		name: 'attachment',
+		type: 'options',
+		default: 'none',
+		description: 'Add an attachment to the note',
+		displayOptions: {
+			show: {
+				resource: ['note'],
+				operation: ['create'],
+			},
+		},
+		options: [
+			{
+				name: 'None',
+				value: 'none',
+				description: 'No attachment',
+			},
+			{
+				name: 'Link',
+				value: 'link',
+				description: 'Attach a link to the note',
+			},
+		],
+	},
+	{
+		displayName: 'Link URL',
+		name: 'linkUrl',
+		type: 'string',
+		default: '',
+		description: 'URL to attach to the note',
+		displayOptions: {
+			show: {
+				resource: ['note'],
+				operation: ['create'],
+				attachment: ['link'],
+			},
+		},
+		required: true,
+		placeholder: 'https://example.com',
+	},
 	/* -------------------------------------------------------------------------- */
 	/*                              note:get                                     */
 	/* -------------------------------------------------------------------------- */

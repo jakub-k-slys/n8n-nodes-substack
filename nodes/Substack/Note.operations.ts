@@ -199,6 +199,7 @@ async function createSimpleNote(
 	body: string,
 	executeFunctions: IExecuteFunctions,
 	itemIndex: number,
+	linkUrl?: string,
 ): Promise<any> {
 	if (!body || !body.trim()) {
 		return SubstackUtils.formatErrorResponse({
@@ -209,7 +210,12 @@ async function createSimpleNote(
 	}
 
 	try {
-		const finalBuilder = ownProfile.newNote().paragraph().text(body.trim());
+		let finalBuilder;
+		if (linkUrl) {
+			finalBuilder = ownProfile.newNoteWithLink(linkUrl).paragraph().text(body.trim());
+		} else {
+			finalBuilder = ownProfile.newNote().paragraph().text(body.trim());
+		}
 		return await finalBuilder.publish();
 	} catch (buildError) {
 		return SubstackUtils.formatErrorResponse({
@@ -225,6 +231,7 @@ async function createAdvancedNote(
 	body: string,
 	executeFunctions: IExecuteFunctions,
 	itemIndex: number,
+	linkUrl?: string,
 ): Promise<any> {
 	if (!body || !body.trim()) {
 		return SubstackUtils.formatErrorResponse({
@@ -235,9 +242,15 @@ async function createAdvancedNote(
 	}
 
 	try {
+		let noteBuilder;
+		if (linkUrl) {
+			noteBuilder = ownProfile.newNoteWithLink(linkUrl);
+		} else {
+			noteBuilder = ownProfile.newNote();
+		}
 		const finalBuilder = MarkdownParser.parseMarkdownToNoteStructured(
 			body.trim(),
-			ownProfile.newNote(),
+			noteBuilder,
 		);
 		return await finalBuilder.publish();
 	} catch (error) {
@@ -273,15 +286,23 @@ async function create(
 			itemIndex,
 			'everyone',
 		) as string;
+		const attachment = executeFunctions.getNodeParameter(
+			'attachment',
+			itemIndex,
+			'none',
+		) as string;
+		const linkUrl = attachment === 'link' 
+			? executeFunctions.getNodeParameter('linkUrl', itemIndex) as string 
+			: undefined;
 
 		const ownProfile = await client.ownProfile();
 
 		let response;
 
 		if (contentType === 'simple') {
-			response = await createSimpleNote(ownProfile, body, executeFunctions, itemIndex);
+			response = await createSimpleNote(ownProfile, body, executeFunctions, itemIndex, linkUrl);
 		} else {
-			response = await createAdvancedNote(ownProfile, body, executeFunctions, itemIndex);
+			response = await createAdvancedNote(ownProfile, body, executeFunctions, itemIndex, linkUrl);
 		}
 
 		if (response && !response.success && response.error) {
@@ -297,6 +318,8 @@ async function create(
 			status: response.status || 'published',
 			userId: response.user_id?.toString() || 'unknown',
 			visibility: visibility,
+			attachment: attachment,
+			linkUrl: linkUrl,
 		};
 
 		return {
