@@ -61,7 +61,7 @@
   },
   "dependencies": {
     "marked": "^4.3.0",
-    "substack-api": "^1.4.0",
+    "substack-api": "^2.1.0",
     "turndown": "^7.2.0"
   }
 }
