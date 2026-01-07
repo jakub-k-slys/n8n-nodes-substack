@@ -152,9 +152,9 @@ async function getFollowees(
 		const limit = OperationUtils.parseLimit(limitParam);
 
 		const ownProfile = await client.ownProfile();
-		const followeesIterable = await ownProfile.followees();
+		const followingIterable = await ownProfile.following();
 		const results = await OperationUtils.executeAsyncIterable(
-			followeesIterable,
+			followingIterable,
 			limit,
 			(followee: any) => DataFormatters.formatFollowing(followee, returnType),
 		);

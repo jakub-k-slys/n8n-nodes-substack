@@ -33,8 +33,8 @@ export class SubstackUtils {
 
 		// Create new client and cache with timestamp
 		const client = new SubstackClient({
-			hostname,
-			apiKey: apiKey as string,
+			publicationUrl: hostname,
+			token: apiKey as string,
 		});
 
 		this.clientCache.set(cacheKey, {

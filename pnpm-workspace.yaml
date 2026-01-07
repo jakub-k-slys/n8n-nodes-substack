@@ -1,0 +1,3 @@
+ignoredBuiltDependencies:
+  - eslint-plugin-n8n-nodes-base
+  - unrs-resolver

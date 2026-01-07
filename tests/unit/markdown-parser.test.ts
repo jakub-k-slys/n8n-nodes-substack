@@ -1,27 +1,106 @@
 import { MarkdownParser } from '../../nodes/Substack/MarkdownParser';
 
-// Import real substack-api
-const { SubstackClient, OwnProfile } = jest.requireActual('substack-api');
-
-// Mock only SubstackClient constructor
-jest.mock('substack-api', () => ({
-	...jest.requireActual('substack-api'),
-	SubstackClient: jest.fn(),
-}));
+// Mock the entire substack-api module
+jest.mock('substack-api');
 
 describe('MarkdownParser - Real NoteBuilder', () => {
 	let capturedPayload: any = null;
 	let mockSubstackClient: any;
-	let mockHttpClient: any;
+	let mockOwnProfile: any;
+	let mockNoteBuilder: any;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
 		capturedPayload = null;
 
-		// Create mocked HTTP client to capture payloads
-		mockHttpClient = {
-			post: jest.fn().mockImplementation(async (url: string, data: any) => {
-				capturedPayload = data;
+		// Create a mock NoteBuilder that captures the structure being built
+		let noteStructure: any[] = [];
+
+		const createParagraphBuilder = (): any => {
+			const paragraphContent: any[] = [];
+
+			const builder: any = {
+				text: jest.fn((text: string): any => {
+					paragraphContent.push({ type: 'text', text });
+					return builder;
+				}),
+				bold: jest.fn((text: string): any => {
+					paragraphContent.push({ type: 'text', text, marks: [{ type: 'bold' }] });
+					return builder;
+				}),
+				italic: jest.fn((text: string): any => {
+					paragraphContent.push({ type: 'text', text, marks: [{ type: 'italic' }] });
+					return builder;
+				}),
+				code: jest.fn((text: string): any => {
+					paragraphContent.push({ type: 'text', text, marks: [{ type: 'code' }] });
+					return builder;
+				}),
+				paragraph: jest.fn((): any => {
+					// Finalize current paragraph
+					if (paragraphContent.length > 0) {
+						noteStructure.push({
+							type: 'paragraph',
+							content: [...paragraphContent]
+						});
+					}
+					// Return a new paragraph builder
+					return createParagraphBuilder();
+				}),
+				done: jest.fn((): any => {
+					// Finalize current paragraph
+					if (paragraphContent.length > 0) {
+						noteStructure.push({
+							type: 'paragraph',
+							content: [...paragraphContent]
+						});
+					}
+					return mockNoteBuilder;
+				}),
+				publish: jest.fn().mockImplementation(async () => {
+					// Finalize current paragraph before publishing
+					if (paragraphContent.length > 0) {
+						noteStructure.push({
+							type: 'paragraph',
+							content: [...paragraphContent]
+						});
+					}
+					capturedPayload = {
+						bodyJson: {
+							type: 'doc',
+							attrs: { schemaVersion: 'v1' },
+							content: noteStructure
+						},
+						tabId: 'for-you',
+						surface: 'feed',
+						replyMinimumRole: 'everyone'
+					};
+					return {
+						id: 12345,
+						body: 'Test note body',
+						status: 'published',
+						user_id: 67890,
+						date: new Date().toISOString(),
+					};
+				})
+			};
+
+			return builder;
+		};
+
+		mockNoteBuilder = {
+			paragraph: jest.fn(() => createParagraphBuilder()),
+			publish: jest.fn().mockImplementation(async () => {
+				capturedPayload = {
+					bodyJson: {
+						type: 'doc',
+						attrs: { schemaVersion: 'v1' },
+						content: noteStructure
+					},
+					tabId: 'for-you',
+					surface: 'feed',
+					replyMinimumRole: 'everyone'
+				};
 				return {
 					id: 12345,
 					body: 'Test note body',
@@ -29,45 +108,26 @@ describe('MarkdownParser - Real NoteBuilder', () => {
 					user_id: 67890,
 					date: new Date().toISOString(),
 				};
-			}),
-			get: jest.fn(),
-			put: jest.fn(),
-			delete: jest.fn(),
+			})
 		};
 
-		// Create real SubstackClient instance for internal use by builders
-		const realClient = new SubstackClient({
-			hostname: 'test.substack.com',
-			apiKey: 'test-key'
-		});
-
-		// Replace the client's post method with our mock
-		realClient.post = mockHttpClient.post;
-		realClient.get = mockHttpClient.get;
-		realClient.put = mockHttpClient.put;
-		realClient.delete = mockHttpClient.delete;
-
-		// Create REAL OwnProfile with mocked data but real behavior
-		const realOwnProfile = new OwnProfile({
+		// Reset noteStructure for each new note
+		mockOwnProfile = {
 			id: 12345,
 			name: 'Test User',
-			handle: 'testuser'
-		}, realClient);
-
-		// Mock the OwnProfile class - this has to be mocked as you specified
-		const mockOwnProfile = {
-			id: 12345,
-			name: 'Test User',
-			newNote: realOwnProfile.newNote.bind(realOwnProfile) // REAL newNote method
+			newNote: jest.fn(() => {
+				noteStructure = [];
+				return mockNoteBuilder;
+			})
 		};
 
-		// Mock SubstackClient - only this is mocked
 		mockSubstackClient = {
 			ownProfile: jest.fn().mockResolvedValue(mockOwnProfile),
 		};
 
 		// Apply the mock
-		require('substack-api').SubstackClient.mockImplementation(() => mockSubstackClient);
+		const { SubstackClient } = require('substack-api');
+		SubstackClient.mockImplementation(() => mockSubstackClient);
 	});
 
 	// Helper to create expected JSON
