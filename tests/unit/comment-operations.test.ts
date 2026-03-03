@@ -36,17 +36,19 @@ describe('Substack Node Unit Tests - Comment Operations', () => {
 	describe('Comment Retrieval', () => {
 		const testSuite = createRetrievalTestSuite('comment', 'getAll', {
 			additionalParams: { postId: 98765 },
-			expectedFields: ['id', 'body', 'createdAt', 'parentPostId', 'author'],
+			expectedFields: ['id', 'body', 'isAdmin', 'parentPostId'],
 			clientMethod: 'postForId',
 			mockDataCount: 2,
 			customErrorSetup: (mockEnv) => {
-				mockEnv.mockPost.comments.mockRejectedValue(new Error('API Error: Unable to fetch comments'));
+				mockEnv.mockPost.comments.mockImplementation(() => {
+					throw new Error('API Error: Unable to fetch comments');
+				});
 			},
 		});
 
 		it('should successfully retrieve comments with valid postId', async () => {
 			const result = await testSuite.testSuccessful(substackNode, mockEnv);
-			
+
 			// Additional comment-specific verifications
 			expect(mockEnv.mockClient.postForId).toHaveBeenCalledWith(98765);
 			expect(mockEnv.mockPost.comments).toHaveBeenCalledTimes(1);
@@ -54,9 +56,9 @@ describe('Substack Node Unit Tests - Comment Operations', () => {
 			// Check comment structure
 			if (result[0].length > 0) {
 				const firstComment = result[0][0].json;
-				expect(firstComment.author).toHaveProperty('id');
-				expect(firstComment.author).toHaveProperty('name');
-				expect(firstComment.author).toHaveProperty('isAdmin');
+				expect(firstComment).toHaveProperty('id');
+				expect(firstComment).toHaveProperty('body');
+				expect(firstComment).toHaveProperty('isAdmin');
 			}
 		});
 
@@ -66,7 +68,7 @@ describe('Substack Node Unit Tests - Comment Operations', () => {
 
 		it('should handle empty comments list', async () => {
 			await testSuite.testEmptyResponse(substackNode, mockEnv, () => {
-				mockEnv.mockPost.comments.mockResolvedValue({
+				mockEnv.mockPost.comments.mockReturnValue({
 					async *[Symbol.asyncIterator]() {
 						// Empty iterator
 					},
@@ -165,9 +167,9 @@ describe('Substack Node Unit Tests - Comment Operations', () => {
 				expect(output).toHaveProperty('json');
 				expect(output).toHaveProperty('pairedItem');
 				expect(output.pairedItem).toEqual({ item: 0 });
-				
+
 				const commentData = output.json;
-				const expectedFields = ['id', 'body', 'createdAt', 'parentPostId', 'author'];
+				const expectedFields = ['id', 'body', 'isAdmin', 'parentPostId'];
 				expectedFields.forEach(field => {
 					expect(commentData).toHaveProperty(field);
 				});
@@ -193,8 +195,8 @@ describe('Substack Node Unit Tests - Comment Operations', () => {
 			});
 		});
 
-		it('should handle missing rawData fields gracefully', async () => {
-			mockEnv.mockPost.comments.mockResolvedValue({
+		it('should handle minimal comment fields gracefully', async () => {
+			mockEnv.mockPost.comments.mockReturnValue({
 				async *[Symbol.asyncIterator]() {
 					yield testComments.minimal[0];
 				},
@@ -212,7 +214,8 @@ describe('Substack Node Unit Tests - Comment Operations', () => {
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
 			const commentData = result[0][0].json;
-			expect(commentData.createdAt).toBe('2024-01-15T16:00:00.000Z'); // Uses createdAt.toISOString()
+			expect(commentData).toHaveProperty('id');
+			expect(commentData).toHaveProperty('body');
 		});
 	});
 
@@ -250,8 +253,8 @@ describe('Substack Node Unit Tests - Comment Operations', () => {
 			expect(result[0].length).toBe(2); // Only 2 comments in mock data
 		});
 
-		it('should handle comments with different author types', async () => {
-			mockEnv.mockPost.comments.mockResolvedValue({
+		it('should handle comments with different isAdmin values', async () => {
+			mockEnv.mockPost.comments.mockReturnValue({
 				async *[Symbol.asyncIterator]() {
 					yield* testComments.basic; // Includes both admin and regular users
 				},
@@ -269,11 +272,11 @@ describe('Substack Node Unit Tests - Comment Operations', () => {
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
 			expect(result[0].length).toBe(2);
-			
-			// Verify different author types are handled correctly
+
+			// Verify different isAdmin values are handled correctly
 			const comments = result[0].map((r: any) => r.json);
-			expect(comments.find((c: any) => c.author.isAdmin === true)).toBeDefined();
-			expect(comments.find((c: any) => c.author.isAdmin === false)).toBeDefined();
+			expect(comments.find((c: any) => c.isAdmin === true)).toBeDefined();
+			expect(comments.find((c: any) => c.isAdmin === false)).toBeDefined();
 		});
 	});
 });

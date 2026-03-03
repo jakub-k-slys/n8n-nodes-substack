@@ -19,23 +19,6 @@ export const profileFields: INodeProperties[] = [
 		required: true,
 	},
 	/* -------------------------------------------------------------------------- */
-	/*                            profile:getProfileById                         */
-	/* -------------------------------------------------------------------------- */
-	{
-		displayName: 'User ID',
-		name: 'userId',
-		type: 'number',
-		default: 0,
-		description: 'The user ID to get profile for',
-		displayOptions: {
-			show: {
-				resource: ['profile'],
-				operation: ['getProfileById'],
-			},
-		},
-		required: true,
-	},
-	/* -------------------------------------------------------------------------- */
 	/*                            profile:getFollowees                           */
 	/* -------------------------------------------------------------------------- */
 	{

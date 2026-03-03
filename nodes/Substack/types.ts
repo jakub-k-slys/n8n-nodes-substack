@@ -19,9 +19,7 @@ export interface ISubstackNote {
 	status: string;
 	userId: string;
 	likes?: number;
-	restacks?: number;
 	type?: string;
-	entityKey?: string;
 }
 
 export interface ISubstackPost {
@@ -42,13 +40,8 @@ export interface ISubstackPost {
 export interface ISubstackComment {
 	id: number;
 	body: string;
-	createdAt: string;
+	isAdmin?: boolean;
 	parentPostId: number;
-	author: {
-		id: number;
-		name: string;
-		isAdmin?: boolean;
-	};
 }
 
 export interface ISubstackFollowing {
@@ -56,13 +49,6 @@ export interface ISubstackFollowing {
 	name?: string;
 	handle?: string;
 	bio?: string;
-	subscriberCount?: number;
-	subscriberCountString?: string;
-	primaryPublication?: {
-		id: number;
-		name: string;
-		subdomain: string;
-	};
 }
 
 export interface IErrorResponse {

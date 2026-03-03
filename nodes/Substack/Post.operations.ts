@@ -8,7 +8,6 @@ import { SubstackUtils } from './SubstackUtils';
 export enum PostOperation {
 	GetAll = 'getAll',
 	GetPostsBySlug = 'getPostsBySlug',
-	GetPostsById = 'getPostsById',
 	GetPostById = 'getPostById',
 }
 
@@ -38,12 +37,6 @@ export const postOperations: INodeProperties[] = [
 				action: 'Get posts by slug',
 			},
 			{
-				name: 'Get Posts From Profile by ID',
-				value: PostOperation.GetPostsById,
-				description: 'Get posts from a profile by its user ID',
-				action: 'Get posts by ID',
-			},
-			{
 				name: 'Get Post by ID',
 				value: PostOperation.GetPostById,
 				description: 'Get a specific post by its ID',
@@ -64,7 +57,7 @@ async function getAll(
 		const limit = OperationUtils.parseLimit(limitParam);
 
 		const ownProfile = await client.ownProfile();
-		const postsIterable = await ownProfile.posts();
+		const postsIterable = ownProfile.posts();
 		const results = await OperationUtils.executeAsyncIterable(
 			postsIterable,
 			limit,
@@ -98,44 +91,7 @@ async function getPostsBySlug(
 		const limit = OperationUtils.parseLimit(limitParam);
 
 		const profile = await client.profileForSlug(slug);
-		const postsIterable = await profile.posts();
-		const results = await OperationUtils.executeAsyncIterable(
-			postsIterable,
-			limit,
-			DataFormatters.formatPost,
-			publicationAddress,
-		);
-
-		return {
-			success: true,
-			data: results,
-			metadata: { status: 'success' },
-		};
-	} catch (error) {
-		return SubstackUtils.formatErrorResponse({
-			message: error.message,
-			node: executeFunctions.getNode(),
-			itemIndex,
-		});
-	}
-}
-
-async function getPostsById(
-	executeFunctions: IExecuteFunctions,
-	client: SubstackClient,
-	publicationAddress: string,
-	itemIndex: number,
-): Promise<IStandardResponse> {
-	try {
-		const userId = OperationUtils.parseNumericParam(
-			executeFunctions.getNodeParameter('userId', itemIndex),
-			'userId',
-		);
-		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '');
-		const limit = OperationUtils.parseLimit(limitParam);
-
-		const profile = await client.profileForId(userId);
-		const postsIterable = await profile.posts();
+		const postsIterable = profile.posts();
 		const results = await OperationUtils.executeAsyncIterable(
 			postsIterable,
 			limit,
@@ -197,6 +153,5 @@ export const postOperationHandlers: Record<
 > = {
 	[PostOperation.GetAll]: getAll,
 	[PostOperation.GetPostsBySlug]: getPostsBySlug,
-	[PostOperation.GetPostsById]: getPostsById,
 	[PostOperation.GetPostById]: getPostById,
 };

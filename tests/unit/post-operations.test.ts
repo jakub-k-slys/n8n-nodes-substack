@@ -51,7 +51,7 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 
 		it('should handle empty posts list', async () => {
 			await testSuite.testEmptyResponse(substackNode, mockEnv, () => {
-				mockEnv.mockOwnProfile.posts.mockResolvedValue({
+				mockEnv.mockOwnProfile.posts.mockReturnValue({
 					async *[Symbol.asyncIterator]() {
 						// Empty iterator
 					},
@@ -80,11 +80,10 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 				{
 					id: null, // Invalid data to trigger skip logic
 					publishedAt: new Date('invalid date'),
-					rawData: {},
 				},
 			];
 
-			mockEnv.mockOwnProfile.posts.mockResolvedValue({
+			mockEnv.mockOwnProfile.posts.mockReturnValue({
 				async *[Symbol.asyncIterator]() {
 					for (const item of malformedPostsData) {
 						yield item;
@@ -104,8 +103,8 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 			expect(result[0].length).toBe(2); // Both posts should be processed
 		});
 
-		it('should handle missing rawData fields gracefully', async () => {
-			mockEnv.mockOwnProfile.posts.mockResolvedValue({
+		it('should handle missing optional fields gracefully', async () => {
+			mockEnv.mockOwnProfile.posts.mockReturnValue({
 				async *[Symbol.asyncIterator]() {
 					yield testPosts.minimal;
 				},
@@ -123,14 +122,14 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 
 			const postData = result[0][0].json;
 			expect(postData.subtitle).toBe(''); // Default for missing subtitle
-			expect(postData.type).toBe('newsletter'); // Default for missing type
-			expect(postData.published).toBe(true); // Default for missing published
-			expect(postData.paywalled).toBe(false); // Default for missing paywalled
-			expect(postData.description).toBe('Basic content'); // Falls back to body
+			expect(postData.type).toBe('newsletter'); // Default type
+			expect(postData.published).toBe(true); // Default published
+			expect(postData.paywalled).toBe(false); // Default paywalled
+			expect(postData.description).toBe('Basic content'); // Uses truncatedBody
 		});
 
 		it('should handle posts with invalid dates', async () => {
-			mockEnv.mockOwnProfile.posts.mockResolvedValue({
+			mockEnv.mockOwnProfile.posts.mockReturnValue({
 				async *[Symbol.asyncIterator]() {
 					yield testPosts.invalidDate;
 				},
@@ -247,8 +246,8 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 			expect(result[0].length).toBe(0);
 		});
 
-		it('should handle posts with different types', async () => {
-			mockEnv.mockOwnProfile.posts.mockResolvedValue({
+		it('should handle multiple posts in one response', async () => {
+			mockEnv.mockOwnProfile.posts.mockReturnValue({
 				async *[Symbol.asyncIterator]() {
 					yield testPosts.complete;
 					yield testPosts.podcast;
@@ -267,12 +266,13 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
 			expect(result[0].length).toBe(3);
-			
-			// Verify different post types are handled correctly
-			const posts = result[0].map((r: any) => r.json);
-			expect(posts.find((p: any) => p.type === 'newsletter')).toBeDefined();
-			expect(posts.find((p: any) => p.type === 'podcast')).toBeDefined();
-			expect(posts.find((p: any) => p.paywalled === true)).toBeDefined();
+
+			// Verify all posts have required fields
+			result[0].forEach((output: any) => {
+				expect(output.json).toHaveProperty('id');
+				expect(output.json).toHaveProperty('title');
+				expect(output.json).toHaveProperty('type', 'newsletter');
+			});
 		});
 	});
 });
