@@ -146,9 +146,9 @@ export const createRetrievalTestSuite = (
 				if (options.customErrorSetup) {
 					options.customErrorSetup(mockEnv);
 				} else if (options.profileMethod) {
-					mockEnv.mockOwnProfile[options.profileMethod].mockRejectedValue(
-						new Error(testErrorMessages.apiError)
-					);
+					mockEnv.mockOwnProfile[options.profileMethod].mockImplementation(() => {
+						throw new Error(testErrorMessages.apiError);
+					});
 				}
 			});
 
@@ -180,9 +180,9 @@ export const createRetrievalTestSuite = (
 				if (options.customErrorSetup) {
 					options.customErrorSetup(mockEnv);
 				} else if (options.profileMethod) {
-					mockEnv.mockOwnProfile[options.profileMethod].mockRejectedValue(
-						new Error(testErrorMessages.apiError)
-					);
+					mockEnv.mockOwnProfile[options.profileMethod].mockImplementation(() => {
+						throw new Error(testErrorMessages.apiError);
+					});
 				}
 			});
 

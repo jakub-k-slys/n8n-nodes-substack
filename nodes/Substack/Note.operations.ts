@@ -2,7 +2,6 @@ import { IExecuteFunctions, INodeProperties } from 'n8n-workflow';
 import { SubstackClient } from 'substack-api';
 import { IStandardResponse } from './types';
 import { SubstackUtils } from './SubstackUtils';
-import { MarkdownParser } from './MarkdownParser';
 import { DataFormatters } from './shared/DataFormatters';
 import { OperationUtils } from './shared/OperationUtils';
 
@@ -10,7 +9,6 @@ export enum NoteOperation {
 	Create = 'create',
 	Get = 'get',
 	GetNotesBySlug = 'getNotesBySlug',
-	GetNotesById = 'getNotesById',
 	GetNoteById = 'getNoteById',
 }
 
@@ -46,12 +44,6 @@ export const noteOperations: INodeProperties[] = [
 				action: 'Get notes by slug',
 			},
 			{
-				name: 'Get Notes From Profile by ID',
-				value: NoteOperation.GetNotesById,
-				description: 'Get notes from a profile by its user ID',
-				action: 'Get notes by ID',
-			},
-			{
 				name: 'Get Note by ID',
 				value: NoteOperation.GetNoteById,
 				description: 'Get a specific note by its ID',
@@ -72,7 +64,7 @@ async function get(
 		const limit = OperationUtils.parseLimit(limitParam);
 
 		const ownProfile = await client.ownProfile();
-		const notesIterable = await ownProfile.notes();
+		const notesIterable = ownProfile.notes();
 		const results = await OperationUtils.executeAsyncIterable(
 			notesIterable,
 			limit,
@@ -106,44 +98,7 @@ async function getNotesBySlug(
 		const limit = OperationUtils.parseLimit(limitParam);
 
 		const profile = await client.profileForSlug(slug);
-		const notesIterable = await profile.notes();
-		const results = await OperationUtils.executeAsyncIterable(
-			notesIterable,
-			limit,
-			DataFormatters.formatNote,
-			publicationAddress,
-		);
-
-		return {
-			success: true,
-			data: results,
-			metadata: { status: 'success' },
-		};
-	} catch (error) {
-		return SubstackUtils.formatErrorResponse({
-			message: error.message,
-			node: executeFunctions.getNode(),
-			itemIndex,
-		});
-	}
-}
-
-async function getNotesById(
-	executeFunctions: IExecuteFunctions,
-	client: SubstackClient,
-	publicationAddress: string,
-	itemIndex: number,
-): Promise<IStandardResponse> {
-	try {
-		const userId = OperationUtils.parseNumericParam(
-			executeFunctions.getNodeParameter('userId', itemIndex),
-			'userId',
-		);
-		const limitParam = executeFunctions.getNodeParameter('limit', itemIndex, '');
-		const limit = OperationUtils.parseLimit(limitParam);
-
-		const profile = await client.profileForId(userId);
-		const notesIterable = await profile.notes();
+		const notesIterable = profile.notes();
 		const results = await OperationUtils.executeAsyncIterable(
 			notesIterable,
 			limit,
@@ -194,80 +149,6 @@ async function getNoteById(
 	}
 }
 
-async function createSimpleNote(
-	ownProfile: any,
-	body: string,
-	executeFunctions: IExecuteFunctions,
-	itemIndex: number,
-	linkUrl?: string,
-): Promise<any> {
-	if (!body || !body.trim()) {
-		return SubstackUtils.formatErrorResponse({
-			message: 'Note must contain at least one paragraph with content - body cannot be empty',
-			node: executeFunctions.getNode(),
-			itemIndex,
-		});
-	}
-
-	try {
-		let finalBuilder;
-		if (linkUrl) {
-			finalBuilder = ownProfile.newNoteWithLink(linkUrl).paragraph().text(body.trim());
-		} else {
-			finalBuilder = ownProfile.newNote().paragraph().text(body.trim());
-		}
-		return await finalBuilder.publish();
-	} catch (buildError) {
-		return SubstackUtils.formatErrorResponse({
-			message: `Note construction failed: ${buildError.message}`,
-			node: executeFunctions.getNode(),
-			itemIndex,
-		});
-	}
-}
-
-async function createAdvancedNote(
-	ownProfile: any,
-	body: string,
-	executeFunctions: IExecuteFunctions,
-	itemIndex: number,
-	linkUrl?: string,
-): Promise<any> {
-	if (!body || !body.trim()) {
-		return SubstackUtils.formatErrorResponse({
-			message: 'Note must contain at least one paragraph with content - body cannot be empty',
-			node: executeFunctions.getNode(),
-			itemIndex,
-		});
-	}
-
-	try {
-		let noteBuilder;
-		if (linkUrl) {
-			noteBuilder = ownProfile.newNoteWithLink(linkUrl);
-		} else {
-			noteBuilder = ownProfile.newNote();
-		}
-		const finalBuilder = MarkdownParser.parseMarkdownToNoteStructured(
-			body.trim(),
-			noteBuilder,
-		);
-		return await finalBuilder.publish();
-	} catch (error) {
-		let userMessage = error.message;
-		if (error.message.includes('Note must contain at least one paragraph with actual content')) {
-			userMessage =
-				'Note must contain at least one paragraph with meaningful content - empty formatting elements are not sufficient';
-		}
-
-		return SubstackUtils.formatErrorResponse({
-			message: userMessage,
-			node: executeFunctions.getNode(),
-			itemIndex,
-		});
-	}
-}
-
 async function create(
 	executeFunctions: IExecuteFunctions,
 	client: SubstackClient,
@@ -276,11 +157,6 @@ async function create(
 ): Promise<IStandardResponse> {
 	try {
 		const body = executeFunctions.getNodeParameter('body', itemIndex) as string;
-		const contentType = executeFunctions.getNodeParameter(
-			'contentType',
-			itemIndex,
-			'simple',
-		) as string;
 		const visibility = executeFunctions.getNodeParameter(
 			'visibility',
 			itemIndex,
@@ -291,32 +167,30 @@ async function create(
 			itemIndex,
 			'none',
 		) as string;
-		const linkUrl = attachment === 'link' 
-			? executeFunctions.getNodeParameter('linkUrl', itemIndex) as string 
-			: undefined;
+		const linkUrl =
+			attachment === 'link'
+				? (executeFunctions.getNodeParameter('linkUrl', itemIndex) as string)
+				: undefined;
+
+		if (!body || !body.trim()) {
+			throw new Error(
+				'Note must contain at least one paragraph with content - body cannot be empty',
+			);
+		}
 
 		const ownProfile = await client.ownProfile();
-
-		let response;
-
-		if (contentType === 'simple') {
-			response = await createSimpleNote(ownProfile, body, executeFunctions, itemIndex, linkUrl);
-		} else {
-			response = await createAdvancedNote(ownProfile, body, executeFunctions, itemIndex, linkUrl);
-		}
-
-		if (response && !response.success && response.error) {
-			return response;
-		}
+		const response = await ownProfile.publishNote(
+			body.trim(),
+			linkUrl ? { attachment: linkUrl } : undefined,
+		);
 
 		const formattedResponse = {
 			success: true,
 			noteId: response.id.toString(),
-			body: response.body || body,
+			body: body.trim(),
 			url: SubstackUtils.formatUrl(publicationAddress, `/p/${response.id}`),
-			date: response.date || new Date().toISOString(),
-			status: response.status || 'published',
-			userId: response.user_id?.toString() || 'unknown',
+			date: new Date().toISOString(),
+			status: 'published',
 			visibility: visibility,
 			attachment: attachment,
 			linkUrl: linkUrl,
@@ -350,6 +224,5 @@ export const noteOperationHandlers: Record<
 	[NoteOperation.Create]: create,
 	[NoteOperation.Get]: get,
 	[NoteOperation.GetNotesBySlug]: getNotesBySlug,
-	[NoteOperation.GetNotesById]: getNotesById,
 	[NoteOperation.GetNoteById]: getNoteById,
 };

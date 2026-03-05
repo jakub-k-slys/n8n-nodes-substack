@@ -8,58 +8,50 @@ export const testPosts = {
 		id: 12345,
 		title: 'Minimal Post',
 		body: 'Basic content',
+		truncatedBody: 'Basic content',
 		publishedAt: new Date('2024-01-15T10:30:00Z'),
-		rawData: {},
+		htmlBody: '',
+		url: 'https://testblog.substack.com/p/12345',
 	},
 	complete: {
 		id: 98765,
 		title: 'Test Post Title',
+		subtitle: 'A comprehensive guide to testing',
+		slug: 'test-post-title',
 		body: 'This is a test post for integration testing.',
+		truncatedBody: 'This is a test post for integration testing.',
 		publishedAt: new Date('2024-01-10T12:00:00Z'),
-		rawData: {
-			subtitle: 'A comprehensive guide to testing',
-			post_date: '2024-01-10T12:00:00Z',
-			type: 'newsletter',
-			published: true,
-			paywalled: false,
-			description: 'This is a test post for integration testing.',
-		},
+		htmlBody: '',
+		url: 'https://testblog.substack.com/p/test-post-title',
 	},
 	paywalled: {
 		id: 13579,
 		title: 'Premium Content',
+		subtitle: 'Exclusive for subscribers',
+		slug: 'premium-content',
 		body: 'This is premium content',
+		truncatedBody: 'This is premium content',
 		publishedAt: new Date('2024-01-10T12:00:00Z'),
-		rawData: {
-			subtitle: 'Exclusive for subscribers',
-			post_date: '2024-01-10T12:00:00Z',
-			type: 'newsletter',
-			published: true,
-			paywalled: true,
-			description: 'This is premium content',
-		},
+		htmlBody: '',
+		url: 'https://testblog.substack.com/p/premium-content',
 	},
 	podcast: {
 		id: 24680,
 		title: 'Podcast Episode',
 		body: 'Audio content',
+		truncatedBody: 'Audio content',
 		publishedAt: new Date('2024-01-10T12:00:00Z'),
-		rawData: {
-			type: 'podcast',
-			published: true,
-			paywalled: false,
-		},
+		htmlBody: '',
+		url: 'https://testblog.substack.com/p/24680',
 	},
 	invalidDate: {
 		id: 11111,
 		title: 'Post with invalid date',
 		body: 'Test content',
+		truncatedBody: 'Test content',
 		publishedAt: new Date('invalid date'),
-		rawData: {
-			type: 'newsletter',
-			published: true,
-			paywalled: false,
-		},
+		htmlBody: '',
+		url: 'https://testblog.substack.com/p/11111',
 	},
 };
 
@@ -68,34 +60,19 @@ export const testComments = {
 		{
 			id: 33333,
 			body: 'Great post! This is very helpful.',
-			author: {
-				id: 11111,
-				name: 'John Doe',
-				isAdmin: false,
-			},
-			createdAt: new Date('2024-01-15T14:20:00Z'),
+			isAdmin: false,
 		},
 		{
 			id: 44444,
 			body: 'Thanks for sharing this information.',
-			author: {
-				id: 22222,
-				name: 'Jane Smith',
-				isAdmin: true,
-			},
-			createdAt: new Date('2024-01-15T15:30:00Z'),
+			isAdmin: true,
 		},
 	],
 	minimal: [
 		{
 			id: 55555,
 			body: 'Minimal comment',
-			author: {
-				id: 33333,
-				name: 'Test User',
-				isAdmin: false,
-			},
-			createdAt: new Date('2024-01-15T16:00:00Z'),
+			isAdmin: false,
 		},
 	],
 };
@@ -103,41 +80,27 @@ export const testComments = {
 export const testNotes = {
 	published: [
 		{
-			id: '12345',
+			id: 12345,
 			body: 'This is a published note for testing purposes.',
-			status: 'published',
-			userId: '67890',
-			likes: 15,
-			restacks: 3,
-			createdAt: new Date('2024-01-20T10:00:00Z'),
-			rawData: {
-				user_id: 67890,
-				date: '2024-01-20T10:00:00Z',
-			},
+			likesCount: 15,
+			author: { id: 67890, name: 'Test User', handle: 'testuser', avatarUrl: '' },
+			publishedAt: new Date('2024-01-20T10:00:00Z'),
 		},
 		{
-			id: '67890',
+			id: 67890,
 			body: 'Another test note with different content.',
-			status: 'published',
-			userId: '67890',
-			likes: 8,
-			restacks: 1,
-			createdAt: new Date('2024-01-21T11:30:00Z'),
-			rawData: {
-				user_id: 67890,
-				date: '2024-01-21T11:30:00Z',
-			},
+			likesCount: 8,
+			author: { id: 67890, name: 'Test User', handle: 'testuser', avatarUrl: '' },
+			publishedAt: new Date('2024-01-21T11:30:00Z'),
 		},
 	],
 	minimal: [
 		{
-			id: '99999',
+			id: 99999,
 			body: 'Minimal note',
-			status: 'published',
-			userId: '67890',
-			likes: 0,
-			restacks: 0,
-			createdAt: new Date('2024-01-22T12:00:00Z'),
+			likesCount: 0,
+			author: { id: 67890, name: 'Test User', handle: 'testuser', avatarUrl: '' },
+			publishedAt: new Date('2024-01-22T12:00:00Z'),
 		},
 	],
 };
@@ -250,26 +213,14 @@ export const testLimits = {
 export const createPostWithOverrides = (basePost: any, overrides: Partial<any>) => ({
 	...basePost,
 	...overrides,
-	rawData: {
-		...basePost.rawData,
-		...overrides.rawData,
-	},
 });
 
 export const createCommentWithOverrides = (baseComment: any, overrides: Partial<any>) => ({
 	...baseComment,
 	...overrides,
-	author: {
-		...baseComment.author,
-		...overrides.author,
-	},
 });
 
 export const createNoteWithOverrides = (baseNote: any, overrides: Partial<any>) => ({
 	...baseNote,
 	...overrides,
-	rawData: {
-		...baseNote.rawData,
-		...overrides.rawData,
-	},
 });

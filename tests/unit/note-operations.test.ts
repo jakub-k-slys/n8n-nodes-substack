@@ -1,11 +1,9 @@
 import { Substack } from '../../nodes/Substack/Substack.node';
 import { createMockExecuteFunctions } from '../mocks/mockExecuteFunctions';
 import { mockCredentials } from '../mocks/mockData';
-import { 
+import {
 	createMockSubstackClient,
 	createMockOwnProfile,
-	createMockNoteBuilder,
-	createMockParagraphBuilder,
 } from '../mocks/mockSubstackClient';
 
 // Mock the substack-api module
@@ -29,23 +27,17 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 	let substackNode: Substack;
 	let mockClient: any;
 	let mockOwnProfile: any;
-	let mockNoteBuilder: any;
-	let mockParagraphBuilder: any;
 
 	beforeEach(() => {
 		// Reset all mocks
 		jest.clearAllMocks();
-		
+
 		substackNode = new Substack();
 		mockClient = createMockSubstackClient();
 		mockOwnProfile = createMockOwnProfile();
-		mockNoteBuilder = createMockNoteBuilder();
-		mockParagraphBuilder = createMockParagraphBuilder();
 
 		// Setup method chain mocks
 		mockClient.ownProfile.mockResolvedValue(mockOwnProfile);
-		mockOwnProfile.newNote.mockReturnValue(mockNoteBuilder);
-		mockNoteBuilder.paragraph.mockReturnValue(mockParagraphBuilder);
 
 		// Mock SubstackUtils.initializeClient to return our mocked client
 		const { SubstackUtils } = require('../../nodes/Substack/SubstackUtils');
@@ -88,7 +80,6 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 				status: 'published',
 				userId: expect.any(String),
 				likes: expect.any(Number),
-				restacks: expect.any(Number),
 				type: 'note',
 			});
 		});
@@ -119,7 +110,7 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 
 		it('should handle empty notes list', async () => {
 			// Setup empty notes response
-			mockOwnProfile.notes.mockResolvedValue({
+			mockOwnProfile.notes.mockReturnValue({
 				async *[Symbol.asyncIterator]() {
 					// Empty iterator
 				},
@@ -145,7 +136,9 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 
 		it('should handle client errors during retrieval', async () => {
 			// Setup client to throw error
-			mockOwnProfile.notes.mockRejectedValue(new Error('API Error: Unable to fetch notes'));
+			mockOwnProfile.notes.mockImplementation(() => {
+				throw new Error('API Error: Unable to fetch notes');
+			});
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -216,11 +209,11 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
 			// Verify each note output structure
-			result[0].forEach((output, index) => {
+			result[0].forEach((output) => {
 				expect(output).toHaveProperty('json');
 				expect(output).toHaveProperty('pairedItem');
 				expect(output.pairedItem).toEqual({ item: 0 });
-				
+
 				// Verify required fields for note list items
 				const noteData = output.json;
 				expect(noteData).toHaveProperty('noteId');
@@ -229,21 +222,19 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 				expect(noteData).toHaveProperty('status');
 				expect(noteData).toHaveProperty('userId');
 				expect(noteData).toHaveProperty('likes');
-				expect(noteData).toHaveProperty('restacks');
 				expect(noteData).toHaveProperty('type');
 			});
 		});
 	});
 
 	describe('Note Creation', () => {
-		it('should successfully create a simple note', async () => {
+		it('should successfully create a note', async () => {
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
 					body: 'This is a test note body',
-					contentType: 'simple',
 					visibility: 'everyone',
 				},
 				credentials: mockCredentials,
@@ -266,71 +257,38 @@ describe('Substack Node Unit Tests - Note Operations', () => {
 			const noteData = output.json;
 			expect(noteData).toHaveProperty('success', true);
 			expect(noteData).toHaveProperty('noteId', '12345');
-			expect(noteData).toHaveProperty('body');
+			expect(noteData).toHaveProperty('body', 'This is a test note body');
 			expect(noteData).toHaveProperty('url');
 			expect(noteData).toHaveProperty('status', 'published');
 			expect(noteData).toHaveProperty('visibility', 'everyone');
 
 			// Verify client methods were called
 			expect(mockClient.ownProfile).toHaveBeenCalledTimes(1);
-			expect(mockOwnProfile.newNote).toHaveBeenCalledWith();
-			expect(mockNoteBuilder.paragraph).toHaveBeenCalledTimes(1);
-			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This is a test note body');
-			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
+			expect(mockOwnProfile.publishNote).toHaveBeenCalledWith('This is a test note body', undefined);
 		});
 
-		it('should successfully create an advanced note with Markdown content', async () => {
-			const markdownContent = `## Hello from n8n
-
-This is a note with **bold**, *italic*, and a [link](https://n8n.io).
-
-- First bullet point
-- Second bullet point
-
-1. Numbered item
-2. Another numbered item`;
-
-			// Setup execution context
+		it('should create a note with link attachment', async () => {
 			const mockExecuteFunctions = createMockExecuteFunctions({
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					body: markdownContent,
-					contentType: 'advanced',
+					body: 'Note with link',
+					attachment: 'link',
+					linkUrl: 'https://n8n.io',
 					visibility: 'subscribers',
 				},
 				credentials: mockCredentials,
 			});
 
-			// Execute the node
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
-			// Verify the result
 			expect(result[0][0].json).toHaveProperty('success', true);
 			expect(result[0][0].json).toHaveProperty('visibility', 'subscribers');
+			expect(result[0][0].json).toHaveProperty('linkUrl', 'https://n8n.io');
 
-			// Verify client methods were called
-			expect(mockOwnProfile.newNote).toHaveBeenCalledWith();
-			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
-		});
-
-		it('should handle empty body validation in advanced mode', async () => {
-			// Setup execution context with empty body
-			const mockExecuteFunctions = createMockExecuteFunctions({
-				nodeParameters: {
-					resource: 'note',
-					operation: 'create',
-					body: '   ', // Whitespace only
-					contentType: 'advanced',
-					visibility: 'everyone',
-				},
-				credentials: mockCredentials,
+			expect(mockOwnProfile.publishNote).toHaveBeenCalledWith('Note with link', {
+				attachment: 'https://n8n.io',
 			});
-
-			// Execute and expect error
-			await expect(
-				substackNode.execute.call(mockExecuteFunctions)
-			).rejects.toThrow('Note must contain at least one paragraph with content - body cannot be empty');
 		});
 
 		it('should handle empty body validation in simple mode', async () => {
@@ -340,7 +298,6 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 					resource: 'note',
 					operation: 'create',
 					body: '', // Empty string
-					contentType: 'simple',
 					visibility: 'everyone',
 				},
 				credentials: mockCredentials,
@@ -359,7 +316,6 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 					resource: 'note',
 					operation: 'create',
 					body: '\n\t   \n\r', // Various whitespace characters
-					contentType: 'simple',
 					visibility: 'everyone',
 				},
 				credentials: mockCredentials,
@@ -377,7 +333,6 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					contentType: 'simple',
 					visibility: 'everyone',
 				},
 				credentials: mockCredentials,
@@ -389,69 +344,9 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 			).rejects.toThrow('Note must contain at least one paragraph with content - body cannot be empty');
 		});
 
-		it('should validate structured note construction in simple mode', async () => {
-			// Setup execution context
-			const mockExecuteFunctions = createMockExecuteFunctions({
-				nodeParameters: {
-					resource: 'note',
-					operation: 'create',
-					body: 'This is a valid note with actual content.',
-					contentType: 'simple',
-					visibility: 'everyone',
-				},
-				credentials: mockCredentials,
-			});
-
-			// Execute the node
-			const result = await substackNode.execute.call(mockExecuteFunctions);
-
-			// Verify the structured approach was used
-			expect(mockNoteBuilder.paragraph).toHaveBeenCalledTimes(1);
-			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This is a valid note with actual content.');
-			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
-			
-			// Verify success
-			expect(result[0][0].json).toHaveProperty('success', true);
-		});
-
-		it('should handle mixed formatting in advanced mode', async () => {
-			const markdownContent = `**Bold text** and *italic text* with \`code\`.
-
-[Link text](https://example.com) and more content.
-
-- First bullet
-- Second bullet
-
-1. First number
-2. Second number`;
-
-			// Setup execution context
-			const mockExecuteFunctions = createMockExecuteFunctions({
-				nodeParameters: {
-					resource: 'note',
-					operation: 'create',
-					body: markdownContent,
-					contentType: 'advanced',
-					visibility: 'subscribers',
-				},
-				credentials: mockCredentials,
-			});
-
-			// Execute the node
-			const result = await substackNode.execute.call(mockExecuteFunctions);
-
-			// Verify multiple paragraphs were created for different elements
-			expect(mockNoteBuilder.paragraph).toHaveBeenCalled();
-			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
-			
-			// Verify success
-			expect(result[0][0].json).toHaveProperty('success', true);
-			expect(result[0][0].json).toHaveProperty('visibility', 'subscribers');
-		});
-
 		it('should handle creation errors appropriately', async () => {
 			// Setup client to throw error
-			mockParagraphBuilder.publish.mockRejectedValue(new Error('API Error: Failed to publish note'));
+			mockOwnProfile.publishNote.mockRejectedValue(new Error('API Error: Failed to publish note'));
 
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
@@ -459,7 +354,6 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 					resource: 'note',
 					operation: 'create',
 					body: 'This should fail',
-					contentType: 'simple',
 				},
 				credentials: mockCredentials,
 			});
@@ -471,36 +365,7 @@ This is a note with **bold**, *italic*, and a [link](https://n8n.io).
 
 			// Verify client methods were called
 			expect(mockClient.ownProfile).toHaveBeenCalledTimes(1);
-			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
+			expect(mockOwnProfile.publishNote).toHaveBeenCalledTimes(1);
 		});
-
-		it('should handle builder validation errors', async () => {
-			// Setup paragraph builder to throw validation error
-			mockParagraphBuilder.text.mockImplementation(() => {
-				throw new Error('Invalid note structure: paragraph cannot be empty');
-			});
-
-			// Setup execution context
-			const mockExecuteFunctions = createMockExecuteFunctions({
-				nodeParameters: {
-					resource: 'note',
-					operation: 'create',
-					body: 'This should trigger builder error',
-					contentType: 'simple',
-				},
-				credentials: mockCredentials,
-			});
-
-			// Execute and expect structured error
-			await expect(
-				substackNode.execute.call(mockExecuteFunctions)
-			).rejects.toThrow('Note construction failed: Invalid note structure: paragraph cannot be empty');
-
-			// Reset the mock for other tests
-			mockParagraphBuilder.text.mockReturnThis();
-		});
-
-		// Note: Additional edge cases for MarkdownParser validation (empty formatting elements,
-		// malformed list markers, etc.) are tested in markdown-parser.test.ts
 	});
 });

@@ -1,11 +1,9 @@
 import { Substack } from '../../nodes/Substack/Substack.node';
 import { createMockExecuteFunctions } from '../mocks/mockExecuteFunctions';
 import { mockCredentials } from '../mocks/mockData';
-import { 
+import {
 	createMockSubstackClient,
 	createMockOwnProfile,
-	createMockNoteBuilder,
-	createMockParagraphBuilder,
 } from '../mocks/mockSubstackClient';
 
 // Mock the substack-api module
@@ -25,27 +23,21 @@ jest.mock('../../nodes/Substack/SubstackUtils', () => ({
 	},
 }));
 
-describe('Builder Pattern Validation Tests', () => {
+describe('Note Creation API Tests', () => {
 	let substackNode: Substack;
 	let mockClient: any;
 	let mockOwnProfile: any;
-	let mockNoteBuilder: any;
-	let mockParagraphBuilder: any;
 
 	beforeEach(() => {
 		// Reset all mocks
 		jest.clearAllMocks();
-		
+
 		substackNode = new Substack();
 		mockClient = createMockSubstackClient();
 		mockOwnProfile = createMockOwnProfile();
-		mockNoteBuilder = createMockNoteBuilder();
-		mockParagraphBuilder = createMockParagraphBuilder();
 
 		// Setup method chain mocks
 		mockClient.ownProfile.mockResolvedValue(mockOwnProfile);
-		mockOwnProfile.newNote.mockReturnValue(mockNoteBuilder);
-		mockNoteBuilder.paragraph.mockReturnValue(mockParagraphBuilder);
 
 		// Mock SubstackUtils.initializeClient to return our mocked client
 		const { SubstackUtils } = require('../../nodes/Substack/SubstackUtils');
@@ -55,15 +47,14 @@ describe('Builder Pattern Validation Tests', () => {
 		});
 	});
 
-	describe('Correct Builder Pattern Implementation', () => {
-		it('should use correct builder pattern: ownProfile.newNote().paragraph().text().publish()', async () => {
+	describe('Correct publishNote API Usage', () => {
+		it('should call ownProfile.publishNote() with note content', async () => {
 			// Setup execution context
 			const mockExecuteFunctions = createMockExecuteFunctions({
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
 					body: 'Hello world',
-					contentType: 'simple',
 					visibility: 'everyone',
 				},
 				credentials: mockCredentials,
@@ -72,143 +63,110 @@ describe('Builder Pattern Validation Tests', () => {
 			// Execute the node
 			const result = await substackNode.execute.call(mockExecuteFunctions);
 
-			// Verify the EXACT pattern from the issue description is followed:
-			// await ownProfile.newNote().paragraph().text("Hello world").publish();
-			
 			// 1. ownProfile should be called
 			expect(mockClient.ownProfile).toHaveBeenCalledTimes(1);
-			
-			// 2. newNote() should be called on ownProfile
-			expect(mockOwnProfile.newNote).toHaveBeenCalledWith();
-			
-			// 3. paragraph() should be called directly on noteBuilder (NOT newNode().paragraph())
-			expect(mockNoteBuilder.paragraph).toHaveBeenCalledTimes(1);
-			
-			// 4. text() should be called on paragraphBuilder
-			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('Hello world');
-			
-			// 5. publish() should be called on paragraphBuilder
-			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
-			
+
+			// 2. publishNote() should be called on ownProfile with correct content
+			expect(mockOwnProfile.publishNote).toHaveBeenCalledWith('Hello world', undefined);
+
 			// Verify success
 			expect(result[0][0].json).toHaveProperty('success', true);
 		});
 
-		it('should prevent the "Note must contain at least one paragraph" error by ensuring paragraph() is called', async () => {
-			// Setup execution context with non-empty content
+		it('should call publishNote with attachment when link is provided', async () => {
 			const mockExecuteFunctions = createMockExecuteFunctions({
 				nodeParameters: {
 					resource: 'note',
 					operation: 'create',
-					body: 'This note should work correctly',
-					contentType: 'simple',
+					body: 'Note with link',
+					attachment: 'link',
+					linkUrl: 'https://example.com',
 					visibility: 'everyone',
-				},
-				credentials: mockCredentials,
-			});
-
-			// Execute the node
-			const result = await substackNode.execute.call(mockExecuteFunctions);
-
-			// The key validation: paragraph() must be called before publish()
-			// We verify this by checking that both were called
-			expect(mockNoteBuilder.paragraph).toHaveBeenCalledTimes(1);
-			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
-			
-			// And text() must be called on the paragraph builder
-			expect(mockParagraphBuilder.text).toHaveBeenCalledWith('This note should work correctly');
-			
-			// Should succeed without the "Note must contain at least one paragraph" error
-			expect(result[0][0].json).toHaveProperty('success', true);
-		});
-
-		it('should handle advanced mode (Markdown) with correct builder pattern', async () => {
-			const markdownContent = `## Hello from n8n
-
-This is a test note with **bold text**.
-
-- First bullet
-- Second bullet`;
-
-			// Setup execution context
-			const mockExecuteFunctions = createMockExecuteFunctions({
-				nodeParameters: {
-					resource: 'note',
-					operation: 'create',
-					body: markdownContent,
-					contentType: 'advanced',
-					visibility: 'everyone',
-				},
-				credentials: mockCredentials,
-			});
-
-			// Execute the node
-			const result = await substackNode.execute.call(mockExecuteFunctions);
-
-			// Verify that the MarkdownParser also uses the correct pattern
-			// Multiple paragraphs should be created for different markdown elements
-			expect(mockNoteBuilder.paragraph).toHaveBeenCalled();
-			expect(mockParagraphBuilder.publish).toHaveBeenCalledTimes(1);
-			
-			// Should succeed
-			expect(result[0][0].json).toHaveProperty('success', true);
-		});
-
-		it('should provide early validation for empty content before attempting to build', async () => {
-			// Setup execution context with empty content
-			const mockExecuteFunctions = createMockExecuteFunctions({
-				nodeParameters: {
-					resource: 'note',
-					operation: 'create',
-					body: '',
-					contentType: 'simple',
-					visibility: 'everyone',
-				},
-				credentials: mockCredentials,
-			});
-
-			// Execute and expect validation error BEFORE any builder pattern is attempted
-			await expect(
-				substackNode.execute.call(mockExecuteFunctions)
-			).rejects.toThrow('Note must contain at least one paragraph with content - body cannot be empty');
-
-			// Verify that no builder methods were called since validation failed early
-			expect(mockNoteBuilder.paragraph).not.toHaveBeenCalled();
-			expect(mockParagraphBuilder.publish).not.toHaveBeenCalled();
-		});
-	});
-
-	describe('Pattern Compliance Tests', () => {
-		it('should match the exact API pattern described in the issue', async () => {
-			// This test validates that our implementation exactly matches:
-			// await ownProfile.newNote().paragraph().text("Hello world").publish();
-
-			const mockExecuteFunctions = createMockExecuteFunctions({
-				nodeParameters: {
-					resource: 'note',
-					operation: 'create',
-					body: 'Hello world',
-					contentType: 'simple',
 				},
 				credentials: mockCredentials,
 			});
 
 			await substackNode.execute.call(mockExecuteFunctions);
 
-			// Verify the exact call chain
-			const calls = mockNoteBuilder.paragraph.mock.calls;
-			const publishCalls = mockParagraphBuilder.publish.mock.calls;
-			const textCalls = mockParagraphBuilder.text.mock.calls;
+			expect(mockOwnProfile.publishNote).toHaveBeenCalledWith('Note with link', {
+				attachment: 'https://example.com',
+			});
+		});
 
-			// Should have called paragraph() once
-			expect(calls).toHaveLength(1);
-			
-			// Should have called text() with the content
-			expect(textCalls).toHaveLength(1);
-			expect(textCalls[0][0]).toBe('Hello world');
-			
-			// Should have called publish() once
-			expect(publishCalls).toHaveLength(1);
+		it('should provide early validation for empty content before attempting to publish', async () => {
+			// Setup execution context with empty content
+			const mockExecuteFunctions = createMockExecuteFunctions({
+				nodeParameters: {
+					resource: 'note',
+					operation: 'create',
+					body: '',
+					visibility: 'everyone',
+				},
+				credentials: mockCredentials,
+			});
+
+			// Execute and expect validation error BEFORE publishNote is called
+			await expect(
+				substackNode.execute.call(mockExecuteFunctions)
+			).rejects.toThrow('Note must contain at least one paragraph with content - body cannot be empty');
+
+			// Verify that publishNote was not called since validation failed early
+			expect(mockOwnProfile.publishNote).not.toHaveBeenCalled();
+		});
+
+		it('should handle publishNote API errors', async () => {
+			mockOwnProfile.publishNote.mockRejectedValue(new Error('API Error: Failed to publish'));
+
+			const mockExecuteFunctions = createMockExecuteFunctions({
+				nodeParameters: {
+					resource: 'note',
+					operation: 'create',
+					body: 'Test note',
+					visibility: 'everyone',
+				},
+				credentials: mockCredentials,
+			});
+
+			await expect(
+				substackNode.execute.call(mockExecuteFunctions)
+			).rejects.toThrow();
+
+			expect(mockOwnProfile.publishNote).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe('Pattern Compliance Tests', () => {
+		it('should trim content before publishing', async () => {
+			const mockExecuteFunctions = createMockExecuteFunctions({
+				nodeParameters: {
+					resource: 'note',
+					operation: 'create',
+					body: '  Hello world  ',
+				},
+				credentials: mockCredentials,
+			});
+
+			await substackNode.execute.call(mockExecuteFunctions);
+
+			// Verify content is trimmed
+			const calls = mockOwnProfile.publishNote.mock.calls;
+			expect(calls[0][0]).toBe('Hello world');
+		});
+
+		it('should include noteId from publishNote response', async () => {
+			const mockExecuteFunctions = createMockExecuteFunctions({
+				nodeParameters: {
+					resource: 'note',
+					operation: 'create',
+					body: 'Hello world',
+				},
+				credentials: mockCredentials,
+			});
+
+			const result = await substackNode.execute.call(mockExecuteFunctions);
+
+			// publishNote returns { id: 12345 }, so noteId should be '12345'
+			expect(result[0][0].json).toHaveProperty('noteId', '12345');
 		});
 	});
 });

@@ -1,10 +1,9 @@
 import { Substack } from '../../nodes/Substack/Substack.node';
 import { createMockExecuteFunctions } from '../mocks/mockExecuteFunctions';
 import { mockCredentials } from '../mocks/mockData';
-import { 
+import {
 	createMockSubstackClient,
 	createMockOwnProfile,
-	createMockNoteBuilder,
 	createMockPost,
 } from '../mocks/mockSubstackClient';
 
@@ -29,23 +28,20 @@ describe('Substack Node Unit Tests - Integration', () => {
 	let substackNode: Substack;
 	let mockClient: any;
 	let mockOwnProfile: any;
-	let mockNoteBuilder: any;
 	let mockPost: any;
 
 	beforeEach(() => {
 		// Reset all mocks
 		jest.clearAllMocks();
-		
+
 		substackNode = new Substack();
 		mockClient = createMockSubstackClient();
 		mockOwnProfile = createMockOwnProfile();
-		mockNoteBuilder = createMockNoteBuilder();
 		mockPost = createMockPost();
 
 		// Setup method chain mocks
 		mockClient.ownProfile.mockResolvedValue(mockOwnProfile);
 		mockClient.postForId.mockResolvedValue(mockPost);
-		mockOwnProfile.newNote.mockReturnValue(mockNoteBuilder);
 
 		// Mock SubstackUtils.initializeClient to return our mocked client
 		const { SubstackUtils } = require('../../nodes/Substack/SubstackUtils');
@@ -60,7 +56,7 @@ describe('Substack Node Unit Tests - Integration', () => {
 			// Test that we can switch between resources in the same test
 			// This validates that mocking doesn't interfere between operations
 
-			// Then test post retrieval
+			// Test post retrieval
 			const postExecuteFunctions = createMockExecuteFunctions({
 				nodeParameters: {
 					resource: 'post',
@@ -137,12 +133,12 @@ describe('Substack Node Unit Tests - Integration', () => {
 	describe('Parameter Validation', () => {
 		it('should validate all resource types', async () => {
 			const resources = ['note', 'post', 'comment'];
-			
+
 			for (const resource of resources) {
 				const mockExecuteFunctions = createMockExecuteFunctions({
 					nodeParameters: {
 						resource: resource,
-						operation: resource === 'note' ? 'get' : 
+						operation: resource === 'note' ? 'get' :
 								  resource === 'post' ? 'getAll' :
 								  resource === 'comment' ? 'getAll' : 'getFollowing',
 						...(resource === 'note' && { body: 'Test content' }),

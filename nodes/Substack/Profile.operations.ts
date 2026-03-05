@@ -8,7 +8,6 @@ import { OperationUtils } from './shared/OperationUtils';
 export enum ProfileOperation {
 	GetOwnProfile = 'getOwnProfile',
 	GetProfileBySlug = 'getProfileBySlug',
-	GetProfileById = 'getProfileById',
 	GetFollowees = 'getFollowees',
 }
 
@@ -36,12 +35,6 @@ export const profileOperations: INodeProperties[] = [
 				value: ProfileOperation.GetProfileBySlug,
 				description: 'Get a profile by its publication slug',
 				action: 'Get profile by slug',
-			},
-			{
-				name: 'Get Profile by ID',
-				value: ProfileOperation.GetProfileById,
-				description: 'Get a profile by its user ID',
-				action: 'Get profile by ID',
 			},
 			{
 				name: 'Get Followees',
@@ -106,36 +99,6 @@ async function getProfileBySlug(
 	}
 }
 
-async function getProfileById(
-	executeFunctions: IExecuteFunctions,
-	client: SubstackClient,
-	publicationAddress: string,
-	itemIndex: number,
-): Promise<IStandardResponse> {
-	try {
-		const userId = OperationUtils.parseNumericParam(
-			executeFunctions.getNodeParameter('userId', itemIndex),
-			'userId',
-		);
-		const profile = await client.profileForId(userId);
-		const profileData = DataFormatters.formatProfile(profile);
-
-		return {
-			success: true,
-			data: profileData,
-			metadata: {
-				status: 'success',
-			},
-		};
-	} catch (error) {
-		return SubstackUtils.formatErrorResponse({
-			message: error.message,
-			node: executeFunctions.getNode(),
-			itemIndex,
-		});
-	}
-}
-
 async function getFollowees(
 	executeFunctions: IExecuteFunctions,
 	client: SubstackClient,
@@ -152,7 +115,7 @@ async function getFollowees(
 		const limit = OperationUtils.parseLimit(limitParam);
 
 		const ownProfile = await client.ownProfile();
-		const followingIterable = await ownProfile.following();
+		const followingIterable = ownProfile.following();
 		const results = await OperationUtils.executeAsyncIterable(
 			followingIterable,
 			limit,
@@ -186,6 +149,5 @@ export const profileOperationHandlers: Record<
 > = {
 	[ProfileOperation.GetOwnProfile]: getOwnProfile,
 	[ProfileOperation.GetProfileBySlug]: getProfileBySlug,
-	[ProfileOperation.GetProfileById]: getProfileById,
 	[ProfileOperation.GetFollowees]: getFollowees,
 };

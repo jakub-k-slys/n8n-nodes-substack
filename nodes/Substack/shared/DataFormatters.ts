@@ -8,21 +8,14 @@ export class DataFormatters {
 	 */
 	static formatNote(note: any, publicationAddress: string): ISubstackNote {
 		return {
-			noteId: (note as any).rawData?.comment?.id?.toString() || note.id?.toString() || 'unknown',
+			noteId: note.id?.toString() || 'unknown',
 			body: note.body || '',
-			url: SubstackUtils.formatUrl(
-				publicationAddress,
-				`/p/${(note as any).rawData?.comment?.id || note.id || 'unknown'}`,
-			),
-			date: DataFormatters.formatDate(
-				(note as any).rawData?.context?.timestamp || note.publishedAt || new Date(),
-			),
+			url: SubstackUtils.formatUrl(publicationAddress, `/p/${note.id || 'unknown'}`),
+			date: DataFormatters.formatDate(note.publishedAt || new Date()),
 			status: 'published',
 			userId: note.author?.id?.toString() || 'unknown',
 			likes: note.likesCount || 0,
-			restacks: (note as any).rawData?.comment?.restacks || 0,
 			type: 'note',
-			entityKey: (note as any).rawData?.entity_key || note.id,
 		};
 	}
 
@@ -37,16 +30,14 @@ export class DataFormatters {
 		return {
 			id: post.id,
 			title: post.title || '',
-			subtitle: (post as any).rawData?.subtitle || '',
-			slug: (post as any).rawData?.slug || post.slug,
-			url: SubstackUtils.formatUrl(publicationAddress, `/p/${(post as any).rawData?.slug || post.slug || post.id}`),
-			postDate: DataFormatters.formatDate(
-				(post as any).rawData?.post_date || post.publishedAt || new Date(),
-			),
-			type: (post as any).rawData?.type || 'newsletter',
-			published: (post as any).rawData?.published ?? true,
-			paywalled: (post as any).rawData?.paywalled ?? false,
-			description: (post as any).rawData?.description || post.body || '',
+			subtitle: post.subtitle || '',
+			slug: post.slug,
+			url: post.url || SubstackUtils.formatUrl(publicationAddress, `/p/${post.slug || post.id}`),
+			postDate: DataFormatters.formatDate(post.publishedAt || new Date()),
+			type: 'newsletter',
+			published: true,
+			paywalled: false,
+			description: post.truncatedBody || post.body || '',
 			htmlBody: htmlBody,
 			markdown: markdown,
 		};
@@ -59,13 +50,8 @@ export class DataFormatters {
 		return {
 			id: comment.id,
 			body: comment.body,
-			createdAt: (comment as any).rawData?.created_at || comment.createdAt.toISOString(),
-			parentPostId: parentPostId || (comment as any).rawData?.parent_post_id || 0,
-			author: {
-				id: comment.author.id,
-				name: comment.author.name,
-				isAdmin: comment.author.isAdmin || false,
-			},
+			isAdmin: comment.isAdmin || false,
+			parentPostId: parentPostId || 0,
 		};
 	}
 
@@ -76,7 +62,7 @@ export class DataFormatters {
 		return {
 			id: profile.id,
 			name: profile.name,
-			handle: profile.slug,
+			handle: profile.handle || profile.slug,
 			bio: profile.bio,
 		};
 	}
@@ -94,11 +80,8 @@ export class DataFormatters {
 		return {
 			id: followee.id,
 			name: followee.name,
-			handle: followee.slug,
+			handle: followee.handle || followee.slug,
 			bio: followee.bio,
-			subscriberCount: 0, // Not available in new API structure
-			subscriberCountString: '', // Not available in new API structure
-			primaryPublication: undefined, // Not available in new API structure
 		};
 	}
 
