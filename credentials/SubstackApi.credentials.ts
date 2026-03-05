@@ -28,7 +28,7 @@ export class SubstackApi implements ICredentialType {
 			typeOptions: {
 				password: true,
 			},
-			description: 'The private API token for authentication',
+			description: 'The substack.sid cookie value used for authentication',
 			required: true,
 		},
 	];

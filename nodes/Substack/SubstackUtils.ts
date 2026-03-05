@@ -31,10 +31,15 @@ export class SubstackUtils {
 			};
 		}
 
+		// Build token from substack.sid value: base64({"substack_sid":"<value>"})
+		const token = Buffer.from(JSON.stringify({ substack_sid: apiKey as string })).toString(
+			'base64',
+		);
+
 		// Create new client and cache with timestamp
 		const client = new SubstackClient({
 			publicationUrl: hostname,
-			token: apiKey as string,
+			token,
 		});
 
 		this.clientCache.set(cacheKey, {
