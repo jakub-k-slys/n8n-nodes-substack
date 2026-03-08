@@ -6,11 +6,11 @@ import {
 } from './mockData';
 
 // Mock data transformed to match substack-api v3 library format
-export const mockClientNoteResponse = {
+const mockClientNoteResponse = {
 	id: 12345,
 };
 
-export const mockClientNotesData = mockNotesListResponse.map(note => ({
+const mockClientNotesData = mockNotesListResponse.map(note => ({
 	id: note.comment.id,
 	body: note.comment.body,
 	author: {
@@ -23,7 +23,7 @@ export const mockClientNotesData = mockNotesListResponse.map(note => ({
 	likesCount: note.comment.reaction_count,
 }));
 
-export const mockClientPostsData = mockPostsListResponse.map(post => ({
+const mockClientPostsData = mockPostsListResponse.map(post => ({
 	id: post.id,
 	title: post.title,
 	subtitle: post.subtitle,
@@ -35,13 +35,13 @@ export const mockClientPostsData = mockPostsListResponse.map(post => ({
 	url: `https://testblog.substack.com/p/${post.slug}`,
 }));
 
-export const mockClientCommentsData = mockCommentsListResponse.map(comment => ({
+const mockClientCommentsData = mockCommentsListResponse.map(comment => ({
 	id: comment.id,
 	body: comment.body,
 	isAdmin: comment.author.is_admin,
 }));
 
-export const mockClientFollowingData = mockFollowingProfilesResponse.map(profile => ({
+const mockClientFollowingData = mockFollowingProfilesResponse.map(profile => ({
 	id: profile.id,
 	name: profile.name,
 	handle: profile.handle,
@@ -50,7 +50,7 @@ export const mockClientFollowingData = mockFollowingProfilesResponse.map(profile
 }));
 
 // Create async iterables for mocking
-export function createMockAsyncIterable<T>(data: T[]): AsyncIterable<T> {
+function createMockAsyncIterable<T>(data: T[]): AsyncIterable<T> {
 	return {
 		async *[Symbol.asyncIterator]() {
 			for (const item of data) {
