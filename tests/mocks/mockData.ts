@@ -1,14 +1,5 @@
 // Mock data for Substack API responses
 
-export const mockNoteResponse = {
-	id: 12345,
-	body: 'This is a test note from n8n integration',
-	date: '2024-01-15T10:30:00Z',
-	status: 'published',
-	user_id: 67890,
-	type: 'note',
-};
-
 export const mockNotesListResponse = [
 	{
 		entity_key: 'note_1',
@@ -108,14 +99,6 @@ export const mockCredentials = {
 	apiKey: 'test-api-key-12345',
 	publicationAddress: 'https://testblog.substack.com',
 };
-
-export const mockErrorResponse = {
-	error: 'Unauthorized',
-	message: 'Invalid API key provided',
-	status: 401,
-};
-
-export const mockFollowingIdsResponse = [12345, 67890, 54321, 98765];
 
 export const mockFollowingProfilesResponse = [
 	{

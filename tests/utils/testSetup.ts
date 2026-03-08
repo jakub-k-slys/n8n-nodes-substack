@@ -5,27 +5,6 @@ import {
 } from '../mocks/mockSubstackClient';
 
 /**
- * Note: Mock setup should be done at module level in each test file
- * This function is kept for documentation but the actual mocks should be set up like this:
- *
- * jest.mock('substack-api', () => ({
- *     SubstackClient: jest.fn(),
- * }));
- *
- * jest.mock('../../nodes/Substack/SubstackUtils', () => ({
- *     SubstackUtils: {
- *         initializeClient: jest.fn(),
- *         formatUrl: jest.fn((base: string, path: string) => `${base}${path}`),
- *         formatErrorResponse: jest.fn((error: any) => ({ success: false, error: error.message })),
- *     },
- * }));
- */
-export const setupStandardMocks = () => {
-	// This is a no-op function - mocks must be set up at module level
-	console.warn('setupStandardMocks() called - mocks should be set up at module level instead');
-};
-
-/**
  * Creates a complete test environment with all necessary mocks configured
  * Returns all mock objects needed for testing
  */
