@@ -2,52 +2,53 @@ import {
 	mockNotesListResponse,
 	mockPostsListResponse,
 	mockCommentsListResponse,
-	mockFollowingProfilesResponse
 } from './mockData';
 
-// Mock data transformed to match substack-api v3 library format
+// Mock data transformed to match substack-api v3 library domain object format
+
 const mockClientNoteResponse = {
 	id: 12345,
 };
 
+// Note domain objects: NoteResponse fields converted to camelCase by the library
 const mockClientNotesData = mockNotesListResponse.map(note => ({
-	id: note.comment.id,
-	body: note.comment.body,
+	id: note.id,
+	body: note.body,
 	author: {
-		id: note.context.users[0]?.id || 67890,
-		name: note.context.users[0]?.name || 'Test User',
-		handle: note.context.users[0]?.handle || 'testuser',
-		avatarUrl: note.context.users[0]?.photo_url || '',
+		id: note.author.id,
+		name: note.author.name,
+		handle: note.author.handle,
+		avatarUrl: note.author.avatar_url,
 	},
-	publishedAt: new Date(note.comment.date),
-	likesCount: note.comment.reaction_count,
+	publishedAt: new Date(note.published_at),
+	likesCount: note.likes_count,
 }));
 
+// PreviewPost (returned by profile.posts()) only exposes: id, title, subtitle, body, truncatedBody, publishedAt
+// It does NOT expose slug, url, or htmlBody — those are only on FullPost (returned by client.postForId())
 const mockClientPostsData = mockPostsListResponse.map(post => ({
 	id: post.id,
 	title: post.title,
 	subtitle: post.subtitle,
-	slug: post.slug,
-	body: post.description,
-	truncatedBody: post.description,
-	publishedAt: new Date(post.post_date),
-	htmlBody: '',
-	url: `https://testblog.substack.com/p/${post.slug}`,
+	body: post.truncated_body,
+	truncatedBody: post.truncated_body,
+	publishedAt: new Date(post.published_at),
 }));
 
+// Comment domain objects: CommentResponse.is_admin mapped to isAdmin by the library
 const mockClientCommentsData = mockCommentsListResponse.map(comment => ({
 	id: comment.id,
 	body: comment.body,
-	isAdmin: comment.author.is_admin,
+	isAdmin: comment.is_admin,
 }));
 
-const mockClientFollowingData = mockFollowingProfilesResponse.map(profile => ({
-	id: profile.id,
-	name: profile.name,
-	handle: profile.handle,
-	slug: profile.handle,
-	bio: profile.bio,
-}));
+// following() returns AsyncIterable<Profile> — the library fetches a full Profile per following user.
+// These represent enriched Profile domain objects, not raw FollowingUserResponse ({id, handle} only).
+const mockClientFollowingData = [
+	{ id: 12345, name: 'John Doe', handle: 'johndoe', slug: 'johndoe', bio: 'Tech writer and blogger' },
+	{ id: 67890, name: 'Jane Smith', handle: 'janesmith', slug: 'janesmith', bio: 'Science communicator' },
+	{ id: 54321, name: 'Bob Wilson', handle: 'bobwilson', slug: 'bobwilson', bio: 'Politics and current events' },
+];
 
 // Create async iterables for mocking
 function createMockAsyncIterable<T>(data: T[]): AsyncIterable<T> {
