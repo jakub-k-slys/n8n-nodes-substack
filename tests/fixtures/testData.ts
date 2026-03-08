@@ -3,6 +3,10 @@
  * This eliminates hardcoded data duplication and makes test maintenance easier
  */
 
+// These fixtures represent PreviewPost objects (returned by profile.posts()).
+// PreviewPost only exposes: id, title, subtitle, body, truncatedBody, publishedAt.
+// slug, url, and htmlBody are NOT part of PreviewPost — they only exist on FullPost
+// (returned by client.postForId()). DataFormatters.formatPost handles their absence via fallbacks.
 export const testPosts = {
 	minimal: {
 		id: 12345,
@@ -10,30 +14,22 @@ export const testPosts = {
 		body: 'Basic content',
 		truncatedBody: 'Basic content',
 		publishedAt: new Date('2024-01-15T10:30:00Z'),
-		htmlBody: '',
-		url: 'https://testblog.substack.com/p/12345',
 	},
 	complete: {
 		id: 98765,
 		title: 'Test Post Title',
 		subtitle: 'A comprehensive guide to testing',
-		slug: 'test-post-title',
 		body: 'This is a test post for integration testing.',
 		truncatedBody: 'This is a test post for integration testing.',
 		publishedAt: new Date('2024-01-10T12:00:00Z'),
-		htmlBody: '',
-		url: 'https://testblog.substack.com/p/test-post-title',
 	},
 	paywalled: {
 		id: 13579,
 		title: 'Premium Content',
 		subtitle: 'Exclusive for subscribers',
-		slug: 'premium-content',
 		body: 'This is premium content',
 		truncatedBody: 'This is premium content',
 		publishedAt: new Date('2024-01-10T12:00:00Z'),
-		htmlBody: '',
-		url: 'https://testblog.substack.com/p/premium-content',
 	},
 	podcast: {
 		id: 24680,
@@ -41,8 +37,6 @@ export const testPosts = {
 		body: 'Audio content',
 		truncatedBody: 'Audio content',
 		publishedAt: new Date('2024-01-10T12:00:00Z'),
-		htmlBody: '',
-		url: 'https://testblog.substack.com/p/24680',
 	},
 	invalidDate: {
 		id: 11111,
@@ -50,8 +44,6 @@ export const testPosts = {
 		body: 'Test content',
 		truncatedBody: 'Test content',
 		publishedAt: new Date('invalid date'),
-		htmlBody: '',
-		url: 'https://testblog.substack.com/p/11111',
 	},
 };
 

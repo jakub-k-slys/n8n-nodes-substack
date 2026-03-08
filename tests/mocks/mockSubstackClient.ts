@@ -23,16 +23,15 @@ const mockClientNotesData = mockNotesListResponse.map(note => ({
 	likesCount: note.comment.reaction_count,
 }));
 
+// PreviewPost (returned by profile.posts()) only exposes: id, title, subtitle, body, truncatedBody, publishedAt
+// It does NOT expose slug, url, or htmlBody — those are only on FullPost (returned by client.postForId())
 const mockClientPostsData = mockPostsListResponse.map(post => ({
 	id: post.id,
 	title: post.title,
 	subtitle: post.subtitle,
-	slug: post.slug,
 	body: post.description,
 	truncatedBody: post.description,
 	publishedAt: new Date(post.post_date),
-	htmlBody: '',
-	url: `https://testblog.substack.com/p/${post.slug}`,
 }));
 
 const mockClientCommentsData = mockCommentsListResponse.map(comment => ({
