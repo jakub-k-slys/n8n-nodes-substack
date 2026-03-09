@@ -23,13 +23,13 @@ describe('DataFormatters Unit Tests', () => {
 				title: 'Test Post',
 				subtitle: 'Test subtitle',
 				url: 'https://test.substack.com/p/test-post',
-				type: 'newsletter',
-				published: true,
-				paywalled: false,
 				description: 'Test description',
 				htmlBody: '<h1>Hello World</h1><p>This is a <strong>test</strong> post.</p>',
 				markdown: 'Hello World\n===========\n\nThis is a **test** post.',
 			});
+			expect(result).not.toHaveProperty('type');
+			expect(result).not.toHaveProperty('published');
+			expect(result).not.toHaveProperty('paywalled');
 		});
 
 		it('should handle empty htmlBody', () => {

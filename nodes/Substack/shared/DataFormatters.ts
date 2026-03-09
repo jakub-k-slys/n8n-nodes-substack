@@ -34,9 +34,6 @@ export class DataFormatters {
 			slug: post.slug,
 			url: post.url || SubstackUtils.formatUrl(publicationAddress, `/p/${post.slug || post.id}`),
 			postDate: DataFormatters.formatDate(post.publishedAt || new Date()),
-			type: 'newsletter',
-			published: true,
-			paywalled: false,
 			description: post.truncatedBody || post.body || '',
 			htmlBody: htmlBody,
 			markdown: markdown,
@@ -64,6 +61,8 @@ export class DataFormatters {
 			name: profile.name,
 			handle: profile.handle || profile.slug,
 			bio: profile.bio,
+			url: profile.url,
+			avatarUrl: profile.avatarUrl,
 		};
 	}
 
@@ -82,6 +81,8 @@ export class DataFormatters {
 			name: followee.name,
 			handle: followee.handle || followee.slug,
 			bio: followee.bio,
+			url: followee.url,
+			avatarUrl: followee.avatarUrl,
 		};
 	}
 

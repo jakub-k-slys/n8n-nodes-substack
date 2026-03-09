@@ -29,9 +29,6 @@ export interface ISubstackPost {
 	slug?: string;
 	url: string;
 	postDate: string;
-	type: 'newsletter' | 'podcast' | 'thread';
-	published?: boolean;
-	paywalled?: boolean;
 	description?: string;
 	htmlBody?: string;
 	markdown?: string;
@@ -49,6 +46,8 @@ export interface ISubstackFollowing {
 	name?: string;
 	handle?: string;
 	bio?: string;
+	url?: string;
+	avatarUrl?: string;
 }
 
 export interface IErrorResponse {
