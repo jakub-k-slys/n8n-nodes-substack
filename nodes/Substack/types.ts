@@ -31,7 +31,6 @@ export interface ISubstackPost {
 	postDate: string;
 	description?: string;
 	htmlBody?: string;
-	markdown?: string;
 }
 
 export interface ISubstackComment {

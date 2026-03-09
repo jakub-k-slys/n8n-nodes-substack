@@ -1,6 +1,5 @@
 import { ISubstackNote, ISubstackPost, ISubstackComment, ISubstackFollowing } from '../types';
 import { SubstackUtils } from '../SubstackUtils';
-import TurndownService from 'turndown';
 
 export class DataFormatters {
 	/**
@@ -23,10 +22,6 @@ export class DataFormatters {
 	 * Format a post object from the Substack API
 	 */
 	static formatPost(post: any, publicationAddress: string): ISubstackPost {
-		const htmlBody = post.htmlBody || '';
-		const turndownService = new TurndownService();
-		const markdown = htmlBody ? turndownService.turndown(htmlBody) : '';
-
 		return {
 			id: post.id,
 			title: post.title || '',
@@ -35,8 +30,7 @@ export class DataFormatters {
 			url: post.url || SubstackUtils.formatUrl(publicationAddress, `/p/${post.slug || post.id}`),
 			postDate: DataFormatters.formatDate(post.publishedAt || new Date()),
 			description: post.truncatedBody || post.body || '',
-			htmlBody: htmlBody,
-			markdown: markdown,
+			htmlBody: post.htmlBody || '',
 		};
 	}
 

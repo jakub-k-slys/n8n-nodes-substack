@@ -45,8 +45,6 @@
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@types/marked": "^4.3.2",
-    "@types/turndown": "^5.0.5",
     "@typescript-eslint/parser": "~8.56.0",
     "eslint": ">=9.29.0 <10",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
@@ -60,8 +58,6 @@
     "n8n-workflow": "^1.82.0"
   },
   "dependencies": {
-    "marked": "^4.3.0",
-    "substack-api": "^3.1.0",
-    "turndown": "^7.2.0"
+    "substack-api": "^3.1.0"
   }
 }
