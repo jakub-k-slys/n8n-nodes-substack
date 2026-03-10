@@ -184,6 +184,7 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 				postDate: expect.any(String),
 				description: expect.any(String),
 				htmlBody: expect.any(String),
+				markdown: expect.any(String),
 			});
 		});
 	});
@@ -218,7 +219,7 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 				
 				// Verify required fields for post list items
 				const postData = output.json;
-				const expectedFields = ['id', 'title', 'subtitle', 'slug', 'url', 'postDate', 'description', 'htmlBody'];
+				const expectedFields = ['id', 'title', 'subtitle', 'slug', 'url', 'postDate', 'description', 'htmlBody', 'markdown'];
 				expectedFields.forEach(field => {
 					expect(postData).toHaveProperty(field);
 				});

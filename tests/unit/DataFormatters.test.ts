@@ -4,13 +4,14 @@ describe('DataFormatters Unit Tests', () => {
 	describe('formatPost', () => {
 		const mockPublicationAddress = 'https://test.substack.com';
 
-		it('should format post with htmlBody field', () => {
+		it('should format post with htmlBody and markdown fields', () => {
 			const mockPost = {
 				id: 123,
 				title: 'Test Post',
 				subtitle: 'Test subtitle',
 				slug: 'test-post',
 				htmlBody: '<h1>Hello World</h1><p>This is a <strong>test</strong> post.</p>',
+				markdown: '# Hello World\n\nThis is a **test** post.',
 				publishedAt: new Date('2023-01-01T00:00:00Z'),
 				truncatedBody: 'Test description',
 				url: 'https://test.substack.com/p/test-post',
@@ -25,27 +26,29 @@ describe('DataFormatters Unit Tests', () => {
 				url: 'https://test.substack.com/p/test-post',
 				description: 'Test description',
 				htmlBody: '<h1>Hello World</h1><p>This is a <strong>test</strong> post.</p>',
+				markdown: '# Hello World\n\nThis is a **test** post.',
 			});
-			expect(result).not.toHaveProperty('markdown');
 			expect(result).not.toHaveProperty('type');
 			expect(result).not.toHaveProperty('published');
 			expect(result).not.toHaveProperty('paywalled');
 		});
 
-		it('should handle empty htmlBody', () => {
+		it('should handle empty htmlBody and markdown', () => {
 			const mockPost = {
 				id: 456,
 				title: 'Empty Post',
 				htmlBody: '',
+				markdown: '',
 				publishedAt: new Date('2023-01-01T00:00:00Z'),
 			};
 
 			const result = DataFormatters.formatPost(mockPost, mockPublicationAddress);
 
 			expect(result.htmlBody).toBe('');
+			expect(result.markdown).toBe('');
 		});
 
-		it('should handle missing htmlBody', () => {
+		it('should handle missing htmlBody and markdown', () => {
 			const mockPost = {
 				id: 789,
 				title: 'No HTML Body',
@@ -55,6 +58,7 @@ describe('DataFormatters Unit Tests', () => {
 			const result = DataFormatters.formatPost(mockPost, mockPublicationAddress);
 
 			expect(result.htmlBody).toBe('');
+			expect(result.markdown).toBe('');
 		});
 
 		it('should maintain all post fields', () => {
@@ -64,6 +68,7 @@ describe('DataFormatters Unit Tests', () => {
 				subtitle: 'Full subtitle',
 				slug: 'full-post',
 				htmlBody: '<p>Simple content</p>',
+				markdown: 'Simple content',
 				body: 'Simple content',
 				truncatedBody: 'Full description',
 				publishedAt: new Date('2023-01-01T00:00:00Z'),
@@ -77,6 +82,7 @@ describe('DataFormatters Unit Tests', () => {
 			expect(result.subtitle).toBe('Full subtitle');
 			expect(result.description).toBe('Full description');
 			expect(result.htmlBody).toBe('<p>Simple content</p>');
+			expect(result.markdown).toBe('Simple content');
 		});
 	});
 });

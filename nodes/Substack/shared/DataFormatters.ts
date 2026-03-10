@@ -31,6 +31,7 @@ export class DataFormatters {
 			postDate: DataFormatters.formatDate(post.publishedAt || new Date()),
 			description: post.truncatedBody || post.body || '',
 			htmlBody: post.htmlBody || '',
+			markdown: post.markdown || '',
 		};
 	}
 

@@ -12,8 +12,8 @@ importers:
         specifier: ^1.82.0
         version: 1.120.3
       substack-api:
-        specifier: ^3.1.0
-        version: 3.1.0
+        specifier: ^3.2.0
+        version: 3.2.0
     devDependencies:
       '@types/jest':
         specifier: ^30.0.0
@@ -2193,8 +2193,8 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
-  substack-api@3.1.0:
-    resolution: {integrity: sha512-/j/quAusCiniIouVrHIfjV385NEDEJ2ZJlxCvYHqaA7ePXfbHGCtQFj41ykVZc+cj+CgqY55GFEbbVdavr9lxg==}
+  substack-api@3.2.0:
+    resolution: {integrity: sha512-znV8mwGfgZWiUCJZ36++K5O6oMOvpd44NIw8iuxUN/9WwsrR7EFVkezGMhfNKKmy4E8Ev2cxmlRTujlVXAOCpQ==}
 
   supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
@@ -4942,7 +4942,7 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
-  substack-api@3.1.0:
+  substack-api@3.2.0:
     dependencies:
       axios: 1.13.5
       axios-rate-limit: 1.4.0(axios@1.13.5)

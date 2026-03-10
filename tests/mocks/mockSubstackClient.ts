@@ -33,6 +33,7 @@ const mockClientPostsData = mockPostsListResponse.map(post => ({
 	truncatedBody: post.truncated_body,
 	publishedAt: new Date(post.published_at),
 	htmlBody: '',
+	markdown: '',
 	url: `https://testblog.substack.com/p/${post.id}`,
 }));
 
@@ -86,6 +87,7 @@ export const createMockPost = () => ({
 	truncatedBody: 'This is a test post for integration testing.',
 	publishedAt: new Date('2024-01-10T12:00:00Z'),
 	htmlBody: '',
+	markdown: '',
 	url: 'https://testblog.substack.com/p/test-post-title',
 	comments: jest.fn().mockReturnValue(createMockAsyncIterable(mockClientCommentsData)),
 });
