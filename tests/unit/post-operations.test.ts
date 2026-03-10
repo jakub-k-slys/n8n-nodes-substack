@@ -35,7 +35,7 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 	// Use the standardized test suite for post retrieval
 	describe('Post Retrieval', () => {
 		const testSuite = createRetrievalTestSuite('post', 'getAll', {
-			expectedFields: ['id', 'title', 'subtitle', 'slug', 'url', 'postDate', 'type', 'published', 'paywalled', 'description', 'htmlBody', 'markdown'],
+			expectedFields: ['id', 'title', 'subtitle', 'slug', 'url', 'postDate', 'description', 'htmlBody'],
 			clientMethod: 'ownProfile',
 			profileMethod: 'posts',
 			mockDataCount: 2,
@@ -122,10 +122,10 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 
 			const postData = result[0][0].json;
 			expect(postData.subtitle).toBe(''); // Default for missing subtitle
-			expect(postData.type).toBe('newsletter'); // Default type
-			expect(postData.published).toBe(true); // Default published
-			expect(postData.paywalled).toBe(false); // Default paywalled
 			expect(postData.description).toBe('Basic content'); // Uses truncatedBody
+			expect(postData).not.toHaveProperty('type');
+			expect(postData).not.toHaveProperty('published');
+			expect(postData).not.toHaveProperty('paywalled');
 		});
 
 		it('should handle posts with invalid dates', async () => {
@@ -182,9 +182,6 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 				subtitle: expect.any(String),
 				url: expect.stringContaining('https://testblog.substack.com/p/'),
 				postDate: expect.any(String),
-				type: expect.any(String),
-				published: expect.any(Boolean),
-				paywalled: expect.any(Boolean),
 				description: expect.any(String),
 				htmlBody: expect.any(String),
 				markdown: expect.any(String),
@@ -222,7 +219,7 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 				
 				// Verify required fields for post list items
 				const postData = output.json;
-				const expectedFields = ['id', 'title', 'subtitle', 'slug', 'url', 'postDate', 'type', 'published', 'paywalled', 'description', 'htmlBody', 'markdown'];
+				const expectedFields = ['id', 'title', 'subtitle', 'slug', 'url', 'postDate', 'description', 'htmlBody', 'markdown'];
 				expectedFields.forEach(field => {
 					expect(postData).toHaveProperty(field);
 				});
@@ -271,7 +268,7 @@ describe('Substack Node Unit Tests - Post Operations', () => {
 			result[0].forEach((output: any) => {
 				expect(output.json).toHaveProperty('id');
 				expect(output.json).toHaveProperty('title');
-				expect(output.json).toHaveProperty('type', 'newsletter');
+				expect(output.json).toHaveProperty('postDate');
 			});
 		});
 	});

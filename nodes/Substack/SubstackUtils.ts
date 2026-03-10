@@ -14,7 +14,7 @@ export class SubstackUtils {
 		const hostname = this.extractHostname(publicationAddress as string, executeFunctions);
 
 		const client = new SubstackClient({
-			publicationUrl: hostname,
+			publicationUrl: `https://${hostname}`,
 			token: apiKey as string,
 		});
 

@@ -1,6 +1,5 @@
 import { ISubstackNote, ISubstackPost, ISubstackComment, ISubstackFollowing } from '../types';
 import { SubstackUtils } from '../SubstackUtils';
-import TurndownService from 'turndown';
 
 export class DataFormatters {
 	/**
@@ -23,10 +22,6 @@ export class DataFormatters {
 	 * Format a post object from the Substack API
 	 */
 	static formatPost(post: any, publicationAddress: string): ISubstackPost {
-		const htmlBody = post.htmlBody || '';
-		const turndownService = new TurndownService();
-		const markdown = htmlBody ? turndownService.turndown(htmlBody) : '';
-
 		return {
 			id: post.id,
 			title: post.title || '',
@@ -34,12 +29,9 @@ export class DataFormatters {
 			slug: post.slug,
 			url: post.url || SubstackUtils.formatUrl(publicationAddress, `/p/${post.slug || post.id}`),
 			postDate: DataFormatters.formatDate(post.publishedAt || new Date()),
-			type: 'newsletter',
-			published: true,
-			paywalled: false,
 			description: post.truncatedBody || post.body || '',
-			htmlBody: htmlBody,
-			markdown: markdown,
+			htmlBody: post.htmlBody || '',
+			markdown: post.markdown || '',
 		};
 	}
 
@@ -64,6 +56,8 @@ export class DataFormatters {
 			name: profile.name,
 			handle: profile.handle || profile.slug,
 			bio: profile.bio,
+			url: profile.url,
+			avatarUrl: profile.avatarUrl,
 		};
 	}
 
@@ -82,6 +76,8 @@ export class DataFormatters {
 			name: followee.name,
 			handle: followee.handle || followee.slug,
 			bio: followee.bio,
+			url: followee.url,
+			avatarUrl: followee.avatarUrl,
 		};
 	}
 

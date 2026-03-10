@@ -11,6 +11,7 @@ describe('DataFormatters Unit Tests', () => {
 				subtitle: 'Test subtitle',
 				slug: 'test-post',
 				htmlBody: '<h1>Hello World</h1><p>This is a <strong>test</strong> post.</p>',
+				markdown: '# Hello World\n\nThis is a **test** post.',
 				publishedAt: new Date('2023-01-01T00:00:00Z'),
 				truncatedBody: 'Test description',
 				url: 'https://test.substack.com/p/test-post',
@@ -23,20 +24,21 @@ describe('DataFormatters Unit Tests', () => {
 				title: 'Test Post',
 				subtitle: 'Test subtitle',
 				url: 'https://test.substack.com/p/test-post',
-				type: 'newsletter',
-				published: true,
-				paywalled: false,
 				description: 'Test description',
 				htmlBody: '<h1>Hello World</h1><p>This is a <strong>test</strong> post.</p>',
-				markdown: 'Hello World\n===========\n\nThis is a **test** post.',
+				markdown: '# Hello World\n\nThis is a **test** post.',
 			});
+			expect(result).not.toHaveProperty('type');
+			expect(result).not.toHaveProperty('published');
+			expect(result).not.toHaveProperty('paywalled');
 		});
 
-		it('should handle empty htmlBody', () => {
+		it('should handle empty htmlBody and markdown', () => {
 			const mockPost = {
 				id: 456,
 				title: 'Empty Post',
 				htmlBody: '',
+				markdown: '',
 				publishedAt: new Date('2023-01-01T00:00:00Z'),
 			};
 
@@ -46,7 +48,7 @@ describe('DataFormatters Unit Tests', () => {
 			expect(result.markdown).toBe('');
 		});
 
-		it('should handle missing htmlBody', () => {
+		it('should handle missing htmlBody and markdown', () => {
 			const mockPost = {
 				id: 789,
 				title: 'No HTML Body',
@@ -59,40 +61,14 @@ describe('DataFormatters Unit Tests', () => {
 			expect(result.markdown).toBe('');
 		});
 
-		it('should convert complex HTML to markdown correctly', () => {
-			const mockPost = {
-				id: 999,
-				title: 'Complex HTML Post',
-				htmlBody: `
-					<h2>Heading 2</h2>
-					<p>Paragraph with <em>emphasis</em> and <strong>strong text</strong>.</p>
-					<ul>
-						<li>List item 1</li>
-						<li>List item 2</li>
-					</ul>
-					<blockquote>This is a quote</blockquote>
-					<a href="https://example.com">Link text</a>
-				`,
-				publishedAt: new Date('2023-01-01T00:00:00Z'),
-			};
-
-			const result = DataFormatters.formatPost(mockPost, mockPublicationAddress);
-
-			expect(result.markdown).toContain('Heading 2\n---------');
-			expect(result.markdown).toContain('_emphasis_');
-			expect(result.markdown).toContain('**strong text**');
-			expect(result.markdown).toContain('*   List item 1');
-			expect(result.markdown).toContain('> This is a quote');
-			expect(result.markdown).toContain('[Link text](https://example.com)');
-		});
-
-		it('should maintain all other post fields', () => {
+		it('should maintain all post fields', () => {
 			const mockPost = {
 				id: 111,
 				title: 'Full Post',
 				subtitle: 'Full subtitle',
 				slug: 'full-post',
 				htmlBody: '<p>Simple content</p>',
+				markdown: 'Simple content',
 				body: 'Simple content',
 				truncatedBody: 'Full description',
 				publishedAt: new Date('2023-01-01T00:00:00Z'),
@@ -101,13 +77,10 @@ describe('DataFormatters Unit Tests', () => {
 
 			const result = DataFormatters.formatPost(mockPost, mockPublicationAddress);
 
-			// Verify all fields are populated
 			expect(result.id).toBe(111);
 			expect(result.title).toBe('Full Post');
 			expect(result.subtitle).toBe('Full subtitle');
 			expect(result.description).toBe('Full description');
-
-			// Verify new fields are added
 			expect(result.htmlBody).toBe('<p>Simple content</p>');
 			expect(result.markdown).toBe('Simple content');
 		});
