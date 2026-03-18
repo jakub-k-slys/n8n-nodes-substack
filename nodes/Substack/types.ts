@@ -19,7 +19,9 @@ export interface ISubstackNote {
 	status: string;
 	userId: string;
 	likes?: number;
+	restacks?: number;
 	type?: string;
+	entityKey?: string;
 }
 
 export interface ISubstackPost {
@@ -29,6 +31,9 @@ export interface ISubstackPost {
 	slug?: string;
 	url: string;
 	postDate: string;
+	type: 'newsletter' | 'podcast' | 'thread';
+	published?: boolean;
+	paywalled?: boolean;
 	description?: string;
 	htmlBody?: string;
 	markdown?: string;
@@ -37,8 +42,13 @@ export interface ISubstackPost {
 export interface ISubstackComment {
 	id: number;
 	body: string;
-	isAdmin?: boolean;
+	createdAt: string;
 	parentPostId: number;
+	author: {
+		id: number;
+		name: string;
+		isAdmin?: boolean;
+	};
 }
 
 export interface ISubstackFollowing {
@@ -46,8 +56,13 @@ export interface ISubstackFollowing {
 	name?: string;
 	handle?: string;
 	bio?: string;
-	url?: string;
-	avatarUrl?: string;
+	subscriberCount?: number;
+	subscriberCountString?: string;
+	primaryPublication?: {
+		id: number;
+		name: string;
+		subdomain: string;
+	};
 }
 
 export interface IErrorResponse {
