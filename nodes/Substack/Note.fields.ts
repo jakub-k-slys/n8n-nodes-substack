@@ -9,7 +9,8 @@ export const noteFields: INodeProperties[] = [
 		name: 'body',
 		type: 'string',
 		default: '',
-		description: 'The content of the note. Supports Markdown formatting.',
+		description:
+			'The content of the note. Must contain at least one paragraph with actual content. Markdown formatting is supported in Advanced mode.',
 		displayOptions: {
 			show: {
 				resource: ['note'],
@@ -21,7 +22,33 @@ export const noteFields: INodeProperties[] = [
 			rows: 4,
 		},
 		placeholder:
-			'Write your note content here... (Supports Markdown: **bold**, *italic*, # headings, [links](url), - lists)',
+			'Write your note content here... (Advanced mode supports Markdown: **bold**, *italic*, # headings, [links](url), - lists)',
+	},
+	{
+		displayName: 'Content Type',
+		name: 'contentType',
+		type: 'options',
+		default: 'simple',
+		description: 'Choose how to format the content',
+		displayOptions: {
+			show: {
+				resource: ['note'],
+				operation: ['create'],
+			},
+		},
+		options: [
+			{
+				name: 'Simple Text',
+				value: 'simple',
+				description: 'Plain text content with structured validation',
+			},
+			{
+				name: 'Advanced (Markdown)',
+				value: 'advanced',
+				description:
+					'Supports Markdown formatting: **bold**, *italic*, # headings, - lists, [links](URL). Builder prevents invalid notes.',
+			},
+		],
 	},
 	{
 		displayName: 'Visibility',
@@ -135,6 +162,39 @@ export const noteFields: INodeProperties[] = [
 			show: {
 				resource: ['note'],
 				operation: ['getNotesBySlug'],
+			},
+		},
+		typeOptions: {
+			minValue: 1,
+		},
+	},
+	/* -------------------------------------------------------------------------- */
+	/*                              note:getNotesById                            */
+	/* -------------------------------------------------------------------------- */
+	{
+		displayName: 'User ID',
+		name: 'userId',
+		type: 'number',
+		default: 0,
+		description: 'The user ID to get notes for',
+		displayOptions: {
+			show: {
+				resource: ['note'],
+				operation: ['getNotesById'],
+			},
+		},
+		required: true,
+	},
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		default: 50,
+		description: 'Max number of results to return',
+		displayOptions: {
+			show: {
+				resource: ['note'],
+				operation: ['getNotesById'],
 			},
 		},
 		typeOptions: {

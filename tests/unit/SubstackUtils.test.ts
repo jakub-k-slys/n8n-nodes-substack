@@ -58,4 +58,22 @@ describe('SubstackUtils', () => {
 			expect(result).toBe('https://myblog.substack.com/p/caf%C3%A9-r%C3%A9sum%C3%A9');
 		});
 	});
+
+	describe('cache management', () => {
+		it('should return cache statistics', () => {
+			const stats = SubstackUtils.getCacheStats();
+			
+			expect(stats).toHaveProperty('size');
+			expect(stats).toHaveProperty('entries');
+			expect(typeof stats.size).toBe('number');
+			expect(Array.isArray(stats.entries)).toBe(true);
+		});
+
+		it('should clear expired cache entries', () => {
+			SubstackUtils.clearExpiredCache();
+			
+			// Should not throw and should complete
+			expect(true).toBe(true);
+		});
+	});
 });

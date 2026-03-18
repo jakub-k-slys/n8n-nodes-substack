@@ -54,6 +54,39 @@ export const postFields: INodeProperties[] = [
 		},
 	},
 	/* -------------------------------------------------------------------------- */
+	/*                              post:getPostsById                            */
+	/* -------------------------------------------------------------------------- */
+	{
+		displayName: 'User ID',
+		name: 'userId',
+		type: 'number',
+		default: 0,
+		description: 'The user ID to get posts for',
+		displayOptions: {
+			show: {
+				resource: ['post'],
+				operation: ['getPostsById'],
+			},
+		},
+		required: true,
+	},
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		default: 50,
+		description: 'Max number of results to return',
+		displayOptions: {
+			show: {
+				resource: ['post'],
+				operation: ['getPostsById'],
+			},
+		},
+		typeOptions: {
+			minValue: 1,
+		},
+	},
+	/* -------------------------------------------------------------------------- */
 	/*                              post:getPostById                             */
 	/* -------------------------------------------------------------------------- */
 	{

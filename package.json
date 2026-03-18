@@ -25,7 +25,7 @@
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
     "lintfix": "eslint nodes credentials package.json --fix",
-    "prepublishOnly": "pnpm run build && eslint -c eslint.prepublish.config.js nodes credentials package.json",
+    "prepublishOnly": "pnpm run build && pnpm dlx eslint -c eslint.prepublish.config.js nodes credentials package.json",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:unit": "jest",
@@ -45,8 +45,10 @@
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@typescript-eslint/parser": "~8.57.0",
-    "eslint": ">=9.29.0 <10",
+    "@types/marked": "^4.3.2",
+    "@types/turndown": "^5.0.5",
+    "@typescript-eslint/parser": "~8.56.0",
+    "eslint": "^9.29.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
     "gulp": "^5.0.0",
     "jest": "^30.0.3",
@@ -58,6 +60,8 @@
     "n8n-workflow": "^1.82.0"
   },
   "dependencies": {
-    "substack-api": "^3.2.0"
+    "marked": "^4.3.0",
+    "substack-api": "^2.2.1",
+    "turndown": "^7.2.0"
   }
 }

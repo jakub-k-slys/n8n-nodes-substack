@@ -34,4 +34,21 @@ export const commentFields: INodeProperties[] = [
 			minValue: 1,
 		},
 	},
+	/* -------------------------------------------------------------------------- */
+	/*                              comment:getCommentById                       */
+	/* -------------------------------------------------------------------------- */
+	{
+		displayName: 'Comment ID',
+		name: 'commentId',
+		type: 'string',
+		default: '',
+		description: 'The ID of the comment to retrieve',
+		displayOptions: {
+			show: {
+				resource: ['comment'],
+				operation: ['getCommentById'],
+			},
+		},
+		required: true,
+	},
 ];
