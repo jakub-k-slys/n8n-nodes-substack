@@ -563,6 +563,7 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+    deprecated: Potential CWE-502 - Update to 1.3.1 or higher
 
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
     resolution: {integrity: sha512-ppLRUgHVaGRWUx0R0Ut06Mjo9gBaBkg3v/8AxusGLhsIotbBLuRk51rAzqLC8gq6NyyAojEXglNjzf6R948DNw==}
@@ -745,8 +746,8 @@ packages:
     peerDependencies:
       axios: '*'
 
-  axios@1.15.0:
-    resolution: {integrity: sha512-wWyJDlAatxk30ZJer+GeCWS209sA42X+N5jU2jy6oHTp7ufw8uzUTVFBX9+wTfAlhiJXGS0Bq7X6efruWjuK9Q==}
+  axios@1.16.0:
+    resolution: {integrity: sha512-6hp5CwvTPlN2A31g5dxnwAX0orzM7pmCRDLnZSX772mv8WDqICwFjowHuPs04Mc8deIld1+ejhtaMn5vp6b+1w==}
 
   b4a@1.7.3:
     resolution: {integrity: sha512-5Q2mfq2WfGuFp3uS//0s6baOJLMoVduPYVeNmDYxu5OUA1/cBfvr2RIS7vi62LdNj/urk1hfmj867I3qt6uZ7Q==}
@@ -3295,11 +3296,11 @@ snapshots:
     dependencies:
       possible-typed-array-names: 1.1.0
 
-  axios-rate-limit@1.4.0(axios@1.15.0):
+  axios-rate-limit@1.4.0(axios@1.16.0):
     dependencies:
-      axios: 1.15.0
+      axios: 1.16.0
 
-  axios@1.15.0:
+  axios@1.16.0:
     dependencies:
       follow-redirects: 1.16.0
       form-data: 4.0.5
@@ -4968,8 +4969,8 @@ snapshots:
 
   substack-api@4.0.0:
     dependencies:
-      axios: 1.15.0
-      axios-rate-limit: 1.4.0(axios@1.15.0)
+      axios: 1.16.0
+      axios-rate-limit: 1.4.0(axios@1.16.0)
       fp-ts: 2.16.11
       io-ts: 2.2.22(fp-ts@2.16.11)
     transitivePeerDependencies:
