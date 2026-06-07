@@ -1,100 +1,60 @@
+> [!WARNING]
+> This package is superseded by [n8n-nodes-substack-new](https://github.com/jakub-k-slys/n8n-nodes-substack-new),
+> which connects to [Substack Gateway OSS](https://github.com/jakub-k-slys/substack-gateway-oss)
+> and supports full read and write operations. This package remains
+> available but is no longer actively developed.
+
 # n8n-nodes-substack
 
 [![npm version](https://badge.fury.io/js/n8n-nodes-substack.svg)](https://badge.fury.io/js/n8n-nodes-substack)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://github.com/jakub-k-slys/n8n-nodes-substack/actions/workflows/test.yaml/badge.svg)](https://github.com/jakub-k-slys/n8n-nodes-substack/actions/workflows/test.yaml)
 
-This n8n community node provides read-only access to the Substack API, enabling you to automate content discovery and analytics workflows with Substack publications.
-
-[n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
+Read-only n8n community node for Substack. Enables content discovery and
+analytics workflows against Substack publications.
 
 ## Features
 
-- **Profile Operations**: Get profile information, followees, and publication data
-- **Post Operations**: Retrieve posts with pagination support
-- **Note Operations**: Access notes from publications and create new notes programmatically with optional title and body content, supporting both simple text and advanced JSON formatting
-- **Comment Operations**: Get comments for posts
-- **Secure Authentication**: API key authentication with publication address
-- **Powered by substack-api**: Uses the robust [substack-api](https://www.npmjs.com/package/substack-api) library for reliable API interactions
-
-## Quick Start
-
-### Get Your Profile Information
-
-```json
-{
-  "nodes": [
-    {
-      "name": "Get My Profile",
-      "type": "n8n-nodes-substack.substack",
-      "parameters": {
-        "resource": "profile",
-        "operation": "getOwnProfile"
-      },
-      "credentials": {
-        "substackApi": "your-credential-id"
-      }
-    }
-  ]
-}
-```
-
-### Retrieve Recent Posts
-
-```json
-{
-  "nodes": [
-    {
-      "name": "Get Recent Posts",
-      "type": "n8n-nodes-substack.substack",
-      "parameters": {
-        "resource": "post",
-        "operation": "getAll",
-        "limit": 10
-      },
-      "credentials": {
-        "substackApi": "your-credential-id"
-      }
-    }
-  ]
-}
-```
+- Profile operations: get profile information and publication data
+- Post operations: retrieve posts with pagination
+- Note operations: read and create notes
+- Comment operations: get comments for posts
 
 ## Installation
 
-### n8n Cloud
-
-1. Go to **Settings** > **Community Nodes**
-2. Click **Install a community node**
-3. Enter `n8n-nodes-substack`
-4. Click **Install**
-
 ### Self-hosted n8n
-
-Install the node in your n8n installation directory:
 
 ```bash
 npm install n8n-nodes-substack
 ```
 
-Then restart your n8n instance.
+Restart n8n after installation.
 
-### Credentials Setup
+### Credentials
 
-1. Add the Substack node to your workflow
-2. Create new credentials with:
-   - **Publication Address**: Your Substack domain (e.g., `myblog.substack.com`)
-   - **API Key**: Your Substack API key
+Add credentials with:
+- **Publication Address**: your Substack domain (e.g. `myblog.substack.com`)
+- **API Key**: your Substack API key
 
 ## Documentation
 
-📖 **[Complete Documentation](docs/)** - Comprehensive guides for all operations
+- [Resource Guides](docs/resources/)
+- [Development Guide](docs/contributing.md)
+- [Testing Guide](docs/testing.md)
+- [Architecture](docs/design.md)
 
-- **[Resource Guides](docs/resources/)** - Detailed documentation for Profile, Post, Note, and Comment operations
-- **[Development Guide](docs/contributing.md)** - Contributing to the project
-- **[Testing Guide](docs/testing.md)** - Testing practices and procedures
-- **[Architecture](docs/design.md)** - Design decisions and project structure
+## Author
+
+Built by [Jakub Slys](https://iam.slys.dev) — Backend Engineer building
+distributed systems for telecoms, running a self-hosted Kubernetes homelab,
+and building AI automation pipelines with n8n, MCP, and Claude.
+
+I write about building this kind of tooling — n8n workflows, self-hosted AI
+automation, and the engineering decisions behind them — at
+[iam.slys.dev](https://iam.slys.dev).
+
+→ [iam.slys.dev](https://iam.slys.dev)
 
 ## License
 
-[MIT](LICENSE.md)
+MIT
