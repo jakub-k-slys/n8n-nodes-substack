@@ -32,16 +32,14 @@ jobs:
                   version: 10
             - uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  # node 24 ships npm >= 11.5.1, required for the `npm publish`
+                  # step to complete OIDC trusted publishing.
+                  node-version: 24
                   cache: 'pnpm'
             - name: Install
               run: pnpm install
-            - name: set NODE_AUTH_TOKEN env
-              run: echo "NODE_AUTH_TOKEN=${{ secrets.NPM_TOKEN }}" >> $GITHUB_ENV
-            - name: set NPM_TOKEN env
-              run: echo "NPM_TOKEN=${{ secrets.NPM_TOKEN }}" >> $GITHUB_ENV
             - name: Semantic Release
-              uses: cycjimmy/semantic-release-action@v4
+              uses: cycjimmy/semantic-release-action@v6
               id: semantic
               with:
                   tag_format: ${version}
@@ -51,6 +49,5 @@ jobs:
                       @semantic-release/git
               env:
                   GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
             - name: set VERSION env
               run: echo "VERSION=${{ steps.semantic.outputs.new_release_version }}" >> $GITHUB_ENV
