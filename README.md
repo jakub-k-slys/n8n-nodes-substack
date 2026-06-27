@@ -8,7 +8,7 @@
 
 [![npm version](https://badge.fury.io/js/n8n-nodes-substack.svg)](https://badge.fury.io/js/n8n-nodes-substack)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://github.com/jakub-k-slys/n8n-nodes-substack/actions/workflows/test.yaml/badge.svg)](https://github.com/jakub-k-slys/n8n-nodes-substack/actions/workflows/test.yaml)
+[![Tests](https://github.com/jakub-k-slys/n8n-nodes-substack/actions/workflows/test.yml/badge.svg)](https://github.com/jakub-k-slys/n8n-nodes-substack/actions/workflows/test.yml)
 
 Read-only n8n community node for Substack. Enables content discovery and
 analytics workflows against Substack publications.
